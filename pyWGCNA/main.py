@@ -84,7 +84,7 @@ def goodGenes(datExpr, weights=None, useSamples=None, useGenes=None, minFraction
 
 
 # Check that all genes and samples have sufficiently low numbers of missing values.
-def goodSampplesGenes(datExpr, weights=None, minFraction=1/2, minNSamples=4, minNGenes=4,
+def goodSamplesGenes(datExpr, weights=None, minFraction=1/2, minNSamples=4, minNGenes=4,
                       tol=None, minRelativeWeight=0.1, verbose=1, indent=0):
     goodGenes = None
     goodSamples = None
@@ -128,7 +128,7 @@ def hclust(d, method = "complete", members = None):
     if method == -1:
         sys.exit("Ambiguous clustering method.")
 
-    dendrogram = fastcluster.linkage_vector(d, method=method)
+    dendrogram = fastcluster.linkage(d, method=method)
 
     return dendrogram
 
@@ -310,10 +310,3 @@ if (sum(ind1) > 0)
     powerEstimate = powerVector[indcut][[1]]
     gc()
     list(powerEstimate=powerEstimate, fitIndices=data.frame(datout))
-
-
-
-
-
-
-
