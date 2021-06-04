@@ -1,4 +1,5 @@
-import math, numpy as np, pandas as pd
+import math, statistics, numpy as np, pandas as pd
+import scipy
 import sys, psutil, warnings
 import fastcluster
 
@@ -7,6 +8,7 @@ import fastcluster
 import numpy
 
 networkTypes = ["unsigned", "signed", "signed hybrid"]
+adjacencyTypes = ["unsigned", "signed", "signed hybrid", "distance"]
 
 def checkAndScaleWeights(weights, expr, scaleByMax=True, verbose=1):
     if len(weights) == 0:
@@ -175,7 +177,7 @@ def calBlockSize(matrixSize, rectangularBlocks = True, maxMemoryAllocation = Non
 # Call the network topology analysis function
 def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
                       powerVector = np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
-                      removeFirst=False, nBreaks = 10, blockSize=None, corOptions = list(use = "p"),
+                      removeFirst=False, nBreaks = 10, blockSize=None, corOptions = pd.DataFrame(),
                       networkType = "unsigned",  moreNetworkConcepts = False, gcInterval = None, verbose = 0):
 
     powerVector = np.sort(powerVector)
@@ -204,7 +206,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     colname1 = ["Power", "SFT.R.sq", "slope", "truncated R.sq", "mean(k)", "median(k)", "max(k)"]
 
     if moreNetworkConcepts:
-        colname1 = [colname1, "Density", "Centralization", "Heterogeneity"]
+        colname1 = colname1.append(["Density", "Centralization", "Heterogeneity"])
 
     datout = pd.DataFrame(np.full((len(powerVector), len(colname1)), 666), columns=colname1)
     datout[:, 1] = powerVector
@@ -220,93 +222,155 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     nPowers = len(powerVector)
     startG = 1
     lastGC = 0
-    corOptions$x = data
+    corOptions[:, 1] = data
 
     if weights is not None:
         if not dataIsExpr:
             sys.exit("Weights can only be used when 'data' represents expression data ('dataIsExpr' must be TRUE).")
         if data.shape != weights.shape:
             sys.exit("When 'weights' are given, dimensions of 'data' and 'weights' must be the same.")
-        corOptions$weights.x = weights
+        corOptions[:, 2] = weights
 
     while startG <= nGenes:
         endG = min(startG + blockSize - 1, nGenes)
         if verbose > 1:
             print("\n  ..working on genes", startG, "through", endG, "of", nGenes, flush=True)
         nBlockGenes = endG - startG + 1
-        datk[startG:endG, :] = foreach(t=actualThreads, .combine = rbind) % dopar % {useGenes = c(startG:endG)[jobs[[t]]]
+
+        useGenes = range(startG, endG)
         nGenes1 = len(useGenes)
         if dataIsExpr:
             corOptions$y = data[:, useGenes]
             if weights is not None:
-                corOptions$weights.y = weights[, useGenes]
-            corx = do.call(corFnc, corOptions)
+                corOptions$weights.y = weights[:, useGenes]
+            corx = corOptions.corr(method ='pearson')
             if intType == 1:
-                corx = math.abs(corx)
+                corx = abs(corx)
             elif intType == 2:
                 corx = (1 + corx) / 2
             elif intType == 3:
                 corx[corx < 0] = 0
             if sum(corx.isna()) != 0:
-                warnings.WarningMessage("Some correlations are NA in block", startG, ":", endG, ".")
+                msg = "Some correlations are NA in block", startG, ":", endG, "."
+                warnings.WarningMessage(msg)
         else:
             corx = data[:, useGenes]
 
-        ind = cbind(useGenes, 1:len(useGenes))
+        ind = pd.concat([pd.Series(useGenes), pd.Series(range(len(useGenes)))], axis=1)
         corx[ind] = 1
-    datk.local = matrix(NA, nGenes1, nPowers)
-    corxPrev = matrix(1, nrow=nrow(corx), ncol=ncol(corx))
-    powerVector1 < - c(0, head(powerVector, -1))
-    powerSteps < - powerVector - powerVector1
-    uniquePowerSteps < - unique(powerSteps)
-    corxPowers < - lapply(uniquePowerSteps, function(p)
-    corx ^ p)
-    names(corxPowers) < - uniquePowerSteps
-    for (j in 1:nPowers) {
-        corxCur < - corxPrev * corxPowers[[as.character(powerSteps[j])]]
-        datk.local[, j] = colSums(corxCur, na.rm = TRUE) - 1
-        corxPrev < - corxCur
+        datk.local = np.empty((nGenes1, nPowers))
+        corxPrev = np.ones((corx.shape))
+        powerVector1 = range(0, powerVector.head(n=-1))
+        powerSteps = powerVector - powerVector1
+        uniquePowerSteps = np.unique(powerSteps)
 
-startG = endG + 1
-if ((gcInterval > 0) & & (startG - lastGC > gcInterval)) {
-gc()
-lastGC = startG
-}
-if (verbose == 1)
-pind = updateProgInd(endG / nGenes, pind)
-}
-if (verbose == 1)
-    printFlush("")
-for (i in c(1:length(powerVector))) {
-khelp = datk[, i]
-if (any(khelp < 0))
-browser()
-SFT1 = scaleFreeFitIndex(k = khelp, nBreaks = nBreaks,
-removeFirst = removeFirst)
-datout[i, 2] = SFT1$Rsquared.SFT
-datout[i, 3] = SFT1$slope.SFT
-datout[i, 4] = SFT1$truncatedExponentialAdjRsquared
-datout[i, 5] = mean(khelp, na.rm = TRUE)
-datout[i, 6] = median(khelp, na.rm = TRUE)
-datout[i, 7] = max(khelp, na.rm = TRUE)
-if (moreNetworkConcepts) {
-Density = sum(khelp) / (nGenes * (nGenes - 1))
-datout[i, 8] = Density
-Centralization = nGenes * (max(khelp) - mean(khelp)) / ((nGenes -
-1) * (nGenes - 2))
-datout[i, 9] = Centralization
-Heterogeneity = sqrt(nGenes * sum(khelp ^ 2) / sum(khelp) ^ 2 -
-1)
-datout[i, 10] = Heterogeneity
-}
-}
-print(signif(data.frame(datout), 3))
-ind1 = datout[, 2] > RsquaredCut
-indcut = NA
-indcut =
-if (sum(ind1) > 0)
-    min(c(1: length(ind1))[ind1])
-    else indcut
+        def fun(p):
+            return corx ^ p
+
+        corxPowers = uniquePowerSteps.applymap(fun)
+        corxPowers.columns = uniquePowerSteps
+        for j in range(nPowers):
+            corxCur = corxPrev * corxPowers[[chr(powerSteps[j])]]
+            datk.local[:, j] = corxCur.sum(axis=0) - 1
+            corxPrev = corxCur
+
+        datk[startG:endG, :] = datk.local
+
+        startG = endG + 1
+        if gcInterval > 0 and startG - lastGC > gcInterval:
+            lastGC = startG
+
+        #if verbose == 1:
+        #    pind = updateProgInd(endG / nGenes, pind)
+
+    if verbose == 1:
+        print("", flush=True)
+
+    for i in range(len(powerVector)):
+        khelp = datk[:, i]
+
+        SFT1 = scaleFreeFitIndex(k = khelp, nBreaks = nBreaks, removeFirst = removeFirst)
+        datout[i, 2] = SFT1$Rsquared.SFT
+        datout[i, 3] = SFT1$slope.SFT
+        datout[i, 4] = SFT1$truncatedExponentialAdjRsquared
+        datout[i, 5] = statistics.mean(khelp)
+        datout[i, 6] = statistics.median(khelp)
+        datout[i, 7] = max(khelp)
+
+        if moreNetworkConcepts:
+            Density = sum(khelp) / (nGenes * (nGenes - 1))
+            datout[i, 8] = Density
+            Centralization = nGenes * (max(khelp) - statistics.mean(khelp)) / ((nGenes - 1) * (nGenes - 2))
+            datout[i, 9] = Centralization
+            Heterogeneity = math.sqrt(nGenes * sum(khelp ^ 2) / sum(khelp) ^ 2 - 1)
+            datout[i, 10] = Heterogeneity
+
+    print(signif(data.frame(datout), 3))
+    ind1 = datout[:, 2] > RsquaredCut
+    indcut = None
+    if sum(ind1) > 0:
+        indcut = min(range(len(ind1))[ind1])
     powerEstimate = powerVector[indcut][[1]]
-    gc()
-    list(powerEstimate=powerEstimate, fitIndices=data.frame(datout))
+
+    return powerEstimate, pd.DataFrame(datout)
+
+
+def adjacency(datExpr, selectCols = None, type = "unsigned", power =  6, corOptions = pd.DataFrame(), weights = None,
+              distFnc = "dist", distOptions = "method = 'euclidean'", weightArgNames = ["weights.x", "weights.y"]):
+    intType = adjacencyTypes.index(type)
+    if intType is None:
+        msg = "Unrecognized 'type'. Recognized values are", adjacencyTypes
+        sys.exit(msg)
+    checkAndScaleWeights(weights, datExpr, scaleByMax = False)
+    if len(weights) > 0:
+        if selectCols.isnull():
+            if isinstance(corOptions, pd.DataFrame):
+                weightOpt = weights.x = weights
+                weightOpt.index = weightArgNames[1]
+            else:
+                weightOpt = weightArgNames[1] + " = weights"
+        else:
+            if isinstance(corOptions, pd.DataFrame):
+                weightOpt = weights.x = weights, weights.y = weights[:,selectCols]
+                weightOpt.index = weightArgNames[1:2]
+            else:
+                weightOpt = weightArgNames[1] + " = weights, " + weightArgNames[2] + " = weights[, selectCols]"
+    else:
+        if isinstance(corOptions, pd.DataFrame):
+            weightOpt = pd.DataFrame()
+        else:
+            weightOpt = ""
+
+    if intType < 4:
+        if selectCols.isnull():
+            if isinstance(corOptions, pd.DataFrame):
+                cor_mat = scipy.stats.pearsonr(datExpr, weightOpt, corOptions)
+            else:
+                corExpr = parse(text = corFnc + "(datExpr " + prepComma(weightOpt) + prepComma(corOptions) + ")")
+                cor_mat = eval(corExpr)
+        else:
+            if isinstance(corOptions, pd.DataFrame):
+                cor_mat = scipy.stats.pearsonr(x = datExpr, y = datExpr[:, selectCols], weightOpt, corOptions)
+            else:
+                corExpr = parse(text = corFnc + "(datExpr, datExpr[, selectCols] " + prepComma(weightOpt) + prepComma(corOptions) + ")")
+                cor_mat = eval(corExpr)
+    else:
+        if not isinstance(selectCols, pd.DataFrame):
+            sys.stop("The argument 'selectCols' cannot be used for distance adjacency.")
+        if isinstance(distOptions, pd.DataFrame):
+            d = scipy.spatial.distance_matrix(datExpr.transpose(), distOptions)
+        else:
+            corExpr = parse(text = distFnc + "(t(datExpr) " + prepComma(distOptions) + ")")
+            d = eval(corExpr)
+        if any(d < 0):
+            warnings.WarningMessage("Function WGCNA::adjacency: Distance function returned (some) negative values.")
+            cor_mat = 1 - ((d/max(d))^2)
+
+    if intType == 1:
+        cor_mat = abs(cor_mat)
+    elif intType == 2:
+        cor_mat = (1 + cor_mat)/2
+    elif intType == 3:
+        cor_mat[cor_mat < 0] = 0
+
+    return cor_mat^power
