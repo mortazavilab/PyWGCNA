@@ -1,18 +1,35 @@
-import math, statistics, numpy as np, pandas as pd
-import scipy
-import sys, psutil, warnings
 import fastcluster
+import math
+import numpy as np
+import pandas as pd
+import psutil
+import scipy
+import statistics
+import sys
+import warnings
 
-
-#public values
-import numpy
-
+# public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
 adjacencyTypes = ["unsigned", "signed", "signed hybrid", "distance"]
 
+
+def replaceMissing(x, replaceWith):
+    if missing(replaceWith):
+        if x.isnumeric():
+            replaceWith = 0
+        elif x.isalpha():
+            replaceWith = ""
+        else:
+            sys.exit("Need 'replaceWith'.")
+
+    x[x.isnull()] = replaceWith
+    return x
+
+
 def checkAndScaleWeights(weights, expr, scaleByMax=True, verbose=1):
-    if len(weights) == 0:
+    if weights is None:
         return weights
+
     weights = np.asmatrix(weights)
     if expr.shape != weights.shape:
         sys.exit("When 'weights' are given, they must have the same dimensions as 'expr'.")
@@ -34,47 +51,48 @@ def checkAndScaleWeights(weights, expr, scaleByMax=True, verbose=1):
 
 
 # Filter genes with too many missing entries
-def goodGenes(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1/2,
-              minNSamples=4, minNGenes=4, tol=None, minRelativeWeight=0.1, verbose=1):
-    datExpr = np.asmatrix(datExpr)
-    if not (all(ele.isdigit() for ele in datExpr)):
+def goodGenesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
+                 minNSamples=4, minNGenes=4, tol=None, minRelativeWeight=0.1, verbose=1):
+    if not datExpr.apply(lambda s: pd.to_numeric(s, errors='coerce').notnull().all()).all():
         sys.exit("datExpr must contain numeric data.")
 
-    weights =checkAndScaleWeights(weights, datExpr, scaleByMax=True)
-    if tol is None:
-        tol = 1e-10 * max(abs(datExpr))
-    if useGenes is None:
-        useGenes = np.repeat(True, datExpr.shape[1])
-    if useSamples is None:
-        useSamples = np.repeat(True, datExpr.shape[0])
+    weights = checkAndScaleWeights(weights, datExpr, scaleByMax=True)
 
-    if len(useGenes) != datExpr.shape[1]:
+    if tol is None:
+        tol = 1e-10 * datExpr.abs().max().max()
+    if useGenes is None:
+        useGenes = np.repeat(True, datExpr.shape[0])
+    if useSamples is None:
+        useSamples = np.repeat(True, datExpr.shape[1])
+
+    if len(useGenes) != datExpr.shape[0]:
         sys.exit("Length of nGenes is not compatible with number of columns in datExpr.")
-    if len(useSamples) != datExpr.shape[0]:
+    if len(useSamples) != datExpr.shape[1]:
         sys.exit("Length of nSamples is not compatible with number of rows in datExpr.")
 
     nSamples = sum(useSamples)
     nGenes = sum(useGenes)
-    if len(weights) == 0:
-        nPresent = datExpr[datExpr[useSamples, useGenes].notna()].sum(axis = 0)
-    else :
-        nPresent = datExpr[datExpr[useSamples, useGenes].notna() and
-                           weights[useSamples, useGenes] > minRelativeWeight].sum(axis = 0)
+    if weights is None:
+        nPresent = datExpr[datExpr.loc[useGenes, useSamples].notna()].sum(axis=1)
+    else:
+        nPresent = datExpr[datExpr[useGenes, useSamples].notna() and
+                           weights[useGenes, useSamples] > minRelativeWeight].sum(axis=1)
 
     gg = useGenes
-    gg[useGenes][nPresent < minNSamples] = False
+    gg[np.logical_and(useGenes, nPresent < minNSamples)] = False
 
-    if len(weights) == 0:
-        var = datExpr[useSamples, gg].var(axis = 0)
+    if weights is None:
+        var = np.var(datExpr.loc[gg, useSamples], axis=1)
+        # var = var.sort_index(inplace=True)
     else:
-        ## need to be fix
-        #TODO:colWeightedVars
-        var = np.var(datExpr, w = weights)
+        # need to be fix
+        # TODO:colWeightedVars
+        var = np.var(datExpr, w=weights)
 
     var[var.isna()] = 0
-    nNAsGenes = datExpr[useSamples, gg].isna().sum(axis=0)
-    gg[gg] = (nNAsGenes < (1 - minFraction) * nSamples & var > tol ^ 2 and
-              (nSamples - nNAsGenes >= minNSamples))
+    nNAsGenes = datExpr.loc[gg, useSamples].isna().sum(axis=1)
+    gg[gg] = np.logical_and(np.logical_and(nNAsGenes < (1 - minFraction) * nSamples, var > tol ** 2),
+                            nSamples - nNAsGenes >= minNSamples)
 
     if sum(gg) < minNGenes:
         sys.exit("Too few genes with valid expression levels in the required number of samples.")
@@ -85,39 +103,77 @@ def goodGenes(datExpr, weights=None, useSamples=None, useGenes=None, minFraction
     return gg
 
 
+# Filter samples with too many missing entries
+def goodSamplesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
+                   minNSamples=4, minNGenes=4, minRelativeWeight=0.1, verbose=1):
+    if useGenes is None:
+        useGenes = np.repeat(True, datExpr.shape[0])
+
+    if useSamples is None:
+        useSamples = np.repeat(True, datExpr.shape[1])
+
+    if len(useGenes) != datExpr.shape[0]:
+        sys.exit("Length of nGenes is not compatible with number of columns in datExpr.")
+
+    if len(useSamples) != datExpr.shape[1]:
+        sys.exit("Length of nSamples is not compatible with number of rows in datExpr.")
+
+    weights = checkAndScaleWeights(weights, datExpr, scaleByMax=True)
+    nSamples = sum(useSamples)
+    nGenes = sum(useGenes)
+    if weights is None:
+        nNAsSamples = np.sum((datExpr.loc[useGenes, useSamples]).isnull(), axis=0)
+    else:
+        nNAsSamples = np.sum(np.logical_or(datExpr[useGenes, useSamples],
+                                           replaceMissing(weights[useGenes, useSamples] < minRelativeWeight, True))
+                             .isnull(), axis=0)
+
+    goodSamples = useSamples
+    goodSamples[useSamples] = np.logical_and((nNAsSamples < (1 - minFraction) * nGenes),
+                                             (nGenes - nNAsSamples >= minNGenes))
+
+    if sum(goodSamples) < minNSamples:
+        sys.exit("Too few samples with valid expression levels for the required number of genes.")
+
+    if verbose > 0 and (nSamples - sum(goodSamples) > 0):
+        print("  ..Excluding", nSamples - sum(goodSamples),
+              "samples from the calculation due to too many missing genes.", flush=True)
+
+    return goodSamples
+
+
 # Check that all genes and samples have sufficiently low numbers of missing values.
-def goodSamplesGenes(datExpr, weights=None, minFraction=1/2, minNSamples=4, minNGenes=4,
-                      tol=None, minRelativeWeight=0.1, verbose=1, indent=0):
+def goodSamplesGenes(datExpr, weights=None, minFraction=1 / 2, minNSamples=4, minNGenes=4, tol=None,
+                     minRelativeWeight=0.1, verbose=1):
     goodGenes = None
     goodSamples = None
     nBadGenes = 0
     nBadSamples = 0
     changed = True
     iter = 1
-    if (verbose > 0):
+    if verbose > 0:
         print("Flagging genes and samples with too many missing values...\n\n")
-    while (changed):
-        if (verbose > 0):
+    while changed:
+        if verbose > 0:
             print(" ..step", iter, "\n")
-        goodGenes = goodGenes(datExpr, weights, goodSamples, goodGenes, minFraction = minFraction,
-                              minNSamples = minNSamples, minNGenes = minNGenes,
-                              minRelativeWeight = minRelativeWeight, tol = tol, verbose = verbose - 1,
-                              indent = indent + 1)
-        goodSamples = goodSamples(datExpr, weights, goodSamples, goodGenes, minFraction = minFraction,
-                                  minNSamples = minNSamples, minNGenes = minNGenes,
-                                  minRelativeWeight = minRelativeWeight, verbose = verbose - 1,
-                                  indent = indent + 1)
-        changed = (~goodGenes.sum() > nBadGenes) or (~goodSamples.sum() > nBadSamples)
-        nBadGenes = ~goodGenes.sum()
-        nBadSamples = ~goodSamples.sum()
+        goodGenes = goodGenesFun(datExpr, weights, goodSamples, goodGenes, minFraction=minFraction,
+                                 minNSamples=minNSamples, minNGenes=minNGenes, minRelativeWeight=minRelativeWeight,
+                                 tol=tol, verbose=verbose - 1)
+        goodSamples = goodSamplesFun(datExpr, weights, goodSamples, goodGenes, minFraction=minFraction,
+                                     minNSamples=minNSamples, minNGenes=minNGenes, minRelativeWeight=minRelativeWeight,
+                                     verbose=verbose - 1)
+        changed = np.logical_or((np.logical_not(goodGenes).sum() > nBadGenes),
+                                (np.logical_not(goodSamples).sum() > nBadSamples))
+        nBadGenes = np.logical_not(goodGenes).sum()
+        nBadSamples = np.logical_not(goodSamples).sum()
         iter = iter + 1
 
-    allOK = np.concatenate(nBadGenes, nBadSamples).sum() == 0
+    allOK = (nBadGenes + nBadSamples == 0)
 
     return goodGenes, goodSamples, allOK
 
 
-def hclust(d, method = "complete", members = None):
+def hclust(d, method="complete", members=None):
     if method == "ward":
         print("\nThe \"ward\" method has been renamed to \"ward.D\"; note new \"ward.D2\"\n")
         method = "ward.D"
@@ -140,7 +196,7 @@ def cutree(sampleTree, cutHeight=50000):
     return sampleTree
 
 
-def checkSimilarity(adjMat, min = 0, max = 1):
+def checkSimilarity(adjMat, min=0, max=1):
     dim = adjMat.shape
     if dim is None or len(dim) != 2:
         sys.exit("adjacency is not two-dimensional")
@@ -158,7 +214,7 @@ def checkSimilarity(adjMat, min = 0, max = 1):
         sys.exit(("some entries are not between", min, "and", max))
 
 
-def calBlockSize(matrixSize, rectangularBlocks = True, maxMemoryAllocation = None, overheadFactor = 3):
+def calBlockSize(matrixSize, rectangularBlocks=True, maxMemoryAllocation=None, overheadFactor=3):
     if maxMemoryAllocation is None:
         maxAlloc = psutil.virtual_memory()[2]
     else:
@@ -176,16 +232,15 @@ def calBlockSize(matrixSize, rectangularBlocks = True, maxMemoryAllocation = Non
 
 # Call the network topology analysis function
 def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
-                      powerVector = np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
-                      removeFirst=False, nBreaks = 10, blockSize=None, corOptions = pd.DataFrame(),
-                      networkType = "unsigned",  moreNetworkConcepts = False, gcInterval = None, verbose = 0):
-
+                      powerVector=np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
+                      removeFirst=False, nBreaks=10, blockSize=None, corOptions=pd.DataFrame(),
+                      networkType="unsigned", moreNetworkConcepts=False, gcInterval=None, verbose=0):
     powerVector = np.sort(powerVector)
     intType = networkTypes.index(networkType)
     if intType is None:
         sys.exit(("Unrecognized 'networkType'. Recognized values are", str(networkTypes)))
 
-    nGenes = data.shape[1] #col
+    nGenes = data.shape[1]  # col
     if nGenes < 3:
         sys.exit("The input data data contain fewer than 3 rows (nodes).\n"
                  "This would result in a trivial correlation network.")
@@ -196,7 +251,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         data = np.where(np.diag(data), 1)
 
     if blockSize is None:
-        blockSize = calBlockSize(nGenes, rectangularBlocks = True, maxMemoryAllocation = 2 ^ 30)
+        blockSize = calBlockSize(nGenes, rectangularBlocks=True, maxMemoryAllocation=2 ^ 30)
 
     if verbose > 0:
         print("pickSoftThreshold: will use block size ", blockSize, ".", flush=True)
@@ -216,7 +271,6 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         pind = ""
     else:
         print("\n")
-
 
     datk = np.zeros((nGenes, len(powerVector)))
     nPowers = len(powerVector)
@@ -240,10 +294,10 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         useGenes = range(startG, endG)
         nGenes1 = len(useGenes)
         if dataIsExpr:
-            corOptions$y = data[:, useGenes]
+            corOptions['y'] = data[:, useGenes]
             if weights is not None:
-                corOptions$weights.y = weights[:, useGenes]
-            corx = corOptions.corr(method ='pearson')
+                corOptions['weights.y'] = weights[:, useGenes]
+            corx = corOptions.corr(method='pearson')
             if intType == 1:
                 corx = abs(corx)
             elif intType == 2:
@@ -280,7 +334,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         if gcInterval > 0 and startG - lastGC > gcInterval:
             lastGC = startG
 
-        #if verbose == 1:
+        # if verbose == 1:
         #    pind = updateProgInd(endG / nGenes, pind)
 
     if verbose == 1:
@@ -289,10 +343,10 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     for i in range(len(powerVector)):
         khelp = datk[:, i]
 
-        SFT1 = scaleFreeFitIndex(k = khelp, nBreaks = nBreaks, removeFirst = removeFirst)
-        datout[i, 2] = SFT1$Rsquared.SFT
-        datout[i, 3] = SFT1$slope.SFT
-        datout[i, 4] = SFT1$truncatedExponentialAdjRsquared
+        SFT1 = scaleFreeFitIndex(k=khelp, nBreaks=nBreaks, removeFirst=removeFirst)
+        datout[i, 2] = SFT1['Rsquared.SFT']
+        datout[i, 3] = SFT1['slope.SFT']
+        datout[i, 4] = SFT1['truncatedExponentialAdjRsquared']
         datout[i, 5] = statistics.mean(khelp)
         datout[i, 6] = statistics.median(khelp)
         datout[i, 7] = max(khelp)
@@ -315,13 +369,13 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     return powerEstimate, pd.DataFrame(datout)
 
 
-def adjacency(datExpr, selectCols = None, type = "unsigned", power =  6, corOptions = pd.DataFrame(), weights = None,
-              distFnc = "dist", distOptions = "method = 'euclidean'", weightArgNames = ["weights.x", "weights.y"]):
+def adjacency(datExpr, selectCols=None, type="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
+              distFnc="dist", distOptions="method = 'euclidean'", weightArgNames=["weights.x", "weights.y"]):
     intType = adjacencyTypes.index(type)
     if intType is None:
         msg = "Unrecognized 'type'. Recognized values are", adjacencyTypes
         sys.exit(msg)
-    checkAndScaleWeights(weights, datExpr, scaleByMax = False)
+    checkAndScaleWeights(weights, datExpr, scaleByMax=False)
     if len(weights) > 0:
         if selectCols.isnull():
             if isinstance(corOptions, pd.DataFrame):
@@ -331,7 +385,7 @@ def adjacency(datExpr, selectCols = None, type = "unsigned", power =  6, corOpti
                 weightOpt = weightArgNames[1] + " = weights"
         else:
             if isinstance(corOptions, pd.DataFrame):
-                weightOpt = weights.x = weights, weights.y = weights[:,selectCols]
+                weightOpt = weights.x = weights, weights.y = weights[:, selectCols]
                 weightOpt.index = weightArgNames[1:2]
             else:
                 weightOpt = weightArgNames[1] + " = weights, " + weightArgNames[2] + " = weights[, selectCols]"
@@ -346,13 +400,14 @@ def adjacency(datExpr, selectCols = None, type = "unsigned", power =  6, corOpti
             if isinstance(corOptions, pd.DataFrame):
                 cor_mat = scipy.stats.pearsonr(datExpr, weightOpt, corOptions)
             else:
-                corExpr = parse(text = corFnc + "(datExpr " + prepComma(weightOpt) + prepComma(corOptions) + ")")
+                corExpr = parse(text=corFnc + "(datExpr " + prepComma(weightOpt) + prepComma(corOptions) + ")")
                 cor_mat = eval(corExpr)
         else:
             if isinstance(corOptions, pd.DataFrame):
-                cor_mat = scipy.stats.pearsonr(x = datExpr, y = datExpr[:, selectCols], weightOpt, corOptions)
+                cor_mat = scipy.stats.pearsonr(x=datExpr, y=datExpr[:, selectCols])  # , weightOpt, corOptions)
             else:
-                corExpr = parse(text = corFnc + "(datExpr, datExpr[, selectCols] " + prepComma(weightOpt) + prepComma(corOptions) + ")")
+                corExpr = parse(text=corFnc + "(datExpr, datExpr[, selectCols] " + prepComma(weightOpt) + prepComma(
+                    corOptions) + ")")
                 cor_mat = eval(corExpr)
     else:
         if not isinstance(selectCols, pd.DataFrame):
@@ -360,17 +415,17 @@ def adjacency(datExpr, selectCols = None, type = "unsigned", power =  6, corOpti
         if isinstance(distOptions, pd.DataFrame):
             d = scipy.spatial.distance_matrix(datExpr.transpose(), distOptions)
         else:
-            corExpr = parse(text = distFnc + "(t(datExpr) " + prepComma(distOptions) + ")")
+            corExpr = parse(text=distFnc + "(t(datExpr) " + prepComma(distOptions) + ")")
             d = eval(corExpr)
         if any(d < 0):
             warnings.WarningMessage("Function WGCNA::adjacency: Distance function returned (some) negative values.")
-            cor_mat = 1 - ((d/max(d))^2)
+            cor_mat = 1 - ((d / max(d)) ^ 2)
 
     if intType == 1:
         cor_mat = abs(cor_mat)
     elif intType == 2:
-        cor_mat = (1 + cor_mat)/2
+        cor_mat = (1 + cor_mat) / 2
     elif intType == 3:
         cor_mat[cor_mat < 0] = 0
 
-    return cor_mat^power
+    return cor_mat ^ power

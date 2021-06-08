@@ -5,12 +5,12 @@ import main as WGCNA
 
 
 def preprocess():
-    expressionList = pd.read_csv('input/expressionList', header=True, index_col=0)
+    expressionList = pd.read_csv('test/input/expressionList', sep=' ')
+
+    expressionList.index = expressionList['gene_id']
+    expressionList = expressionList.drop(['gene_id'], axis=1)
 
     # Prepare and clean data
-    # Remove rows with less than 1 TPM
-    expressionList = expressionList[expressionList[:, np.where(expressionList)] > 1, :]
-
     # Check that all genes and samples have sufficiently low numbers of missing values.
     goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(expressionList, verbose=3)
     # if not okay
@@ -19,9 +19,9 @@ def preprocess():
         if np.count_nonzero(goodGenes) > 0:
             print(("Removing genes:", expressionList.index[goodGenes], "\n"), flush=True)
         if np.count_nonzero(goodSamples) > 0:
-            print(("Removing samples:", expressionList.index[goodSamples], "\n"), flush=True)
+            print(("Removing samples:", expressionList.columns[goodSamples], "\n"), flush=True)
         # Remove the offending genes and samples from the data:
-        expressionList = expressionList[goodSamples, goodGenes]
+        expressionList = expressionList.loc[goodGenes, goodSamples]
 
     # Clustering
     sampleTree = WGCNA.hclust(expressionList, method="average")
@@ -50,5 +50,4 @@ def preprocess():
 
 
 if __name__ == '__main__':
-    print("AAA")
     preprocess()
