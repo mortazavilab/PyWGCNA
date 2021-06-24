@@ -1,4 +1,3 @@
-import fastcluster
 import math
 import numpy as np
 import pandas as pd
@@ -7,6 +6,7 @@ import scipy
 import statistics
 import sys
 import warnings
+from scipy.cluster.hierarchy import linkage, cut_tree
 
 # public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
@@ -173,12 +173,8 @@ def goodSamplesGenes(datExpr, weights=None, minFraction=1 / 2, minNSamples=4, mi
     return goodGenes, goodSamples, allOK
 
 
-def hclust(d, method="complete", members=None):
-    if method == "ward":
-        print("\nThe \"ward\" method has been renamed to \"ward.D\"; note new \"ward.D2\"\n")
-        method = "ward.D"
-
-    METHODS = ["single", "complete", "average", "mcquitty", "ward.D", "centroid", "median", "ward.D2"]
+def hclust(d, method="complete"):
+    METHODS = ["single", "complete", "average", "weighted", "centroid"]
 
     if method not in METHODS:
         sys.exit("Invalid clustering method.")
@@ -186,14 +182,16 @@ def hclust(d, method="complete", members=None):
     if method == -1:
         sys.exit("Ambiguous clustering method.")
 
-    dendrogram = fastcluster.linkage(d, method=method)
+    dendrogram = linkage(d, method=method)
 
     return dendrogram
 
 
 # Determine cluster under the line # TODO
 def cutree(sampleTree, cutHeight=50000):
-    return sampleTree
+    cutTree = cut_tree(sampleTree, height=cutHeight)
+
+    return cutTree
 
 
 def checkSimilarity(adjMat, min=0, max=1):
