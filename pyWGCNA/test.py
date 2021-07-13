@@ -22,28 +22,31 @@ def preprocess():
     if not allOK:
         # Optionally, print the gene and sample names that were removed:
         if np.count_nonzero(goodGenes) > 0:
-            print(("Removing genes:", expressionList.index[goodGenes], "\n"), flush=True)
+            print(("Removing genes:", expressionList.index[not goodGenes].values, "\n"), flush=True)
         if np.count_nonzero(goodSamples) > 0:
-            print(("Removing samples:", expressionList.columns[goodSamples], "\n"), flush=True)
+            print(("Removing samples:", expressionList.columns[not goodSamples].values, "\n"), flush=True)
         # Remove the offending genes and samples from the data:
         expressionList = expressionList.loc[goodGenes, goodSamples]
 
     # Clustering
     sampleTree = WGCNA.hclust(pdist(expressionList.T), method="average")
 
-    dendrogram(sampleTree, color_threshold=190000, labels=expressionList.T.index, leaf_rotation=90, leaf_font_size=8)
-    plt.axhline(y=190000, c='grey', lw=1, linestyle='dashed')
+    cut = 400000
+    dendrogram(sampleTree, color_threshold=cut, labels=expressionList.T.index, leaf_rotation=90, leaf_font_size=8)
+    plt.axhline(y=cut, c='grey', lw=1, linestyle='dashed')
+    plt.title('Sample clustering to detect outliers')
+    plt.xlabel('Samples')
+    plt.ylabel('Distances')
+    plt.tight_layout()
     plt.savefig('test/output/plots/sampleClusteringCleaning.png')
 
     # Determine cluster under the line
-    clust = WGCNA.cutree(sampleTree, cutHeight=190000)
+    clust = WGCNA.cutree(sampleTree, cutHeight=cut)
     # clust 0 contains the samples we want to keep.
     clust = clust.T.tolist()[0]
     index = [index for index, element in enumerate(clust) if element == 0]
 
     datExpr = expressionList.iloc[:, index]
-    nGenes = datExpr.shape[0]
-    nSamples = datExpr.shape[1]
 
     # convert trancript ID to gene ID
     for i in range(datExpr.shape[0]):
@@ -54,5 +57,18 @@ def preprocess():
     datExpr.to_csv('test/output/data/data_input')
 
 
+def run_WGCNA():
+    datExpr = pd.read_csv('test/output/data/data_input', header=0, index_col=0)
+    # Choose a set of soft-thresholding powers
+    powers = list(range(1, 10)) + list(range(11, 21, 2))
+
+    # Call the network topology analysis function
+    sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, verbose=5)
+
+    return sft
+
+
 if __name__ == '__main__':
     preprocess()
+
+    #run_WGCNA()
