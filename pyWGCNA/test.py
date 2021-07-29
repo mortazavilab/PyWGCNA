@@ -28,6 +28,8 @@ def preprocess():
         # Remove the offending genes and samples from the data:
         expressionList = expressionList.loc[goodGenes, goodSamples]
 
+    print("\n\n")
+
     # Clustering
     sampleTree = WGCNA.hclust(pdist(expressionList.T), method="average")
 
@@ -60,10 +62,10 @@ def preprocess():
 def run_WGCNA():
     datExpr = pd.read_csv('test/output/data/data_input', header=0, index_col=0)
     # Choose a set of soft-thresholding powers
-    powers = list(range(1, 10)) + list(range(11, 21, 2))
+    powers = list(range(1, 11)) + list(range(11, 21, 2))
 
     # Call the network topology analysis function
-    sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, verbose=5)
+    sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, networkType="signed", verbose=5)
 
     return sft
 
@@ -71,4 +73,4 @@ def run_WGCNA():
 if __name__ == '__main__':
     preprocess()
 
-    #run_WGCNA()
+    run_WGCNA()
