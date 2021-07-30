@@ -1,7 +1,6 @@
 import math
 import numpy as np
 import pandas as pd
-import psutil
 import scipy
 import scipy.stats as stats
 import statistics
@@ -9,8 +8,6 @@ import sys
 import warnings
 from scipy.cluster.hierarchy import linkage, cut_tree
 import networkx as nx
-from tabulate import tabulate
-import matplotlib.pyplot as plt
 from statsmodels.formula.api import ols
 import resource
 
