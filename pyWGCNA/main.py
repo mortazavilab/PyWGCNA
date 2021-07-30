@@ -9,6 +9,7 @@ import sys
 import warnings
 from scipy.cluster.hierarchy import linkage, cut_tree
 import networkx as nx
+from tabulate import tabulate
 import matplotlib.pyplot as plt
 from statsmodels.formula.api import ols
 import resource
@@ -59,7 +60,7 @@ def checkAndScaleWeights(weights, expr, scaleByMax=True, verbose=1):
 
 
 # Filter genes with too many missing entries
-def goodGenesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1/2,
+def goodGenesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
                  minNSamples=4, minNGenes=4, tol=None, minRelativeWeight=0.1, verbose=1):
     if not datExpr.apply(lambda s: pd.to_numeric(s, errors='coerce').notnull().all()).all():
         sys.exit("datExpr must contain numeric data.")
@@ -237,36 +238,28 @@ def calBlockSize(matrixSize, rectangularBlocks=True, maxMemoryAllocation=None, o
 
 
 # Calculation of fitting statistics for evaluating scale free topology fit.
-def scaleFreeFitIndex(k, nBreaks=10, removeFirst=False):
+def scaleFreeFitIndex(k, nBreaks=10):
     df = pd.DataFrame({'data': k})
     df['discretized_k'] = pd.cut(df['data'], nBreaks)
     df['dk'] = df.groupby('discretized_k')['data'].transform('mean')  # tapply(k, discretized_k, mean)
-    print("AAAAA", df)
-    p_dk = len(df['discretized_k']) / len(k)  # as.vector(tapply(k, discretized.k, length)/length(k))
-    breaks1 = np.arange(min(k), max(k), nBreaks + 1)
-    y, edges = np.histogram(k, bins=breaks1)
-    dk2 = 0.5*(edges[1:] + edges[:-1])
-    if np.isnan(df['dk']):
-        dk = dk2
-    if dk == 0:
-        dk = dk2
-    if np.isnan(p_dk):
-        p_dk = 0
-    log_dk = math.log10(dk)
-    if removeFirst:
-        p_dk = p_dk[1:]
-        log_dk = log_dk[1:]
-    log_p_dk = math.log10(p_dk + 1e-09)
-    print("BBBB", log_dk)
-    print("AAAA", log_p_dk)
-    df = pd.DataFrame({'log_p_dk': log_p_dk, 'log_dk': log_dk})
+    df['p_dk'] = df['discretized_k'].value_counts() / len(k)  # as.vector(tapply(k, discretized.k, length)/length(k))
+    breaks1 = np.linspace(start=min(k), stop=max(k), num=nBreaks + 1)
+    y, edges = np.histogram(df['data'], bins=breaks1)
+    dk2 = 0.5 * (edges[1:] + edges[:-1])
+    df = df.groupby('discretized_k').mean()
+    if df['dk'].isnull().values.any():
+        df['dk'][df['dk'].isnull().values] = dk2[df['dk'].isnull().values]
+    if np.any(df['dk'] == 0):
+        df['dk'][df['dk'] == 0] = dk2[df['dk'] == 0]
+    if df['p_dk'].isnull().values.any():
+        df['p_dk'][df['p_dk'].isnull().values] = 0
+    df['log_dk'] = np.log10(df['dk'])
+    df['log_p_dk'] = np.log10(df['p_dk'] + 1e-09)
     model = ols(formula='log_p_dk ~ log_dk', data=df).fit()
-    # lm2 = lm(log.p.dk ~ log.dk + I(10^log.dk))
-    datout = pd.DataFrame({'Rsquared.SFT': [model.summary().rsquared],
-                           'slope.SFT': [model.summary().coefficients],
-                           'truncatedExponentialAdjRsquared': [model.summary().adj.r.squared]})
-
-    return datout
+    dfout = pd.DataFrame({'Rsquared.SFT': [model.rsquared],
+                          'slope.SFT': [model.params.values[1]],
+                          'truncatedExponentialAdjRsquared': [model.rsquared_adj]})
+    return dfout
 
 
 # Call the network topology analysis function
@@ -302,8 +295,8 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     if moreNetworkConcepts:
         colname1 = colname1.append(["Density", "Centralization", "Heterogeneity"])
 
-    datout = pd.DataFrame(np.full((len(powerVector), len(colname1)), 666), columns=colname1)
-    datout.loc[:, 0] = powerVector
+    datout = pd.DataFrame(np.full((len(powerVector), len(colname1)), 666), columns=colname1, dtype=object)
+    datout['Power'] = powerVector
     if verbose > 0:
         print("pickSoftThreshold: calculating connectivity for given powers...", flush=True)
     else:
@@ -331,7 +324,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     while startG <= nGenes:
         endG = min(startG + blockSize - 1, nGenes)
         if verbose > 1:
-            print("\t..working on genes", (startG+1), "through", (endG+1), "of", nGenes, flush=True)
+            print("\t..working on genes", (startG + 1), "through", (endG + 1), "of", nGenes, flush=True)
 
         useGenes = list(range(startG, endG))
         nGenes1 = len(useGenes)
@@ -382,158 +375,30 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
 
     for i in range(len(powerVector)):
         khelp = datk[:, i]
-        SFT1 = scaleFreeFitIndex(k=khelp, nBreaks=nBreaks, removeFirst=removeFirst)
-        datout[i, 1] = SFT1['Rsquared.SFT']
-        datout[i, 2] = SFT1['slope.SFT']
-        datout[i, 3] = SFT1['truncatedExponentialAdjRsquared']
-        datout[i, 4] = statistics.mean(khelp)
-        datout[i, 5] = statistics.median(khelp)
-        datout[i, 6] = max(khelp)
-    return None
-
-
-# Call the network topology analysis function
-def pickSoftThreshold1(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
-                      powerVector=np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
-                      removeFirst=False, nBreaks=10, blockSize=None, corOptions=None,
-                      networkType="unsigned", moreNetworkConcepts=False, gcInterval=None, verbose=0):
-    powerVector = np.sort(powerVector)
-    intType = networkTypes.index(networkType)
-    if intType is None:
-        sys.exit(("Unrecognized 'networkType'. Recognized values are", str(networkTypes)))
-
-    nGenes = data.shape[1]  # col
-    if nGenes < 3:
-        sys.exit("The input data data contain fewer than 3 rows (nodes).\n"
-                 "This would result in a trivial correlation network.")
-
-    if not dataIsExpr:
-        checkSimilarity(data)
-        if any(np.diag(data) != 1):
-            data = np.where(np.diag(data), 1)
-
-    if blockSize is None:
-        blockSize = calBlockSize(nGenes, rectangularBlocks=True, maxMemoryAllocation=2 ^ 30)
-        if verbose > 0:
-            print("pickSoftThreshold: will use block size ", blockSize, ".", flush=True)
-
-    if gcInterval is None or len(gcInterval) == 0:
-        gcInterval = 4 * blockSize
-
-    colname1 = ["Power", "SFT.R.sq", "slope", "truncated R.sq", "mean(k)", "median(k)", "max(k)"]
-
-    if moreNetworkConcepts:
-        colname1 = colname1.append(["Density", "Centralization", "Heterogeneity"])
-
-    datout = pd.DataFrame(np.full((len(powerVector), len(colname1)), 666), columns=colname1)
-    datout.loc[:, 1] = powerVector
-    if verbose > 0:
-        print("pickSoftThreshold: calculating connectivity for given powers...\n")
-    if verbose == 1:
-        pind = ""
-    else:
-        print("\n")
-
-    datk = np.zeros((nGenes, len(powerVector)))
-    nPowers = len(powerVector)
-    startG = 1
-    lastGC = 0
-    #print(data.shape[1])
-    #print(data.columns.values)
-    if corOptions is None:
-        corOptions = pd.DataFrame()
-        corOptions['data'] = data
-    else:
-        corOptions['data'] = data
-
-    if weights is not None:
-        if not dataIsExpr:
-            sys.exit("Weights can only be used when 'data' represents expression data ('dataIsExpr' must be TRUE).")
-        if data.shape != weights.shape:
-            sys.exit("When 'weights' are given, dimensions of 'data' and 'weights' must be the same.")
-        corOptions[:, 2] = weights
-
-    while startG <= nGenes:
-        endG = min(startG + blockSize - 1, nGenes)
-        if verbose > 1:
-            print("\n  ..working on genes", startG, "through", endG, "of", nGenes, flush=True)
-
-        useGenes = range(startG, endG)
-        nGenes1 = len(useGenes)
-        if dataIsExpr:
-            corOptions['y'] = data[:, useGenes]
-            if weights is not None:
-                corOptions['weights.y'] = weights[:, useGenes]
-            corx = corOptions.corr(method='pearson')
-            if intType == 1:
-                corx = abs(corx)
-            elif intType == 2:
-                corx = (1 + corx) / 2
-            elif intType == 3:
-                corx[corx < 0] = 0
-            if sum(corx.isna()) != 0:
-                msg = "Some correlations are NA in block" + startG + ":" + endG + "."
-                warnings.warn(msg)
-        else:
-            corx = data[:, useGenes]
-
-        ind = pd.concat([pd.Series(useGenes), pd.Series(range(len(useGenes)))], axis=1)
-        corx[ind] = 1
-        datk.local = np.empty((nGenes1, nPowers))
-        corxPrev = np.ones(corx.shape)
-        powerVector1 = range(0, powerVector.head(n=-1))
-        powerSteps = powerVector - powerVector1
-        uniquePowerSteps = np.unique(powerSteps)
-
-        def fun(p):
-            return corx ** p
-
-        corxPowers = uniquePowerSteps.applymap(fun)
-        corxPowers.columns = uniquePowerSteps
-        for j in range(nPowers):
-            corxCur = corxPrev * corxPowers[[chr(powerSteps[j])]]
-            datk.local[:, j] = corxCur.sum(axis=0) - 1
-            corxPrev = corxCur
-
-        datk[startG:endG, :] = datk.local
-
-        startG = endG + 1
-        if 0 < gcInterval < startG - lastGC:
-            lastGC = startG
-
-        # if verbose == 1:
-        #    pind = updateProgInd(endG / nGenes, pind)
-
-    if verbose == 1:
-        print("", flush=True)
-
-    for i in range(len(powerVector)):
-        khelp = datk[:, i]
-
-        SFT1 = scaleFreeFitIndex(k=khelp, nBreaks=nBreaks, removeFirst=removeFirst)
-        datout[i, 2] = SFT1['Rsquared.SFT']
-        datout[i, 3] = SFT1['slope.SFT']
-        datout[i, 4] = SFT1['truncatedExponentialAdjRsquared']
-        datout[i, 5] = statistics.mean(khelp)
-        datout[i, 6] = statistics.median(khelp)
-        datout[i, 7] = max(khelp)
+        SFT1 = scaleFreeFitIndex(k=khelp, nBreaks=nBreaks)
+        datout.loc[i, 'SFT.R.sq'] = SFT1.loc[0, 'Rsquared.SFT']
+        datout.loc[i, 'slope'] = SFT1.loc[0, 'slope.SFT']
+        datout.loc[i, 'truncated R.sq'] = SFT1.loc[0, 'truncatedExponentialAdjRsquared']
+        datout.loc[i, 'mean(k)'] = statistics.mean(khelp)
+        datout.loc[i, 'median(k)'] = statistics.median(khelp)
+        datout.loc[i, 'max(k)'] = max(khelp)
 
         if moreNetworkConcepts:
             Density = sum(khelp) / (nGenes * (nGenes - 1))
-            datout[i, 8] = Density
+            datout.loc[i, 'Density'] = Density
             Centralization = nGenes * (max(khelp) - statistics.mean(khelp)) / ((nGenes - 1) * (nGenes - 2))
-            datout[i, 9] = Centralization
-            Heterogeneity = math.sqrt(nGenes * sum(khelp ^ 2) / sum(khelp) ^ 2 - 1)
-            datout[i, 10] = Heterogeneity
+            datout.loc[i, 'Centralization'] = Centralization
+            Heterogeneity = np.sqrt(nGenes * sum(khelp ^ 2) / sum(khelp) ^ 2 - 1)
+            datout.loc[i, 'Heterogeneity'] = Heterogeneity
 
-    print(round(data.frame(datout), 3))
-    ind1 = datout[:, 2] > RsquaredCut
+    print(datout)
+    ind1 = datout.iloc[:, 1] > RsquaredCut
     indcut = None
     if sum(ind1) > 0:
         indcut = min(range(len(ind1))[ind1])
-    powerEstimate = powerVector[indcut][[1]]
+    powerEstimate = powerVector[indcut]
 
-    return powerEstimate, pd.DataFrame(datout)
+    return powerEstimate, datout
 
 
 def adjacency(datExpr, selectCols=None, type="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
