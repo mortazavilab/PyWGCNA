@@ -10,6 +10,7 @@ from scipy.cluster.hierarchy import linkage, cut_tree
 import networkx as nx
 from statsmodels.formula.api import ols
 import resource
+from sklearn.linear_model import LinearRegression
 
 # public values
 networkTypes = ["unsigned", "signed"]
@@ -238,31 +239,38 @@ def calBlockSize(matrixSize, rectangularBlocks=True, maxMemoryAllocation=None, o
 def scaleFreeFitIndex(k, nBreaks=10):
     df = pd.DataFrame({'data': k})
     df['discretized_k'] = pd.cut(df['data'], nBreaks)
-    df['dk'] = df.groupby('discretized_k')['data'].transform('mean')  # tapply(k, discretized_k, mean)
-    df['p_dk'] = df['discretized_k'].value_counts() / len(k)  # as.vector(tapply(k, discretized.k, length)/length(k))
+    dk = df.groupby('discretized_k').mean()  # tapply(k, discretized_k, mean)
+    dk = pd.DataFrame(dk.reset_index())
+    dk.columns = ['discretized_k', 'dk']
+    p_dk = df['discretized_k'].value_counts() / len(k)  # as.vector(tapply(k, discretized.k, length)/length(k))
+    p_dk = pd.DataFrame(p_dk.reset_index())
+    p_dk.columns = ['discretized_k', 'p_dk']
     breaks1 = np.linspace(start=min(k), stop=max(k), num=nBreaks + 1)
     y, edges = np.histogram(df['data'], bins=breaks1)
     dk2 = 0.5 * (edges[1:] + edges[:-1])
-    df = df.groupby('discretized_k').mean()
+    df = pd.merge(dk, p_dk, on='discretized_k')
     if df['dk'].isnull().values.any():
-        df['dk'][df['dk'].isnull().values] = dk2[df['dk'].isnull().values]
+        df.loc[df['dk'].isnull().values, 'dk'] = dk2[df['dk'].isnull().values]
     if np.any(df['dk'] == 0):
-        df['dk'][df['dk'] == 0] = dk2[df['dk'] == 0]
+        df.loc[df['dk'] == 0, 'dk'] = dk2[df['dk'] == 0]
     if df['p_dk'].isnull().values.any():
-        df['p_dk'][df['p_dk'].isnull().values] = 0
+        df.loc[df['p_dk'].isnull().values, 'p_dk'] = 0
     df['log_dk'] = np.log10(df['dk'])
     df['log_p_dk'] = np.log10(df['p_dk'] + 1e-09)
-    model = ols(formula='log_p_dk ~ log_dk', data=df).fit()
-    dfout = pd.DataFrame({'Rsquared.SFT': [model.rsquared],
-                          'slope.SFT': [model.params.values[1]],
-                          'truncatedExponentialAdjRsquared': [model.rsquared_adj]})
+    df['log_p_dk_10'] = np.power(10, df['log_dk'])
+
+    model1 = ols(formula='log_p_dk ~ log_dk', data=df).fit()
+    model2 = ols(formula='log_p_dk ~ log_dk + log_p_dk_10', data=df).fit()
+    dfout = pd.DataFrame({'Rsquared.SFT': [model1.rsquared],
+                          'slope.SFT': [model1.params.values[1]],
+                          'truncatedExponentialAdjRsquared': [model2.rsquared_adj]})
     return dfout
 
 
 # Call the network topology analysis function
 def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
                       powerVector=np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
-                      removeFirst=False, nBreaks=10, blockSize=None, corOptions=None,
+                      nBreaks=10, blockSize=None, corOptions=None,
                       networkType="unsigned", moreNetworkConcepts=False, gcInterval=None, verbose=0):
     powerVector = np.sort(powerVector)
     intType = networkTypes.index(networkType)
@@ -319,9 +327,9 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         corOptions[:, 2] = weights
 
     while startG <= nGenes:
-        endG = min(startG + blockSize - 1, nGenes)
+        endG = min(startG + blockSize, nGenes)
         if verbose > 1:
-            print("\t..working on genes", (startG + 1), "through", (endG + 1), "of", nGenes, flush=True)
+            print("\t..working on genes", startG, "through", endG, "of", nGenes, flush=True)
 
         useGenes = list(range(startG, endG))
         nGenes1 = len(useGenes)
@@ -342,8 +350,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         else:
             corx = data[:, useGenes]
 
-        ind = pd.concat([pd.Series(useGenes), pd.Series(range(len(useGenes)))], axis=1)
-        corx[ind] = 1
+        corx[useGenes, list(range(len(useGenes)))] = 1
         datk_local = np.empty((nGenes1, nPowers))
         datk_local[:] = np.NaN
         corxPrev = np.ones(corx.shape)

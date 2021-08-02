@@ -67,6 +67,20 @@ def run_WGCNA():
     # Call the network topology analysis function
     sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, networkType="signed", verbose=5)
 
+    fig, ax = plt.subplots(ncols=2)
+    ax[0].scatter(x=df['Gr Liv Area'], y=df['SalePrice'])
+    ax[0].set_xlabel("Soft Threshold (power)")
+    ax[0].set_ylabel("Scale Free Topology Model Fit,signed R^2")
+    ax[0].title('Scale independence')
+
+    ax[1].scatter(x=df['Overall Qual'], y=df['SalePrice'])
+    ax[1].set_xlabel("Soft Threshold (power)")
+    ax[1].set_ylabel("Mean Connectivity")
+    ax[1].title('Mean connectivity')
+
+    plt.tight_layout()
+    plt.savefig('test/output/plots/summarypower.png')
+
     return sft
 
 
