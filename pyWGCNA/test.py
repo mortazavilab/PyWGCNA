@@ -67,21 +67,37 @@ def run_WGCNA():
     # Call the network topology analysis function
     sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, networkType="signed", verbose=5)
 
-    fig, ax = plt.subplots(ncols=2)
-    ax[0].scatter(x=df['Gr Liv Area'], y=df['SalePrice'])
+    fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
+
+    ax[0].plot(sft['Power'], -1 * np.sign(sft['slope']) * sft['SFT.R.sq'], 'o')
+    for i in range(len(powers)):
+        ax[0].text(sft.loc[i, 'Power'], -1 * np.sign(sft.loc[i, 'slope']) * sft.loc[i, 'SFT.R.sq'],
+                   str(sft.loc[i, 'Power']), ha="center", va="center", color='r', weight='bold')
+    ax[0].axhline(0.9, color='r')
     ax[0].set_xlabel("Soft Threshold (power)")
     ax[0].set_ylabel("Scale Free Topology Model Fit,signed R^2")
-    ax[0].title('Scale independence')
+    ax[0].title.set_text('Scale independence')
 
-    ax[1].scatter(x=df['Overall Qual'], y=df['SalePrice'])
+    ax[1].plot(sft['Power'], sft['mean(k)'], 'o')
+    for i in range(len(powers)):
+        ax[1].text(sft.loc[i, 'Power'], sft.loc[i, 'mean(k)'],
+                   str(sft.loc[i, 'Power']), ha="center", va="center", color='r', weight='bold')
     ax[1].set_xlabel("Soft Threshold (power)")
     ax[1].set_ylabel("Mean Connectivity")
-    ax[1].title('Mean connectivity')
+    ax[1].title.set_text('Mean connectivity')
 
-    plt.tight_layout()
-    plt.savefig('test/output/plots/summarypower.png')
+    fig.tight_layout()
+    fig.savefig('test/output/plots/summarypower.png')
 
-    return sft
+    # Set Power
+    softPower = 13
+    adjacency = WGCNA.adjacency(datExpr, power=softPower, networkType="signed")
+
+    # Turn adjacency into topological overlap
+    TOM = WGCNA.TOMsimilarity(adjacency, TOMType="signed")
+    dissTOM = 1 - TOM
+
+    pd.DataFrame(TOM).to_csv('test/output/data/TOM')
 
 
 if __name__ == '__main__':

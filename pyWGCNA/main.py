@@ -10,11 +10,12 @@ from scipy.cluster.hierarchy import linkage, cut_tree
 import networkx as nx
 from statsmodels.formula.api import ols
 import resource
-from sklearn.linear_model import LinearRegression
 
 # public values
 networkTypes = ["unsigned", "signed"]
 adjacencyTypes = ["unsigned", "signed"]
+TOMTypes = ["NA", "unsigned", "signed"]
+TOMDenoms = ["min", "mean"]
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
@@ -268,10 +269,10 @@ def scaleFreeFitIndex(k, nBreaks=10):
 
 
 # Call the network topology analysis function
-def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
+def pickSoftThreshold(data, dataIsExpr=True, weights=None,
                       powerVector=np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
-                      nBreaks=10, blockSize=None, corOptions=None,
-                      networkType="unsigned", moreNetworkConcepts=False, gcInterval=None, verbose=0):
+                      nBreaks=10, blockSize=None, corOptions=None, networkType="unsigned",
+                      moreNetworkConcepts=False, gcInterval=None, verbose=0):
     powerVector = np.sort(powerVector)
     intType = networkTypes.index(networkType)
     if intType is None:
@@ -311,8 +312,6 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
     nPowers = len(powerVector)
     startG = 0
     lastGC = 0
-    # print(data.shape[1])
-    # print(data.columns.values)
     if corOptions is None:
         corOptions = pd.DataFrame()
         corOptions['x'] = [data]
@@ -359,8 +358,8 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
         powerSteps = powerVector - powerVector1
         uniquePowerSteps = np.unique(powerSteps)
 
-        def func(pow):
-            return corx ** pow
+        def func(power):
+            return corx ** power
 
         corxPowers = pd.DataFrame()
         for p in uniquePowerSteps:
@@ -396,33 +395,27 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.85,
             datout.loc[i, 'Heterogeneity'] = Heterogeneity
 
     print(datout)
-    ind1 = datout.iloc[:, 1] > RsquaredCut
-    indcut = None
-    if sum(ind1) > 0:
-        indcut = min(range(len(ind1))[ind1])
-    powerEstimate = powerVector[indcut]
 
-    return powerEstimate, datout
+    return datout
 
 
-def adjacency(datExpr, selectCols=None, type="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
-              distFnc="dist", distOptions="method = 'euclidean'", weightArgNames=["weights.x", "weights.y"]):
-    intType = adjacencyTypes.index(type)
+def adjacency(datExpr, selectCols=None, networkType="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
+              weightArgNames=["weights.x", "weights.y"]):
+    intType = networkTypes.index(networkType)
     if intType is None:
-        msg = "Unrecognized 'type'. Recognized values are", adjacencyTypes
-        sys.exit(msg)
-    checkAndScaleWeights(weights, datExpr, scaleByMax=False)
-    if len(weights) > 0:
-        if selectCols.isnull():
+        sys.exit(("Unrecognized 'type'. Recognized values are", str(adjacencyTypes)))
+    weights = checkAndScaleWeights(weights, datExpr, scaleByMax=False)
+    if weights is not None:
+        if selectCols is None:
             if isinstance(corOptions, pd.DataFrame):
-                weightOpt = weights.x = weights
-                weightOpt.index = weightArgNames[1]
+                weightOpt = pd.DataFrame({'weights.x': weights})
+                weightOpt.index = weightArgNames[0]
             else:
-                weightOpt = weightArgNames[1] + " = weights"
+                weightOpt = weightArgNames[0] + " = weights"
         else:
             if isinstance(corOptions, pd.DataFrame):
-                weightOpt = weights.x = weights, weights.y = weights[:, selectCols]
-                weightOpt.index = weightArgNames[1:2]
+                weightOpt = pd.DataFrame({'weights.x': weights, 'weights.y': weights[:, selectCols]})
+                weightOpt.index = weightArgNames[0:2]
             else:
                 weightOpt = weightArgNames[1] + " = weights, " + weightArgNames[2] + " = weights[, selectCols]"
     else:
@@ -431,40 +424,81 @@ def adjacency(datExpr, selectCols=None, type="unsigned", power=6, corOptions=pd.
         else:
             weightOpt = ""
 
-    if intType < 4:
-        if selectCols.isnull():
-            if isinstance(corOptions, pd.DataFrame):
-                cor_mat = scipy.stats.pearsonr(datExpr, weightOpt, corOptions)
-            else:
-                corExpr = parse(text=corFnc + "(datExpr " + prepComma(weightOpt) + prepComma(corOptions) + ")")
-                cor_mat = eval(corExpr)
-        else:
-            if isinstance(corOptions, pd.DataFrame):
-                cor_mat = scipy.stats.pearsonr(x=datExpr, y=datExpr[:, selectCols])  # , weightOpt, corOptions)
-            else:
-                corExpr = parse(text=corFnc + "(datExpr, datExpr[, selectCols] " + prepComma(weightOpt) + prepComma(
-                    corOptions) + ")")
-                cor_mat = eval(corExpr)
+    if selectCols is None:
+        cor_mat = np.corrcoef(datExpr.T)  # cor_mat = do.call(corFnc.fnc, c(list(x = datExpr), weightOpt, corOptions))
     else:
-        if not isinstance(selectCols, pd.DataFrame):
-            sys.stop("The argument 'selectCols' cannot be used for distance adjacency.")
-        if isinstance(distOptions, pd.DataFrame):
-            d = scipy.spatial.distance_matrix(datExpr.transpose(), distOptions)
-        else:
-            corExpr = parse(text=distFnc + "(t(datExpr) " + prepComma(distOptions) + ")")
-            d = eval(corExpr)
-        if any(d < 0):
-            warnings.WarningMessage("Function WGCNA::adjacency: Distance function returned (some) negative values.")
-            cor_mat = 1 - ((d / max(d)) ^ 2)
+        cor_mat = np.corrcoef(x=datExpr, y=datExpr[:, selectCols])  # , weightOpt, corOptions)
 
-    if intType == 1:
+    if intType == 0:
         cor_mat = abs(cor_mat)
-    elif intType == 2:
+    elif intType == 1:
         cor_mat = (1 + cor_mat) / 2
-    elif intType == 3:
-        cor_mat[cor_mat < 0] = 0
 
-    return cor_mat ^ power
+    return cor_mat ** power
+
+
+def checkAdjMat(adjMat, min=0, max=1):
+    shape = adjMat.shape
+    if shape is None or len(shape) != 2:
+        sys.exit("adjacency is not two-dimensional")
+
+    if not issubclass(adjMat.dtype.type, np.floating):
+        sys.exit("adjacency is not numeric")
+    if shape[0] != shape[1]:
+        sys.exit("adjacency is not square")
+    if np.max(np.fabs(np.subtract(adjMat, adjMat.T))) > 1e-12:
+        sys.exit("adjacency is not symmetric")
+    if np.min(adjMat) < min or np.max(adjMat) > max:
+        sys.exit(("some entries are not between", min, "and", max))
+
+
+def TomSimilarityFromAdj(adjMat, TOMDenom, TOMType):
+    # Prepare adjacency
+    np.fill_diagonal(adjMat, 0)
+    # Prepare TOM
+    tom = np.zeros_like(adjMat)
+    # Compute TOM
+    L = np.matmul(adjMat, adjMat)
+    ki = adjMat.sum(axis=1)
+    kj = adjMat.sum(axis=0)
+    if TOMDenom == 0:  # min
+        MINK = np.array([np.minimum(ki_, kj) for ki_ in ki])
+    else:  # mean
+        MINK = np.array([((ki_ + kj) / 2) for ki_ in ki])
+    if TOMType == 0:  # unsigned
+        tom = (L + adjMat) / (MINK + 1 - adjMat)
+    else:  # signed
+        tom = np.fabs((L + adjMat)) / (MINK + 1 - np.fabs(adjMat))
+    np.fill_diagonal(tom, 1)
+    return tom
+
+
+def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min",
+                  suppressNegativeTOM=False, verbose=1, indent=0):
+    TOMTypeC = TOMTypes.index(TOMType)
+    if TOMTypeC is None:
+        sys.exit(("Invalid 'TOMType'. Recognized values are", str(TOMTypes)))
+    if TOMTypeC == 0:
+        sys.exit("'TOMType' cannot be 'none' for this function.")
+    TOMDenomC = TOMDenoms.index(TOMDenom)
+    if TOMDenomC is None:
+        sys.exit(("Invalid 'TOMDenom'. Recognized values are", str(TOMDenoms)))
+
+    min = 0
+    if TOMTypeC == 2:
+        min = -1
+    checkAdjMat(adjMat, min=min, max=1)
+    np.nan_to_num(adjMat, copy=False, nan=0)
+
+    if verbose > 0:
+        print("..connectivity..\n")
+
+    tom = TomSimilarityFromAdj(adjMat, TOMDenomC, TOMTypeC)
+
+    if verbose > 0:
+        print("..done..\n")
+
+    return tom
 
 
 # Take in pearsons r and n (number of experiments) to calculate the t-stat and p value (student's t distribution)
