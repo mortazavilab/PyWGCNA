@@ -1,7 +1,6 @@
 import math
 import numpy as np
 import pandas as pd
-import scipy
 import scipy.stats as stats
 import statistics
 import sys
@@ -10,12 +9,14 @@ from scipy.cluster.hierarchy import linkage, cut_tree
 import networkx as nx
 from statsmodels.formula.api import ols
 import resource
+from os import path
 
 # public values
 networkTypes = ["unsigned", "signed"]
 adjacencyTypes = ["unsigned", "signed"]
 TOMTypes = ["NA", "unsigned", "signed"]
 TOMDenoms = ["min", "mean"]
+chunkSize = 100
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
@@ -473,8 +474,7 @@ def TomSimilarityFromAdj(adjMat, TOMDenom, TOMType):
     return tom
 
 
-def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min",
-                  suppressNegativeTOM=False, verbose=1, indent=0):
+def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min", verbose=1):
     TOMTypeC = TOMTypes.index(TOMType)
     if TOMTypeC is None:
         sys.exit(("Invalid 'TOMType'. Recognized values are", str(TOMTypes)))
@@ -499,6 +499,1227 @@ def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min",
         print("..done..\n")
 
     return tom
+
+
+def interpolate(data, index):
+    i = round(index)
+    n = len(data)
+    if i < 1:
+        return data[1]
+    if i >= n:
+        return data[n]
+    r = index - i
+    return data[i] * (1 - r) + data[i + 1] * r
+
+
+def coreSizeFunc(BranchSize, minClusterSize):
+    BaseCoreSize = minClusterSize/2 + 1
+    if BaseCoreSize < BranchSize:
+        CoreSize = int(BaseCoreSize + math.sqrt(BranchSize - BaseCoreSize))
+    else:
+        CoreSize = BranchSize
+
+    return CoreSize
+
+
+
+def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
+                 maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
+                 minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
+                 externalBranchSplitFnc=None, minExternalSplit=None,
+                 externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
+                 assumeSimpleExternalSpecification=True, pamStage=True,
+                 pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
+                 respectSmallClusters=True, verbose=2):
+    if maxPamDist is None:
+        maxPamDist = cutHeight
+
+    nMerge = dendro.shape[0]
+    if nMerge < 1:
+        sys.exit("The given dendrogram is suspicious: number of merges is zero.")
+    if distM is None:
+        sys.exit("distM must be non-NULL")
+    if distM.shape is None:
+        sys.exit("distM must be a matrix.")
+    if distM.shape[0] != nMerge + 1 or distM.shape[1] != nMerge + 1:
+        sys.exit("distM has incorrect dimensions.")
+    if pamRespectsDendro and not respectSmallClusters:
+        print("cutreeHybrid Warning: parameters pamRespectsDendro (TRUE) "
+              "and respectSmallClusters (FALSE) imply contradictory intent.\n"
+              "Although the code will work, please check you really intented "
+              "these settings for the two arguments.", flush=True)
+    if any(np.diag(distM) != 0):
+        np.fill_diagonal(distM, 0)
+    refQuantile = 0.05
+    refMerge = round(nMerge * refQuantile)
+    if refMerge < 1:
+        refMerge = 1
+    refHeight = dendro[refMerge, 2]
+    if cutHeight is None:
+        cutHeight = 0.99 * (np.max(dendro[:, 2]) - refHeight) + refHeight
+        if verbose > 0:
+            print("..cutHeight not given, setting it to", round(cutHeight, 3),
+                  " ===>  99% of the (truncated) height range in dendro.", flush=True)
+    else:
+        if cutHeight > np.max(dendro[:, 2]):
+            cutHeight = np.max(dendro[:, 2])
+    if maxPamDist is None:
+        maxPamDist = cutHeight
+    nMergeBelowCut = np.count_nonzero(dendro[:, 2] <= cutHeight)
+    if nMergeBelowCut < minClusterSize:
+        if verbose > 0:
+            print("cutHeight set too low: no merges below the cut.", flush=True)
+        return pd.DataFrame({'labels': np.repeat(0, nMerge + 1, axis=0)})
+
+    # nExternalSplits = len(externalBranchSplitFnc)
+    # if nExternalSplits > 0:
+    #     if len(minExternalSplit) < 1:
+    #         sys.exit("'minExternalBranchSplit' must be given.")
+    #     if assumeSimpleExternalSpecification and nExternalSplits == 1:
+    #         externalSplitOptions = pd.DataFrame(externalSplitOptions)
+    #     # TODO: externalBranchSplitFnc = lapply(externalBranchSplitFnc, match.fun)
+    #     for es in range(nExternalSplits):
+    #         externalSplitOptions['tree'][es] = dendro
+    #         if len(externalSplitFncNeedsDistance) == 0 or externalSplitFncNeedsDistance[es]:
+    #             externalSplitOptions['dissimMat'][es] = distM
+    #
+    # MxBranches = nMergeBelowCut
+    # branch_isBasic = np.repeat(True, MxBranches, axis=0)
+    # branch_isTopBasic = np.repeat(True, MxBranches, axis=0)
+    # branch_failSize = np.repeat(False, MxBranches, axis=0)
+    # branch_rootHeight = np.repeat(np.NaN, MxBranches, axis=0)
+    # branch_size = np.repeat(2, MxBranches, axis=0)
+    # branch_nMerge = np.repeat(1, MxBranches, axis=0)
+    # branch_nSingletons = np.repeat(2, MxBranches, axis=0)
+    # branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
+    # branch_mergedInto = np.repeat(0, MxBranches, axis=0)
+    # branch_attachHeight = np.repeat(np.NaN, MxBranches, axis=0)
+    # branch_singletons = pd.DataFrame([], columns=list(range(MxBranches)))
+    # branch_basicClusters = pd.DataFrame([], columns=list(range(MxBranches)))
+    # branch_mergingHeights = pd.DataFrame([], columns=list(range(MxBranches)))
+    # branch_singletonHeights = pd.DataFrame([], columns=list(range(MxBranches)))
+    # nBranches = 0
+    # spyIndex = None
+    # if path.exists("dynamicTreeCutSpyFile"):
+    #     spyIndex = pd.read_table("dynamicTreeCutSpyFile", header=False)
+    #     print("Found 'spy file' with indices of objects to watch for.", flush=True)
+    #     spyIndex = pd.to_numeric(spyIndex.values[:, 0])
+    #     print(list(spyIndex), flush=True)
+    #
+    # defMCS = [0.64, 0.73, 0.82, 0.91, 0.95]
+    # defMG = (1.0 - defMCS) * 3.0 / 4.0
+    # nSplitDefaults = len(defMCS)
+    # if isinstance(deepSplit, bool):
+    #     deepSplit = pd.to_numeric(deepSplit) * (nSplitDefaults - 2)
+    # if deepSplit < 0 or deepSplit > nSplitDefaults:
+    #     msg = "Parameter deepSplit (value" + str(deepSplit) + \
+    #           ") out of range: allowable range is 0 through", str(nSplitDefaults - 1)
+    #     sys.exit(msg)
+    # if maxCoreScatter is None:
+    #     maxCoreScatter = interpolate(defMCS, deepSplit)
+    # if minGap is None:
+    #     minGap = interpolate(defMG, deepSplit)
+    # if maxAbsCoreScatter is None:
+    #     maxAbsCoreScatter = refHeight + maxCoreScatter * (cutHeight - refHeight)
+    # if minAbsGap is None:
+    #     minAbsGap = minGap * (cutHeight - refHeight)
+    # if minSplitHeight is None:
+    #     minSplitHeight = 0
+    # if minAbsSplitHeight is None:
+    #     minAbsSplitHeight = refHeight + minSplitHeight * (cutHeight - refHeight)
+    # nPoints = nMerge + 1
+    # IndMergeToBranch = np.repeat(0, nMerge, axis=0)
+    # onBranch = np.repeat(0, nPoints, axis=0)
+    # RootBranch = 0
+    # if verbose > 2:
+    #     print("..Going through the merge tree", flush=True)
+    #
+    # mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.NaN, nMerge, axis=0),
+    #                                  'smSize': np.repeat(np.NaN, nMerge, axis=0),
+    #                                  'smCrSc': np.repeat(np.NaN, nMerge, axis=0),
+    #                                  'smGap': np.repeat(np.NaN, nMerge, axis=0),
+    #                                  'lgI': np.repeat(np.NaN, nMerge, axis=0),
+    #                                  'lgSize': np.repeat(np.NaN, nMerge, axis=0),
+    #                                  'lgCrSc': np.repeat(np.NAN, nMerge, axis=0),
+    #                                  'lgGap': np.repeat(np.NAN, nMerge, axis=0),
+    #                                  'merged': np.repeat(np.NAN, nMerge, axis=0)})
+    # if nExternalSplits > 0:
+    #     externalMergeDiags = pd.DataFrame(np.NAN, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
+    #
+    # extender = np.repeat(0, 10, axis=0)
+    # for merge in range(nMerge):
+    #     if dendro[merge, 0] <= cutHeight:
+    #         if dendro[merge, 0] < 0 and dendro[merge, 1] < 0:
+    #             nBranches = nBranches + 1
+    #             branch_isBasic[nBranches] = True
+    #             branch_isTopBasic[nBranches] = True
+    #             branch_singletons[[nBranches]] = [-1 * dendro[merge, 0:2], extender]
+    #             branch_basicClusters[[nBranches]] = extender
+    #             branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
+    #             branch_singletonHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
+    #             IndMergeToBranch[merge] = nBranches
+    #             RootBranch = nBranches
+    #         elif np.sign(dendro[merge, 0]) * np.sign(dendro[merge, 1]) < 0:
+    #             clust = IndMergeToBranch[max(dendro[merge, 0:2])]
+    #             if clust == 0:
+    #                 sys.exit("Internal error: a previous merge has no associated cluster. Sorry!")
+    #             gene = -1 * min(dendro[merge, 0:2])
+    #             ns = branch_nSingletons[clust] + 1
+    #             nm = branch_nMerge[clust] + 1
+    #             if branch_isBasic[clust]:
+    #                 if ns > len(branch_singletons[[clust]]):
+    #                     branch_singletons[[clust]] = np.concatenate((branch_singletons[[clust]], extender), axis=0)
+    #                     branch_singletonHeights[[clust]] = np.concatenate((branch_singletonHeights[[clust]], extender), axis=0)
+    #
+    #                 branch_singletons[[clust]][ns] = gene
+    #                 branch_singletonHeights[[clust]][ns] = dendro[merge, 2]
+    #
+    #             else:
+    #                 onBranch[gene] = clust
+    #
+    #             if nm >= len(branch_mergingHeights[[clust]]):
+    #                 branch_mergingHeights[[clust]] = np.concatenate((branch_mergingHeights[[clust]], extender), axis=0)
+    #
+    #             branch_mergingHeights[[clust]][nm] = dendro[merge, 2]
+    #             branch_size[clust] = branch_size[clust] + 1
+    #             branch_nMerge[clust] = nm
+    #             branch_nSingletons[clust] = ns
+    #             IndMergeToBranch[merge] = clust
+    #             RootBranch = clust
+    #
+    #         else:
+    #             clusts = IndMergeToBranch[dendro[merge, 0:2]]
+    #             sizes = branch_size[clusts]
+    #             rnk = stats.rankdata(sizes, method='ordinal')
+    #             small = clusts[rnk[1]]
+    #             large = clusts[rnk[2]]
+    #             sizes = sizes[rnk]
+    #             branch1 = branch_singletons[[large]][1:sizes[2]]
+    #             branch2 = branch_singletons[[small]][1:sizes[1]]
+    #             spyMatch = False
+    #             if spyIndex is not None:
+    #                 n1 = len(branch1.intersection(spyIndex))
+    #                 if n1 / len(branch1) > 0.99 and n1 / len(spyIndex) > 0.99:
+    #                     print("Found spy match for branch 1 on merge", merge, flush=True)
+    #                     spyMatch = True
+    #
+    #                 n2 = len(branch2.intersection(spyIndex))
+    #                 if n2 / len(branch1) > 0.99 and n2 / len(spyIndex) > 0.99:
+    #                     print("Found spy match for branch 2 on merge", merge, flush=True)
+    #                     spyMatch = True
+    #
+    #             if branch_isBasic[small]:
+    #                 coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize)
+    #                 Core = branch_singletons[[small]][0:coresize]
+    #                 SmAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
+    #             else:
+    #                 SmAveDist = 0
+    #
+    #             if branch_isBasic[large]:
+    #                 coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize)
+    #                 Core = branch_singletons[[large]][0:coresize]
+    #                 LgAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
+    #             else:
+    #                 LgAveDist = 0
+    #
+    #             mergeDiagnostics[merge, :] = [small, branch_size[small], SmAveDist, dendro[merge, 2] - SmAveDist,
+    #                                           large, branch_size[large], LgAveDist, dendro[merge, 2] - LgAveDist, None]
+    #             SmallerScores = [branch_isBasic[small], branch_size[small] < minClusterSize,
+    #                              SmAveDist > maxAbsCoreScatter, dendro[merge, 2] - SmAveDist < minAbsGap,
+    #                             dendro[merge, 2] < minAbsSplitHeight]
+    #             if SmallerScores[1] * sum(SmallerScores[-1]) > 0:
+    #                 DoMerge = True
+    #                 SmallerFailSize = not (SmallerScores[3] | SmallerScores[4])
+    #
+    #             else:
+    #                 LargerScores = [branch_isBasic[large],
+    #                                 branch_size[large] < minClusterSize, LgAveDist > maxAbsCoreScatter,
+    #                                 dendro[merge, 2] - LgAveDist < minAbsGap,
+    #                                 dendro[merge, 2] < minAbsSplitHeight]
+    #                 if LargerScores[1] * sum(LargerScores[-1]) > 0:
+    #                     DoMerge = True
+    #                     SmallerFailSize = not (LargerScores[3] | LargerScores[4])
+    #                     x = small
+    #                     small = large
+    #                     large = x
+    #                     sizes = sizes.reverse()
+    #                 else:
+    #                     DoMerge = False
+    #
+    #                 if DoMerge:
+    #                     mergeDiagnostics['merged'][merge] = 1
+    #
+    #                 if not DoMerge and nExternalSplits > 0 and branch_isBasic[small] and branch_isBasic[large]:
+    #                     if verbose > 4:
+    #                         print("Entering external split code on merge ", merge, flush=True)
+    #                     branch1 = branch_singletons[[large]][0:sizes[1]]
+    #                     branch2 = branch_singletons[[small]][0:sizes[0]]
+    #                     if verbose > 4 or spyMatch:
+    #                         print("  ..branch lengths: ", sizes[0], ", ", sizes[1], flush=True)
+    #                     es = 0
+    #                     while es < nExternalSplits and not DoMerge:
+    #                         es = es + 1
+    #                         args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[[es]],
+    #                                              'branch1': branch1, 'branch2': branch2})
+    #                         args['branch1'] = branch1
+    #                         args['branch2'] = branch2
+    #                         extSplit = do.call(externalBranchSplitFnc[[es]], args)
+    #                         if spyMatch:
+    #                             print(" .. external criterion ", es, ": ", extSplit, flush=True)
+    #                         DoMerge = extSplit < minExternalSplit[es]
+    #                         externalMergeDiags[merge, es] = extSplit
+    #                         mergeDiagnostics['merged'][merge] = 0
+    #                         if DoMerge:
+    #                             mergeDiagnostics['merged'][merge] = 2
+    #
+    #
+    #                 if DoMerge:
+    #                     branch_failSize[[small]] = SmallerFailSize
+    #                     branch_mergedInto[small] = large
+    #                     branch_attachHeight[small] = dendro[merge, 2]
+    #                     branch_isTopBasic[small] = False
+    #                     nss = branch_nSingletons[small]
+    #                     nsl = branch_nSingletons[large]
+    #                     ns = nss + nsl
+    #                     if branch_isBasic[large]:
+    #                         nExt = math.ceil((ns - len(branch_singletons[[large]])) / chunkSize)
+    #                         if nExt > 0:
+    #                             if verbose > 5:
+    #                                 print("Extending singletons for branch", large, "by", nExt, " extenders.", flush=True)
+    #                             branch_singletons[[large]] = np.concatenate((branch_singletons[[large]],
+    #                                                                          np.repeat(extender, nExt)), axis=0)
+    #                             branch_singletonHeights[[large]] = np.concatenate((branch_singletonHeights[[large]],
+    #                                                                               np.repeat(extender, nExt)), axis=0)
+    #
+    #                         branch_singletons[[large]][nsl:ns] = branch_singletons[[small]][0:nss]
+    #                         branch_singletonHeights[[large]][nsl:ns] = branch_singletonHeights[[small]][0:nss]
+    #                         branch_nSingletons[large] = ns
+    #                     else:
+    #                         if not branch_isBasic[small]:
+    #                             sys.exit("Internal error: merging two composite clusters. Sorry!")
+    #                         onBranch[branch_singletons[[small]]] = large
+    #
+    #                     nm = branch_nMerge[large] + 1
+    #                     if nm > len(branch_mergingHeights[[large]]):
+    #                         branch_mergingHeights[[large]] = np.concatenate((branch_mergingHeights[[large]], extender), axis=0)
+    #
+    #                     branch_mergingHeights[[large]][nm] = dendro[merge, 2]
+    #                     branch_nMerge[large] = nm
+    #                     branch_size[large] = branch_size[small] + branch_size[large]
+    #                     IndMergeToBranch[merge] = large
+    #                     RootBranch = large
+    #                 else:
+    #                     if branch_isBasic[large] and not branch_isBasic[small]:
+    #                         x = large
+    #                         large = small
+    #                         small = x
+    #                         sizes = sizes.reverse()
+    #
+    #                     if branch_isBasic[large] or (pamStage and pamRespectsDendro):
+    #                         nBranches = nBranches + 1
+    #                         branch_attachHeight[large, small] = dendro[merge, 2]
+    #                         branch_mergedInto[large, small] = nBranches
+    #                         if branch_isBasic[small]:
+    #                             addBasicClusters = small
+    #                         else:
+    #                             addBasicClusters = branch_basicClusters[[small]]
+    #                         if branch_isBasic[large]:
+    #                             addBasicClusters = [addBasicClusters, large]
+    #                         else:
+    #                             addBasicClusters = np.concatenate((addBasicClusters, branch_basicClusters[[large]]), axis=0)
+    #                         branch_isBasic[nBranches] = False
+    #                         branch_isTopBasic[nBranches] = False
+    #                         branch_basicClusters[[nBranches]] = addBasicClusters
+    #                         branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0)
+    #                         branch_nMerge[nBranches] = 2
+    #                         branch_size[nBranches] = sum(sizes)
+    #                         branch_nBasicClusters[nBranches] = len(addBasicClusters)
+    #                         IndMergeToBranch[merge] = nBranches
+    #                         RootBranch = nBranches
+    #                     else:
+    #                         addBasicClusters = branch_basicClusters[[small]]
+    #                         if branch_isBasic[small]:
+    #                             addBasicClusters = small
+    #                         nbl = branch_nBasicClusters[large]
+    #                         nb = branch_nBasicClusters[large] + len(addBasicClusters)
+    #                         if nb > len(branch_basicClusters[[large]]):
+    #                             nExt = math.ceil((nb - len(branch_basicClusters[[large]])) / chunkSize)
+    #                             branch_basicClusters[[large]] = np.concatenate((branch_basicClusters[[large]],
+    #                                                                             np.repeat(extender, nExt)), axis=0)
+    #
+    #                         branch_basicClusters[[large]][nbl:nb] = addBasicClusters
+    #                         branch_nBasicClusters[large] = nb
+    #                         branch_size[large] = branch_size[large] + branch_size[small]
+    #                         nm = branch_nMerge[large] + 1
+    #                         if nm > len(branch_mergingHeights[[large]]):
+    #                             branch_mergingHeights[[large]] = np.repeat((branch_mergingHeights[[large]], extender), axis=0)
+    #
+    #                         branch_mergingHeights[[large]][nm] = dendro[merge, 2]
+    #                         branch_nMerge[large] = nm
+    #                         branch_attachHeight[small] = dendro[merge, 2]
+    #                         branch_mergedInto[small] = large
+    #                         IndMergeToBranch[merge] = large
+    #                         RootBranch = large
+    #
+    #         if verbose > 2:
+    #             pind = updateProgInd(merge / nMerge, pind)
+    #
+    #     if verbose > 2:
+    #         pind = updateProgInd(1, pind)
+    #         print("", flush=True)
+    #
+    # if verbose > 2:
+    #     print("..Going through detected branches and marking clusters..", flush=True)
+    #
+    # isCluster = np.repeat(False, nBranches)
+    # SmallLabels = np.repeat(0, nPoints)
+    #
+    # for clust in range(nBranches):
+    #     if branch_attachHeight[clust] is None:
+    #         branch_attachHeight[clust] = cutHeight
+    #     if branch_isTopBasic[clust]:
+    #         coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
+    #         Core = branch_singletons[[clust]][0:coresize]
+    #         CoreScatter = np.mean(distM[Core, Core].sum(axis=0) / (coresize - 1))
+    #         isCluster[clust] = (branch_isTopBasic[clust] and branch_size[clust] >= minClusterSize and
+    #                                 CoreScatter < maxAbsCoreScatter and branch_attachHeight[clust] - CoreScatter > minAbsGap)
+    #     else:
+    #         CoreScatter = 0
+    #
+    #     if branch_failSize[clust]:
+    #         SmallLabels[branch_singletons[[clust]]] = clust
+    #
+    # if not respectSmallClusters:
+    #     SmallLabels = np.repeat(0, nPoints)
+    #
+    # if verbose > 2:
+    #     print("..Assigning Tree Cut stage labels..", flush=True)
+    #
+    # Colors = np.repeat(0, nPoints)
+    # coreLabels = np.repeat(0, nPoints)
+    # clusterBranches = list(range(nBranches))[isCluster]
+    # branchLabels = np.repeat(0, nBranches)
+    # color = 0
+    # for clust in clusterBranches:
+    #     color = color + 1
+    #     Colors[branch_singletons[[clust]]] = color
+    #     SmallLabels[branch_singletons[[clust]]] = 0
+    #     coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
+    #     Core = branch_singletons[[clust]][0:coresize]
+    #     coreLabels[Core] = color
+    #     branchLabels[clust] = color
+    #
+    # Labeled = list(range(nPoints))[Colors != 0]
+    # Unlabeled = list(range(nPoints))[Colors == 0]
+    # nUnlabeled = len(Unlabeled)
+    # UnlabeledExist = nUnlabeled > 0
+    #
+    # if len(Labeled) > 0:
+    #     LabelFac = factor(Colors[Labeled])
+    #     nProperLabels = nlevels(LabelFac)
+    #
+    # else:
+    #     nProperLabels = 0
+    #
+    # if pamStage and UnlabeledExist and nProperLabels > 0:
+    #     if verbose > 2:
+    #         print("..Assigning PAM stage labels..", flush=True)
+    #     nPAMed = 0
+    #     if useMedoids:
+    #         Medoids = np.repeat(0, nProperLabels)
+    #         ClusterRadii = np.repeat(0, nProperLabels)
+    #         for cluster in range(nProperLabels):
+    #             InCluster = list(range(nPoints))[Colors == cluster]
+    #             DistInCluster = distM[InCluster, InCluster]
+    #             DistSums = DistInCluster.sum(axis=0)
+    #             Medoids[cluster] = InCluster[DistSums.idxmin()]
+    #             ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
+    #
+    #         if respectSmallClusters:
+    #             FSmallLabels = factor(SmallLabels)
+    #             SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
+    #             nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
+    #
+    #             if nSmallClusters > 0:
+    #                 for sclust in SmallLabLevs[SmallLabLevs != 0]:
+    #                     InCluster = list(range(nPoints))[SmallLabels == sclust]
+    #                     if pamRespectsDendro:
+    #                         onBr = np.unique(onBranch[InCluster])
+    #                         if len(onBr) > 1:
+    #                             msg = "Internal error: objects in a small cluster are marked to belong\n " \
+    #                                   "to several large branches:" + str(onBr)
+    #                             sys.exit(msg)
+    #
+    #                         if onBr > 0:
+    #                             basicOnBranch = branch_basicClusters[[onBr]]
+    #                             labelsOnBranch = branchLabels[basicOnBranch]
+    #                         else:
+    #                             labelsOnBranch = None
+    #                     else:
+    #                         labelsOnBranch = list(range(nProperLabels))
+    #
+    #                     DistInCluster = distM[InCluster, InCluster]
+    #
+    #                     if len(labelsOnBranch) > 0:
+    #                         if len(InCluster) > 1:
+    #                             DistSums = apply(DistInCluster, 2, sum)
+    #                             smed = InCluster[DistSums.idxmin()]
+    #                             DistToMeds = distM[Medoids[labelsOnBranch], smed]
+    #                             closest = DistToMeds.idxmin()
+    #                             DistToClosest = DistToMeds[closest]
+    #                             closestLabel = labelsOnBranch[closest]
+    #                             if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
+    #                                 Colors[InCluster] = closestLabel
+    #                                 nPAMed = nPAMed + len(InCluster)
+    #                         else:
+    #                             Colors[InCluster] = -1
+    #                     else:
+    #                         Colors[InCluster] = -1
+    #
+    #             Unlabeled = list(range(nPoints))[Colors == 0]
+    #             if len(Unlabeled > 0):
+    #                 for obj in Unlabeled:
+    #                     if pamRespectsDendro:
+    #                         onBr = onBranch[obj]
+    #                         if onBr > 0:
+    #                             basicOnBranch = branch_basicClusters[[onBr]]
+    #                             labelsOnBranch = branchLabels[basicOnBranch]
+    #                         else:
+    #                             labelsOnBranch = None
+    #                     else:
+    #                         labelsOnBranch = list(range(nProperLabels))
+    #
+    #                     if labelsOnBranch is not None:
+    #                         UnassdToMedoidDist = distM[Medoids[labelsOnBranch], obj]
+    #                         nearest = UnassdToMedoidDist.idxmin()
+    #                         NearestCenterDist = UnassdToMedoidDist[nearest]
+    #                         nearestMed = labelsOnBranch[nearest]
+    #                         if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
+    #                             Colors[obj] = nearestMed
+    #                             nPAMed = nPAMed + 1
+    #                 UnlabeledExist = (sum(Colors == 0) > 0)
+    #     else:
+    #         ClusterDiam = np.repeat(0, nProperLabels)
+    #         for cluster in range(nProperLabels):
+    #             InCluster = list(range(nPoints))[Colors == cluster]
+    #             nInCluster = len(InCluster)
+    #             DistInCluster = distM[InCluster, InCluster]
+    #             if nInCluster > 1:
+    #                 AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
+    #                 ClusterDiam[cluster] = max(AveDistInClust)
+    #
+    #             else:
+    #                 ClusterDiam[cluster] = 0
+    #
+    #         ColorsX = Colors
+    #         if respectSmallClusters:
+    #             FSmallLabels = factor(SmallLabels)
+    #             SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
+    #             nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
+    #             if nSmallClusters > 0:
+    #                 if pamRespectsDendro:
+    #                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
+    #                         InCluster = list(range(nPoints))[SmallLabels == sclust]
+    #                         onBr = unique(onBranch[InCluster])
+    #                         if len(onBr) > 1:
+    #                             msg = "Internal error: objects in a small cluster are marked to belong\n" \
+    #                                   "to several large branches:" + str(onBr)
+    #                             sys.exit(msg)
+    #                         if onBr > 0:
+    #                             basicOnBranch = branch_basicClusters[[onBr]]
+    #                             labelsOnBranch = branchLabels[basicOnBranch]
+    #                             useObjects = ColorsX in np.unique(labelsOnBranch)
+    #                             DistSClustClust = distM[InCluster, useObjects]
+    #                             MeanDist = DistSClustClust.mean(axis=0)
+    #                             useColorsFac = factor(ColorsX[useObjects])
+    #                             MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
+    #                             nearest = MeanMeanDist.idxmin()
+    #                             NearestDist = MeanMeanDist[nearest]
+    #                             nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+    #                             if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+    #                                 Colors[InCluster] = nearestLabel
+    #                                 nPAMed = nPAMed + len(InCluster)
+    #                             else:
+    #                                 Colors[InCluster] = -1
+    #                 else:
+    #                     labelsOnBranch = list(range(nProperLabels))
+    #                     useObjects = list(range(nPoints))[ColorsX != 0]
+    #                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
+    #                         InCluster = list(range(nPoints))[SmallLabels == sclust]
+    #                         DistSClustClust = distM[InCluster, useObjects]
+    #                         MeanDist = DistSClustClust.mean(axis=0)
+    #                         useColorsFac = factor(ColorsX[useObjects])
+    #                         MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
+    #                         nearest = MeanMeanDist.idxmin()
+    #                         NearestDist = MeanMeanDist[nearest]
+    #                         nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+    #                         if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+    #                             Colors[InCluster] = nearestLabel
+    #                             nPAMed = nPAMed + len(InCluster)
+    #                         else:
+    #                             Colors[InCluster] = -1
+    #
+    #         Unlabeled = list(range(nPoints))[Colors == 0]
+    #         if len(Unlabeled) > 0:
+    #             if pamRespectsDendro:
+    #                 unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
+    #                 for obj in unlabOnBranch:
+    #                     onBr = onBranch[obj]
+    #                     basicOnBranch = branch_basicClusters[[onBr]]
+    #                     labelsOnBranch = branchLabels[basicOnBranch]
+    #                     useObjects = ColorsX in np.unique(labelsOnBranch)
+    #                     useColorsFac = factor(ColorsX[useObjects])
+    #                     UnassdToClustDist = tapply(distM[useObjects, obj], useColorsFac, mean)
+    #                     nearest = UnassdToClustDist.idxmin()
+    #                     NearestClusterDist = UnassdToClustDist[nearest]
+    #                     nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+    #                     if NearestClusterDist < ClusterDiam[nearestLabel] or NearestClusterDist < maxPamDist:
+    #                         Colors[obj] = nearestLabel
+    #                         nPAMed = nPAMed + 1
+    #             else:
+    #                 useObjects = list(range(nPoints))[ColorsX != 0]
+    #                 useColorsFac = factor(ColorsX[useObjects])
+    #                 nUseColors = nlevels(useColorsFac)
+    #                 UnassdToClustDist = apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
+    #                 UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
+    #                 nearest = apply(UnassdToClustDist, 2, which.min)
+    #                 nearestDist = apply(UnassdToClustDist, 2, min)
+    #                 nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+    #                 assign = nearestDist < ClusterDiam[nearestLabel] or nearestDist < maxPamDist
+    #                 Colors[Unlabeled[assign]] = nearestLabel[assign]
+    #                 nPAMed = nPAMed + sum(assign)
+    #
+    #     if verbose > 2:
+    #         print("....assigned", nPAMed, "objects to existing clusters.", flush=True)
+    # Colors[Colors < 0] = 0
+    # UnlabeledExist = (sum(Colors == 0) > 0)
+    # NumLabs = pd.to_numeric(as.factor(Colors))
+    # Sizes = table(NumLabs)
+    # if UnlabeledExist:
+    #     if len(Sizes) > 1:
+    #         SizeRank = np.concatenate((1, (stats.rankdata(-1 * Sizes[2:len(Sizes)], method='ordinal') + 1)), axis=0)
+    #     else:
+    #         SizeRank = 1
+    #     OrdNumLabs = SizeRank[NumLabs]
+    #
+    # else:
+    #     SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
+    #     OrdNumLabs = SizeRank[NumLabs]
+    #
+    # ordCoreLabels = OrdNumLabs - UnlabeledExist
+    # ordCoreLabels[coreLabels == 0] = 0
+    # if verbose > 0:
+    #     print("..done.", flush=True)
+    #
+    # mergeDiagnostics = np.concatenate((mergeDiagnostics, externalMergeDiags), axis=0)
+    # if nExternalSplits == 0:
+    #     mergeDiagnostics = mergeDiagnostics
+    #
+    # return (OrdNumLabs - UnlabeledExist), ordCoreLabels, SmallLabels, onBranch, mergeDiagnostics, \
+    #        pd.DataFrame({'maxCoreScatter': maxCoreScatter, 'minGap': minGap, 'maxAbsCoreScatter': maxAbsCoreScatter,
+    #                      'minAbsGap': minAbsGap, 'minExternalSplit': minExternalSplit}), \
+    #        pd.DataFrame({'nBranches': nBranches, 'IndMergeToBranch': IndMergeToBranch, 'RootBranch': RootBranch,
+    #                      'isCluster': isCluster, 'nPoints': nMerge + 1})
+
+
+
+# def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
+#                  maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
+#                  minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
+#                  externalBranchSplitFnc=None, minExternalSplit=None,
+#                  externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
+#                  assumeSimpleExternalSpecification=True, pamStage=True,
+#                  pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
+#                  respectSmallClusters=True, verbose=2):
+#     if maxPamDist is None:
+#         maxPamDist = cutHeight
+#
+#     nMerge = dendro.shape[0]
+#     if nMerge < 1:
+#         sys.exit("The given dendrogram is suspicious: number of merges is zero.")
+#     if distM is None:
+#         sys.exit("distM must be non-NULL")
+#     if distM.shape is None:
+#         sys.exit("distM must be a matrix.")
+#     if distM.shape[0] != nMerge + 1 or distM.shape[1] != nMerge + 1:
+#         sys.exit("distM has incorrect dimensions.")
+#     if pamRespectsDendro and not respectSmallClusters:
+#         print("cutreeHybrid Warning: parameters pamRespectsDendro (TRUE) "
+#               "and respectSmallClusters (FALSE) imply contradictory intent.\n"
+#               "Although the code will work, please check you really intented "
+#               "these settings for the two arguments.", flush=True)
+#     if any(np.diag(distM) != 0):
+#         np.fill_diagonal(distM, 0)
+#     refQuantile = 0.05
+#     refMerge = round(nMerge * refQuantile)
+#     if refMerge < 1:
+#         refMerge = 1
+#     refHeight = dendro[refMerge, 2]
+#     if cutHeight is None:
+#         cutHeight = 0.99 * (np.max(dendro[:, 2]) - refHeight) + refHeight
+#         if verbose > 0:
+#             print("..cutHeight not given, setting it to", round(cutHeight, 3),
+#                   " ===>  99% of the (truncated) height range in dendro.", flush=True)
+#     else:
+#         if cutHeight > np.max(dendro[:, 2]):
+#             cutHeight = np.max(dendro[:, 2])
+#     if maxPamDist is None:
+#         maxPamDist = cutHeight
+#     nMergeBelowCut = np.count_nonzero(dendro[:, 2] <= cutHeight)
+#     if nMergeBelowCut < minClusterSize:
+#         if verbose > 0:
+#             print("cutHeight set too low: no merges below the cut.", flush=True)
+#         return pd.DataFrame({'labels': np.repeat(0, nMerge + 1, axis=0)})
+#
+#     nExternalSplits = len(externalBranchSplitFnc)
+#     if nExternalSplits > 0:
+#         if len(minExternalSplit) < 1:
+#             sys.exit("'minExternalBranchSplit' must be given.")
+#         if assumeSimpleExternalSpecification and nExternalSplits == 1:
+#             externalSplitOptions = pd.DataFrame(externalSplitOptions)
+#         # TODO: externalBranchSplitFnc = lapply(externalBranchSplitFnc, match.fun)
+#         for es in range(nExternalSplits):
+#             externalSplitOptions['tree'][es] = dendro
+#             if len(externalSplitFncNeedsDistance) == 0 or externalSplitFncNeedsDistance[es]:
+#                 externalSplitOptions['dissimMat'][es] = distM
+#
+#     MxBranches = nMergeBelowCut
+#     branch_isBasic = np.repeat(True, MxBranches, axis=0)
+#     branch_isTopBasic = np.repeat(True, MxBranches, axis=0)
+#     branch_failSize = np.repeat(False, MxBranches, axis=0)
+#     branch_rootHeight = np.repeat(np.NaN, MxBranches, axis=0)
+#     branch_size = np.repeat(2, MxBranches, axis=0)
+#     branch_nMerge = np.repeat(1, MxBranches, axis=0)
+#     branch_nSingletons = np.repeat(2, MxBranches, axis=0)
+#     branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
+#     branch_mergedInto = np.repeat(0, MxBranches, axis=0)
+#     branch_attachHeight = np.repeat(np.NaN, MxBranches, axis=0)
+#     branch_singletons = pd.DataFrame([], columns=list(range(MxBranches)))
+#     branch_basicClusters = pd.DataFrame([], columns=list(range(MxBranches)))
+#     branch_mergingHeights = pd.DataFrame([], columns=list(range(MxBranches)))
+#     branch_singletonHeights = pd.DataFrame([], columns=list(range(MxBranches)))
+#     nBranches = 0
+#     spyIndex = None
+#     if path.exists("dynamicTreeCutSpyFile"):
+#         spyIndex = pd.read_table("dynamicTreeCutSpyFile", header=False)
+#         print("Found 'spy file' with indices of objects to watch for.", flush=True)
+#         spyIndex = pd.to_numeric(spyIndex.values[:, 0])
+#         print(list(spyIndex), flush=True)
+#
+#     defMCS = [0.64, 0.73, 0.82, 0.91, 0.95]
+#     defMG = (1.0 - defMCS) * 3.0 / 4.0
+#     nSplitDefaults = len(defMCS)
+#     if isinstance(deepSplit, bool):
+#         deepSplit = pd.to_numeric(deepSplit) * (nSplitDefaults - 2)
+#     if deepSplit < 0 or deepSplit > nSplitDefaults:
+#         msg = "Parameter deepSplit (value" + str(deepSplit) + \
+#               ") out of range: allowable range is 0 through", str(nSplitDefaults - 1)
+#         sys.exit(msg)
+#     if maxCoreScatter is None:
+#         maxCoreScatter = interpolate(defMCS, deepSplit)
+#     if minGap is None:
+#         minGap = interpolate(defMG, deepSplit)
+#     if maxAbsCoreScatter is None:
+#         maxAbsCoreScatter = refHeight + maxCoreScatter * (cutHeight - refHeight)
+#     if minAbsGap is None:
+#         minAbsGap = minGap * (cutHeight - refHeight)
+#     if minSplitHeight is None:
+#         minSplitHeight = 0
+#     if minAbsSplitHeight is None:
+#         minAbsSplitHeight = refHeight + minSplitHeight * (cutHeight - refHeight)
+#     nPoints = nMerge + 1
+#     IndMergeToBranch = np.repeat(0, nMerge, axis=0)
+#     onBranch = np.repeat(0, nPoints, axis=0)
+#     RootBranch = 0
+#     if verbose > 2:
+#         print("..Going through the merge tree", flush=True)
+#
+#     mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.NaN, nMerge, axis=0),
+#                                      'smSize': np.repeat(np.NaN, nMerge, axis=0),
+#                                      'smCrSc': np.repeat(np.NaN, nMerge, axis=0),
+#                                      'smGap': np.repeat(np.NaN, nMerge, axis=0),
+#                                      'lgI': np.repeat(np.NaN, nMerge, axis=0),
+#                                      'lgSize': np.repeat(np.NaN, nMerge, axis=0),
+#                                      'lgCrSc': np.repeat(np.NAN, nMerge, axis=0),
+#                                      'lgGap': np.repeat(np.NAN, nMerge, axis=0),
+#                                      'merged': np.repeat(np.NAN, nMerge, axis=0)})
+#     if nExternalSplits > 0:
+#         externalMergeDiags = pd.DataFrame(np.NAN, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
+#
+#     extender = np.repeat(0, 10, axis=0)
+#     for merge in range(nMerge):
+#         if dendro[merge, 0] <= cutHeight:
+#             if dendro[merge, 0] < 0 and dendro[merge, 1] < 0:
+#                 nBranches = nBranches + 1
+#                 branch_isBasic[nBranches] = True
+#                 branch_isTopBasic[nBranches] = True
+#                 branch_singletons[[nBranches]] = [-1 * dendro[merge, 0:2], extender]
+#                 branch_basicClusters[[nBranches]] = extender
+#                 branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
+#                 branch_singletonHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
+#                 IndMergeToBranch[merge] = nBranches
+#                 RootBranch = nBranches
+#             elif np.sign(dendro[merge, 0]) * np.sign(dendro[merge, 1]) < 0:
+#                 clust = IndMergeToBranch[max(dendro[merge, 0:2])]
+#                 if clust == 0:
+#                     sys.exit("Internal error: a previous merge has no associated cluster. Sorry!")
+#                 gene = -1 * min(dendro[merge, 0:2])
+#                 ns = branch_nSingletons[clust] + 1
+#                 nm = branch_nMerge[clust] + 1
+#                 if branch_isBasic[clust]:
+#                     if ns > len(branch_singletons[[clust]]):
+#                         branch_singletons[[clust]] = np.concatenate((branch_singletons[[clust]], extender), axis=0)
+#                         branch_singletonHeights[[clust]] = np.concatenate((branch_singletonHeights[[clust]], extender), axis=0)
+#
+#                     branch_singletons[[clust]][ns] = gene
+#                     branch_singletonHeights[[clust]][ns] = dendro[merge, 2]
+#
+#                 else:
+#                     onBranch[gene] = clust
+#
+#                 if nm >= len(branch_mergingHeights[[clust]]):
+#                     branch_mergingHeights[[clust]] = np.concatenate((branch_mergingHeights[[clust]], extender), axis=0)
+#
+#                 branch_mergingHeights[[clust]][nm] = dendro[merge, 2]
+#                 branch_size[clust] = branch_size[clust] + 1
+#                 branch_nMerge[clust] = nm
+#                 branch_nSingletons[clust] = ns
+#                 IndMergeToBranch[merge] = clust
+#                 RootBranch = clust
+#
+#             else:
+#                 clusts = IndMergeToBranch[dendro[merge, 0:2]]
+#                 sizes = branch_size[clusts]
+#                 rnk = stats.rankdata(sizes, method='ordinal')
+#                 small = clusts[rnk[1]]
+#                 large = clusts[rnk[2]]
+#                 sizes = sizes[rnk]
+#                 branch1 = branch_singletons[[large]][1:sizes[2]]
+#                 branch2 = branch_singletons[[small]][1:sizes[1]]
+#                 spyMatch = False
+#                 if spyIndex is not None:
+#                     n1 = len(branch1.intersection(spyIndex))
+#                     if n1 / len(branch1) > 0.99 and n1 / len(spyIndex) > 0.99:
+#                         print("Found spy match for branch 1 on merge", merge, flush=True)
+#                         spyMatch = True
+#
+#                     n2 = len(branch2.intersection(spyIndex))
+#                     if n2 / len(branch1) > 0.99 and n2 / len(spyIndex) > 0.99:
+#                         print("Found spy match for branch 2 on merge", merge, flush=True)
+#                         spyMatch = True
+#
+#                 if branch_isBasic[small]:
+#                     coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize)
+#                     Core = branch_singletons[[small]][0:coresize]
+#                     SmAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
+#                 else:
+#                     SmAveDist = 0
+#
+#                 if branch_isBasic[large]:
+#                     coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize)
+#                     Core = branch_singletons[[large]][0:coresize]
+#                     LgAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
+#                 else:
+#                     LgAveDist = 0
+#
+#                 mergeDiagnostics[merge, :] = [small, branch_size[small], SmAveDist, dendro[merge, 2] - SmAveDist,
+#                                               large, branch_size[large], LgAveDist, dendro[merge, 2] - LgAveDist, None]
+#                 SmallerScores = [branch_isBasic[small], branch_size[small] < minClusterSize,
+#                                  SmAveDist > maxAbsCoreScatter, dendro[merge, 2] - SmAveDist < minAbsGap,
+#                                 dendro[merge, 2] < minAbsSplitHeight]
+#                 if SmallerScores[1] * sum(SmallerScores[-1]) > 0:
+#                     DoMerge = True
+#                     SmallerFailSize = not (SmallerScores[3] | SmallerScores[4])
+#
+#                 else:
+#                     LargerScores = [branch_isBasic[large],
+#                                     branch_size[large] < minClusterSize, LgAveDist > maxAbsCoreScatter,
+#                                     dendro[merge, 2] - LgAveDist < minAbsGap,
+#                                     dendro[merge, 2] < minAbsSplitHeight]
+#                     if LargerScores[1] * sum(LargerScores[-1]) > 0:
+#                         DoMerge = True
+#                         SmallerFailSize = not (LargerScores[3] | LargerScores[4])
+#                         x = small
+#                         small = large
+#                         large = x
+#                         sizes = sizes.reverse()
+#                     else:
+#                         DoMerge = False
+#
+#                     if DoMerge:
+#                         mergeDiagnostics['merged'][merge] = 1
+#
+#                     if not DoMerge and nExternalSplits > 0 and branch_isBasic[small] and branch_isBasic[large]:
+#                         if verbose > 4:
+#                             print("Entering external split code on merge ", merge, flush=True)
+#                         branch1 = branch_singletons[[large]][0:sizes[1]]
+#                         branch2 = branch_singletons[[small]][0:sizes[0]]
+#                         if verbose > 4 or spyMatch:
+#                             print("  ..branch lengths: ", sizes[0], ", ", sizes[1], flush=True)
+#                         es = 0
+#                         while es < nExternalSplits and not DoMerge:
+#                             es = es + 1
+#                             args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[[es]],
+#                                                  'branch1': branch1, 'branch2': branch2})
+#                             args['branch1'] = branch1
+#                             args['branch2'] = branch2
+#                             extSplit = do.call(externalBranchSplitFnc[[es]], args)
+#                             if spyMatch:
+#                                 print(" .. external criterion ", es, ": ", extSplit, flush=True)
+#                             DoMerge = extSplit < minExternalSplit[es]
+#                             externalMergeDiags[merge, es] = extSplit
+#                             mergeDiagnostics['merged'][merge] = 0
+#                             if DoMerge:
+#                                 mergeDiagnostics['merged'][merge] = 2
+#
+#
+#                     if DoMerge:
+#                         branch_failSize[[small]] = SmallerFailSize
+#                         branch_mergedInto[small] = large
+#                         branch_attachHeight[small] = dendro[merge, 2]
+#                         branch_isTopBasic[small] = False
+#                         nss = branch_nSingletons[small]
+#                         nsl = branch_nSingletons[large]
+#                         ns = nss + nsl
+#                         if branch_isBasic[large]:
+#                             nExt = math.ceil((ns - len(branch_singletons[[large]])) / chunkSize)
+#                             if nExt > 0:
+#                                 if verbose > 5:
+#                                     print("Extending singletons for branch", large, "by", nExt, " extenders.", flush=True)
+#                                 branch_singletons[[large]] = np.concatenate((branch_singletons[[large]],
+#                                                                              np.repeat(extender, nExt)), axis=0)
+#                                 branch_singletonHeights[[large]] = np.concatenate((branch_singletonHeights[[large]],
+#                                                                                   np.repeat(extender, nExt)), axis=0)
+#
+#                             branch_singletons[[large]][nsl:ns] = branch_singletons[[small]][0:nss]
+#                             branch_singletonHeights[[large]][nsl:ns] = branch_singletonHeights[[small]][0:nss]
+#                             branch_nSingletons[large] = ns
+#                         else:
+#                             if not branch_isBasic[small]:
+#                                 sys.exit("Internal error: merging two composite clusters. Sorry!")
+#                             onBranch[branch_singletons[[small]]] = large
+#
+#                         nm = branch_nMerge[large] + 1
+#                         if nm > len(branch_mergingHeights[[large]]):
+#                             branch_mergingHeights[[large]] = np.concatenate((branch_mergingHeights[[large]], extender), axis=0)
+#
+#                         branch_mergingHeights[[large]][nm] = dendro[merge, 2]
+#                         branch_nMerge[large] = nm
+#                         branch_size[large] = branch_size[small] + branch_size[large]
+#                         IndMergeToBranch[merge] = large
+#                         RootBranch = large
+#                     else:
+#                         if branch_isBasic[large] and not branch_isBasic[small]:
+#                             x = large
+#                             large = small
+#                             small = x
+#                             sizes = sizes.reverse()
+#
+#                         if branch_isBasic[large] or (pamStage and pamRespectsDendro):
+#                             nBranches = nBranches + 1
+#                             branch_attachHeight[large, small] = dendro[merge, 2]
+#                             branch_mergedInto[large, small] = nBranches
+#                             if branch_isBasic[small]:
+#                                 addBasicClusters = small
+#                             else:
+#                                 addBasicClusters = branch_basicClusters[[small]]
+#                             if branch_isBasic[large]:
+#                                 addBasicClusters = [addBasicClusters, large]
+#                             else:
+#                                 addBasicClusters = np.concatenate((addBasicClusters, branch_basicClusters[[large]]), axis=0)
+#                             branch_isBasic[nBranches] = False
+#                             branch_isTopBasic[nBranches] = False
+#                             branch_basicClusters[[nBranches]] = addBasicClusters
+#                             branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0)
+#                             branch_nMerge[nBranches] = 2
+#                             branch_size[nBranches] = sum(sizes)
+#                             branch_nBasicClusters[nBranches] = len(addBasicClusters)
+#                             IndMergeToBranch[merge] = nBranches
+#                             RootBranch = nBranches
+#                         else:
+#                             addBasicClusters = branch_basicClusters[[small]]
+#                             if branch_isBasic[small]:
+#                                 addBasicClusters = small
+#                             nbl = branch_nBasicClusters[large]
+#                             nb = branch_nBasicClusters[large] + len(addBasicClusters)
+#                             if nb > len(branch_basicClusters[[large]]):
+#                                 nExt = math.ceil((nb - len(branch_basicClusters[[large]])) / chunkSize)
+#                                 branch_basicClusters[[large]] = np.concatenate((branch_basicClusters[[large]],
+#                                                                                 np.repeat(extender, nExt)), axis=0)
+#
+#                             branch_basicClusters[[large]][nbl:nb] = addBasicClusters
+#                             branch_nBasicClusters[large] = nb
+#                             branch_size[large] = branch_size[large] + branch_size[small]
+#                             nm = branch_nMerge[large] + 1
+#                             if nm > len(branch_mergingHeights[[large]]):
+#                                 branch_mergingHeights[[large]] = np.repeat((branch_mergingHeights[[large]], extender), axis=0)
+#
+#                             branch_mergingHeights[[large]][nm] = dendro[merge, 2]
+#                             branch_nMerge[large] = nm
+#                             branch_attachHeight[small] = dendro[merge, 2]
+#                             branch_mergedInto[small] = large
+#                             IndMergeToBranch[merge] = large
+#                             RootBranch = large
+#
+#             if verbose > 2:
+#                 pind = updateProgInd(merge / nMerge, pind)
+#
+#         if verbose > 2:
+#             pind = updateProgInd(1, pind)
+#             print("", flush=True)
+#
+#     if verbose > 2:
+#         print("..Going through detected branches and marking clusters..", flush=True)
+#
+#     isCluster = np.repeat(False, nBranches)
+#     SmallLabels = np.repeat(0, nPoints)
+#
+#     for clust in range(nBranches):
+#         if branch_attachHeight[clust] is None:
+#             branch_attachHeight[clust] = cutHeight
+#         if branch_isTopBasic[clust]:
+#             coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
+#             Core = branch_singletons[[clust]][0:coresize]
+#             CoreScatter = np.mean(distM[Core, Core].sum(axis=0) / (coresize - 1))
+#             isCluster[clust] = (branch_isTopBasic[clust] and branch_size[clust] >= minClusterSize and
+#                                     CoreScatter < maxAbsCoreScatter and branch_attachHeight[clust] - CoreScatter > minAbsGap)
+#         else:
+#             CoreScatter = 0
+#
+#         if branch_failSize[clust]:
+#             SmallLabels[branch_singletons[[clust]]] = clust
+#
+#     if not respectSmallClusters:
+#         SmallLabels = np.repeat(0, nPoints)
+#
+#     if verbose > 2:
+#         print("..Assigning Tree Cut stage labels..", flush=True)
+#
+#     Colors = np.repeat(0, nPoints)
+#     coreLabels = np.repeat(0, nPoints)
+#     clusterBranches = list(range(nBranches))[isCluster]
+#     branchLabels = np.repeat(0, nBranches)
+#     color = 0
+#     for clust in clusterBranches:
+#         color = color + 1
+#         Colors[branch_singletons[[clust]]] = color
+#         SmallLabels[branch_singletons[[clust]]] = 0
+#         coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
+#         Core = branch_singletons[[clust]][0:coresize]
+#         coreLabels[Core] = color
+#         branchLabels[clust] = color
+#
+#     Labeled = list(range(nPoints))[Colors != 0]
+#     Unlabeled = list(range(nPoints))[Colors == 0]
+#     nUnlabeled = len(Unlabeled)
+#     UnlabeledExist = nUnlabeled > 0
+#
+#     if len(Labeled) > 0:
+#         LabelFac = factor(Colors[Labeled])
+#         nProperLabels = nlevels(LabelFac)
+#
+#     else:
+#         nProperLabels = 0
+#
+#     if pamStage and UnlabeledExist and nProperLabels > 0:
+#         if verbose > 2:
+#             print("..Assigning PAM stage labels..", flush=True)
+#         nPAMed = 0
+#         if useMedoids:
+#             Medoids = np.repeat(0, nProperLabels)
+#             ClusterRadii = np.repeat(0, nProperLabels)
+#             for cluster in range(nProperLabels):
+#                 InCluster = list(range(nPoints))[Colors == cluster]
+#                 DistInCluster = distM[InCluster, InCluster]
+#                 DistSums = DistInCluster.sum(axis=0)
+#                 Medoids[cluster] = InCluster[DistSums.idxmin()]
+#                 ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
+#
+#             if respectSmallClusters:
+#                 FSmallLabels = factor(SmallLabels)
+#                 SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
+#                 nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
+#
+#                 if nSmallClusters > 0:
+#                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
+#                         InCluster = list(range(nPoints))[SmallLabels == sclust]
+#                         if pamRespectsDendro:
+#                             onBr = np.unique(onBranch[InCluster])
+#                             if len(onBr) > 1:
+#                                 msg = "Internal error: objects in a small cluster are marked to belong\n " \
+#                                       "to several large branches:" + str(onBr)
+#                                 sys.exit(msg)
+#
+#                             if onBr > 0:
+#                                 basicOnBranch = branch_basicClusters[[onBr]]
+#                                 labelsOnBranch = branchLabels[basicOnBranch]
+#                             else:
+#                                 labelsOnBranch = None
+#                         else:
+#                             labelsOnBranch = list(range(nProperLabels))
+#
+#                         DistInCluster = distM[InCluster, InCluster]
+#
+#                         if len(labelsOnBranch) > 0:
+#                             if len(InCluster) > 1:
+#                                 DistSums = apply(DistInCluster, 2, sum)
+#                                 smed = InCluster[DistSums.idxmin()]
+#                                 DistToMeds = distM[Medoids[labelsOnBranch], smed]
+#                                 closest = DistToMeds.idxmin()
+#                                 DistToClosest = DistToMeds[closest]
+#                                 closestLabel = labelsOnBranch[closest]
+#                                 if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
+#                                     Colors[InCluster] = closestLabel
+#                                     nPAMed = nPAMed + len(InCluster)
+#                             else:
+#                                 Colors[InCluster] = -1
+#                         else:
+#                             Colors[InCluster] = -1
+#
+#                 Unlabeled = list(range(nPoints))[Colors == 0]
+#                 if len(Unlabeled > 0):
+#                     for obj in Unlabeled:
+#                         if pamRespectsDendro:
+#                             onBr = onBranch[obj]
+#                             if onBr > 0:
+#                                 basicOnBranch = branch_basicClusters[[onBr]]
+#                                 labelsOnBranch = branchLabels[basicOnBranch]
+#                             else:
+#                                 labelsOnBranch = None
+#                         else:
+#                             labelsOnBranch = list(range(nProperLabels))
+#
+#                         if labelsOnBranch is not None:
+#                             UnassdToMedoidDist = distM[Medoids[labelsOnBranch], obj]
+#                             nearest = UnassdToMedoidDist.idxmin()
+#                             NearestCenterDist = UnassdToMedoidDist[nearest]
+#                             nearestMed = labelsOnBranch[nearest]
+#                             if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
+#                                 Colors[obj] = nearestMed
+#                                 nPAMed = nPAMed + 1
+#                     UnlabeledExist = (sum(Colors == 0) > 0)
+#         else:
+#             ClusterDiam = np.repeat(0, nProperLabels)
+#             for cluster in range(nProperLabels):
+#                 InCluster = list(range(nPoints))[Colors == cluster]
+#                 nInCluster = len(InCluster)
+#                 DistInCluster = distM[InCluster, InCluster]
+#                 if nInCluster > 1:
+#                     AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
+#                     ClusterDiam[cluster] = max(AveDistInClust)
+#
+#                 else:
+#                     ClusterDiam[cluster] = 0
+#
+#             ColorsX = Colors
+#             if respectSmallClusters:
+#                 FSmallLabels = factor(SmallLabels)
+#                 SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
+#                 nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
+#                 if nSmallClusters > 0:
+#                     if pamRespectsDendro:
+#                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
+#                             InCluster = list(range(nPoints))[SmallLabels == sclust]
+#                             onBr = unique(onBranch[InCluster])
+#                             if len(onBr) > 1:
+#                                 msg = "Internal error: objects in a small cluster are marked to belong\n" \
+#                                       "to several large branches:" + str(onBr)
+#                                 sys.exit(msg)
+#                             if onBr > 0:
+#                                 basicOnBranch = branch_basicClusters[[onBr]]
+#                                 labelsOnBranch = branchLabels[basicOnBranch]
+#                                 useObjects = ColorsX in np.unique(labelsOnBranch)
+#                                 DistSClustClust = distM[InCluster, useObjects]
+#                                 MeanDist = DistSClustClust.mean(axis=0)
+#                                 useColorsFac = factor(ColorsX[useObjects])
+#                                 MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
+#                                 nearest = MeanMeanDist.idxmin()
+#                                 NearestDist = MeanMeanDist[nearest]
+#                                 nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+#                                 if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+#                                     Colors[InCluster] = nearestLabel
+#                                     nPAMed = nPAMed + len(InCluster)
+#                                 else:
+#                                     Colors[InCluster] = -1
+#                     else:
+#                         labelsOnBranch = list(range(nProperLabels))
+#                         useObjects = list(range(nPoints))[ColorsX != 0]
+#                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
+#                             InCluster = list(range(nPoints))[SmallLabels == sclust]
+#                             DistSClustClust = distM[InCluster, useObjects]
+#                             MeanDist = DistSClustClust.mean(axis=0)
+#                             useColorsFac = factor(ColorsX[useObjects])
+#                             MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
+#                             nearest = MeanMeanDist.idxmin()
+#                             NearestDist = MeanMeanDist[nearest]
+#                             nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+#                             if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+#                                 Colors[InCluster] = nearestLabel
+#                                 nPAMed = nPAMed + len(InCluster)
+#                             else:
+#                                 Colors[InCluster] = -1
+#
+#             Unlabeled = list(range(nPoints))[Colors == 0]
+#             if len(Unlabeled) > 0:
+#                 if pamRespectsDendro:
+#                     unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
+#                     for obj in unlabOnBranch:
+#                         onBr = onBranch[obj]
+#                         basicOnBranch = branch_basicClusters[[onBr]]
+#                         labelsOnBranch = branchLabels[basicOnBranch]
+#                         useObjects = ColorsX in np.unique(labelsOnBranch)
+#                         useColorsFac = factor(ColorsX[useObjects])
+#                         UnassdToClustDist = tapply(distM[useObjects, obj], useColorsFac, mean)
+#                         nearest = UnassdToClustDist.idxmin()
+#                         NearestClusterDist = UnassdToClustDist[nearest]
+#                         nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+#                         if NearestClusterDist < ClusterDiam[nearestLabel] or NearestClusterDist < maxPamDist:
+#                             Colors[obj] = nearestLabel
+#                             nPAMed = nPAMed + 1
+#                 else:
+#                     useObjects = list(range(nPoints))[ColorsX != 0]
+#                     useColorsFac = factor(ColorsX[useObjects])
+#                     nUseColors = nlevels(useColorsFac)
+#                     UnassdToClustDist = apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
+#                     UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
+#                     nearest = apply(UnassdToClustDist, 2, which.min)
+#                     nearestDist = apply(UnassdToClustDist, 2, min)
+#                     nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
+#                     assign = nearestDist < ClusterDiam[nearestLabel] or nearestDist < maxPamDist
+#                     Colors[Unlabeled[assign]] = nearestLabel[assign]
+#                     nPAMed = nPAMed + sum(assign)
+#
+#         if verbose > 2:
+#             print("....assigned", nPAMed, "objects to existing clusters.", flush=True)
+#     Colors[Colors < 0] = 0
+#     UnlabeledExist = (sum(Colors == 0) > 0)
+#     NumLabs = pd.to_numeric(as.factor(Colors))
+#     Sizes = table(NumLabs)
+#     if UnlabeledExist:
+#         if len(Sizes) > 1:
+#             SizeRank = np.concatenate((1, (stats.rankdata(-1 * Sizes[2:len(Sizes)], method='ordinal') + 1)), axis=0)
+#         else:
+#             SizeRank = 1
+#         OrdNumLabs = SizeRank[NumLabs]
+#
+#     else:
+#         SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
+#         OrdNumLabs = SizeRank[NumLabs]
+#
+#     ordCoreLabels = OrdNumLabs - UnlabeledExist
+#     ordCoreLabels[coreLabels == 0] = 0
+#     if verbose > 0:
+#         print("..done.", flush=True)
+#
+#     mergeDiagnostics = np.concatenate((mergeDiagnostics, externalMergeDiags), axis=0)
+#     if nExternalSplits == 0:
+#         mergeDiagnostics = mergeDiagnostics
+#
+#     return (OrdNumLabs - UnlabeledExist), ordCoreLabels, SmallLabels, onBranch, mergeDiagnostics, \
+#            pd.DataFrame({'maxCoreScatter': maxCoreScatter, 'minGap': minGap, 'maxAbsCoreScatter': maxAbsCoreScatter,
+#                          'minAbsGap': minAbsGap, 'minExternalSplit': minExternalSplit}), \
+#            pd.DataFrame({'nBranches': nBranches, 'IndMergeToBranch': IndMergeToBranch, 'RootBranch': RootBranch,
+#                          'isCluster': isCluster, 'nPoints': nMerge + 1})
 
 
 # Take in pearsons r and n (number of experiments) to calculate the t-stat and p value (student's t distribution)
