@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import main as WGCNA
 from scipy.cluster.hierarchy import dendrogram
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import pdist, squareform
 
 
 def preprocess():
@@ -72,7 +72,7 @@ def run_WGCNA():
     ax[0].plot(sft['Power'], -1 * np.sign(sft['slope']) * sft['SFT.R.sq'], 'o')
     for i in range(len(powers)):
         ax[0].text(sft.loc[i, 'Power'], -1 * np.sign(sft.loc[i, 'slope']) * sft.loc[i, 'SFT.R.sq'],
-                   str(sft.loc[i, 'Power']), ha="center", va="center", color='r', weight='bold')
+                   str(sft.loc[i, 'Power']), ha="center", va="center", color='black', weight='bold')
     ax[0].axhline(0.9, color='r')
     ax[0].set_xlabel("Soft Threshold (power)")
     ax[0].set_ylabel("Scale Free Topology Model Fit,signed R^2")
@@ -90,17 +90,53 @@ def run_WGCNA():
     fig.savefig('test/output/plots/summarypower.png')
 
     # Set Power
-    softPower = 13
+    softPower = 11
     adjacency = WGCNA.adjacency(datExpr, power=softPower, networkType="signed")
 
     # Turn adjacency into topological overlap
     TOM = WGCNA.TOMsimilarity(adjacency, TOMType="signed")
     dissTOM = 1 - TOM
-
     pd.DataFrame(TOM).to_csv('test/output/data/TOM')
+
+    # Call the hierarchical clustering function
+    geneTree = WGCNA.hclust(pdist(dissTOM), method="average")
+    # Plot the resulting clustering tree (dendrogram)
+    plt.figure(figsize=(15, 5))
+    dendrogram(geneTree, color_threshold=None, no_labels=True, leaf_rotation=90)
+    plt.title('Gene clustering on TOM-based dissimilarity')
+    plt.xlabel('')
+    plt.ylabel('')
+    plt.tight_layout()
+    plt.savefig('test/output/plots/dendrogram.png')
+
+
+def run_WGCNA1():
+    TOM = pd.read_csv('test/output/data/TOM', header=0, index_col=0)
+    # TOM = pd.concat(TOM)
+    dissTOM = 1 - TOM
+    dissTOM = dissTOM.round(decimals=8)
+
+    # Call the hierarchical clustering function
+    geneTree = WGCNA.hclust(squareform(dissTOM.values), method="average")
+    # Plot the resulting clustering tree (dendrogram)
+    plt.figure(figsize=(18, 5))
+    dendrogram(geneTree, color_threshold=0, no_labels=True, leaf_rotation=90, above_threshold_color='black')
+    plt.title('Gene clustering on TOM-based dissimilarity')
+    plt.xlabel('')
+    plt.ylabel('')
+    plt.tight_layout()
+    plt.savefig('test/output/plots/dendrogram.png')
+
+    # We like large modules, so we set the minimum module size relatively high:
+    minModuleSize = 50
+    # Module identification using dynamic tree cut:
+    dynamicMods = WGCNA.cutreeHybrid(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
+                                     minClusterSize=minModuleSize)
 
 
 if __name__ == '__main__':
-    preprocess()
+    # preprocess()
 
-    run_WGCNA()
+    # run_WGCNA()
+
+    run_WGCNA1()
