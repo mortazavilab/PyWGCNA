@@ -513,24 +513,36 @@ def interpolate(data, index):
 
 
 def coreSizeFunc(BranchSize, minClusterSize):
-    BaseCoreSize = minClusterSize/2 + 1
+    BaseCoreSize = minClusterSize / 2 + 1
     if BaseCoreSize < BranchSize:
         CoreSize = int(BaseCoreSize + math.sqrt(BranchSize - BaseCoreSize))
     else:
         CoreSize = BranchSize
 
-    return CoreSize
-
+    return CoreSize - 1
 
 
 def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
-                 maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
-                 minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
-                 externalBranchSplitFnc=None, minExternalSplit=None,
-                 externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
-                 assumeSimpleExternalSpecification=True, pamStage=True,
-                 pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
-                 respectSmallClusters=True, verbose=2):
+                  maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
+                  minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
+                  externalBranchSplitFnc=None, minExternalSplit=None,
+                  externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
+                  assumeSimpleExternalSpecification=True, pamStage=True,
+                  pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
+                  respectSmallClusters=True, verbose=2):
+    print(dendro[0:10, :])
+    print(dendro.shape)
+
+    tmp = dendro[:, 0] > dendro.shape[0]
+    dendro[tmp, 0] = dendro[tmp, 0] - dendro.shape[0] - 1
+    dendro[np.logical_not(tmp), 0] = -1 * dendro[np.logical_not(tmp), 0]
+    tmp = dendro[:, 1] > dendro.shape[0]
+    dendro[tmp, 1] = dendro[tmp, 1] - dendro.shape[0] - 1
+    dendro[np.logical_not(tmp), 1] = -1 * dendro[np.logical_not(tmp), 1]
+
+    print(dendro[0:10, :])
+    print(dendro.shape)
+
     if maxPamDist is None:
         maxPamDist = cutHeight
 
@@ -571,306 +583,335 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
             print("cutHeight set too low: no merges below the cut.", flush=True)
         return pd.DataFrame({'labels': np.repeat(0, nMerge + 1, axis=0)})
 
-    # nExternalSplits = len(externalBranchSplitFnc)
-    # if nExternalSplits > 0:
-    #     if len(minExternalSplit) < 1:
-    #         sys.exit("'minExternalBranchSplit' must be given.")
-    #     if assumeSimpleExternalSpecification and nExternalSplits == 1:
-    #         externalSplitOptions = pd.DataFrame(externalSplitOptions)
-    #     # TODO: externalBranchSplitFnc = lapply(externalBranchSplitFnc, match.fun)
-    #     for es in range(nExternalSplits):
-    #         externalSplitOptions['tree'][es] = dendro
-    #         if len(externalSplitFncNeedsDistance) == 0 or externalSplitFncNeedsDistance[es]:
-    #             externalSplitOptions['dissimMat'][es] = distM
-    #
-    # MxBranches = nMergeBelowCut
-    # branch_isBasic = np.repeat(True, MxBranches, axis=0)
-    # branch_isTopBasic = np.repeat(True, MxBranches, axis=0)
-    # branch_failSize = np.repeat(False, MxBranches, axis=0)
-    # branch_rootHeight = np.repeat(np.NaN, MxBranches, axis=0)
-    # branch_size = np.repeat(2, MxBranches, axis=0)
-    # branch_nMerge = np.repeat(1, MxBranches, axis=0)
-    # branch_nSingletons = np.repeat(2, MxBranches, axis=0)
-    # branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
-    # branch_mergedInto = np.repeat(0, MxBranches, axis=0)
-    # branch_attachHeight = np.repeat(np.NaN, MxBranches, axis=0)
-    # branch_singletons = pd.DataFrame([], columns=list(range(MxBranches)))
-    # branch_basicClusters = pd.DataFrame([], columns=list(range(MxBranches)))
-    # branch_mergingHeights = pd.DataFrame([], columns=list(range(MxBranches)))
-    # branch_singletonHeights = pd.DataFrame([], columns=list(range(MxBranches)))
-    # nBranches = 0
-    # spyIndex = None
-    # if path.exists("dynamicTreeCutSpyFile"):
-    #     spyIndex = pd.read_table("dynamicTreeCutSpyFile", header=False)
-    #     print("Found 'spy file' with indices of objects to watch for.", flush=True)
-    #     spyIndex = pd.to_numeric(spyIndex.values[:, 0])
-    #     print(list(spyIndex), flush=True)
-    #
-    # defMCS = [0.64, 0.73, 0.82, 0.91, 0.95]
-    # defMG = (1.0 - defMCS) * 3.0 / 4.0
-    # nSplitDefaults = len(defMCS)
-    # if isinstance(deepSplit, bool):
-    #     deepSplit = pd.to_numeric(deepSplit) * (nSplitDefaults - 2)
-    # if deepSplit < 0 or deepSplit > nSplitDefaults:
-    #     msg = "Parameter deepSplit (value" + str(deepSplit) + \
-    #           ") out of range: allowable range is 0 through", str(nSplitDefaults - 1)
-    #     sys.exit(msg)
-    # if maxCoreScatter is None:
-    #     maxCoreScatter = interpolate(defMCS, deepSplit)
-    # if minGap is None:
-    #     minGap = interpolate(defMG, deepSplit)
-    # if maxAbsCoreScatter is None:
-    #     maxAbsCoreScatter = refHeight + maxCoreScatter * (cutHeight - refHeight)
-    # if minAbsGap is None:
-    #     minAbsGap = minGap * (cutHeight - refHeight)
-    # if minSplitHeight is None:
-    #     minSplitHeight = 0
-    # if minAbsSplitHeight is None:
-    #     minAbsSplitHeight = refHeight + minSplitHeight * (cutHeight - refHeight)
-    # nPoints = nMerge + 1
-    # IndMergeToBranch = np.repeat(0, nMerge, axis=0)
-    # onBranch = np.repeat(0, nPoints, axis=0)
-    # RootBranch = 0
-    # if verbose > 2:
-    #     print("..Going through the merge tree", flush=True)
-    #
-    # mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.NaN, nMerge, axis=0),
-    #                                  'smSize': np.repeat(np.NaN, nMerge, axis=0),
-    #                                  'smCrSc': np.repeat(np.NaN, nMerge, axis=0),
-    #                                  'smGap': np.repeat(np.NaN, nMerge, axis=0),
-    #                                  'lgI': np.repeat(np.NaN, nMerge, axis=0),
-    #                                  'lgSize': np.repeat(np.NaN, nMerge, axis=0),
-    #                                  'lgCrSc': np.repeat(np.NAN, nMerge, axis=0),
-    #                                  'lgGap': np.repeat(np.NAN, nMerge, axis=0),
-    #                                  'merged': np.repeat(np.NAN, nMerge, axis=0)})
-    # if nExternalSplits > 0:
-    #     externalMergeDiags = pd.DataFrame(np.NAN, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
-    #
-    # extender = np.repeat(0, 10, axis=0)
-    # for merge in range(nMerge):
-    #     if dendro[merge, 0] <= cutHeight:
-    #         if dendro[merge, 0] < 0 and dendro[merge, 1] < 0:
-    #             nBranches = nBranches + 1
-    #             branch_isBasic[nBranches] = True
-    #             branch_isTopBasic[nBranches] = True
-    #             branch_singletons[[nBranches]] = [-1 * dendro[merge, 0:2], extender]
-    #             branch_basicClusters[[nBranches]] = extender
-    #             branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
-    #             branch_singletonHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
-    #             IndMergeToBranch[merge] = nBranches
-    #             RootBranch = nBranches
-    #         elif np.sign(dendro[merge, 0]) * np.sign(dendro[merge, 1]) < 0:
-    #             clust = IndMergeToBranch[max(dendro[merge, 0:2])]
-    #             if clust == 0:
-    #                 sys.exit("Internal error: a previous merge has no associated cluster. Sorry!")
-    #             gene = -1 * min(dendro[merge, 0:2])
-    #             ns = branch_nSingletons[clust] + 1
-    #             nm = branch_nMerge[clust] + 1
-    #             if branch_isBasic[clust]:
-    #                 if ns > len(branch_singletons[[clust]]):
-    #                     branch_singletons[[clust]] = np.concatenate((branch_singletons[[clust]], extender), axis=0)
-    #                     branch_singletonHeights[[clust]] = np.concatenate((branch_singletonHeights[[clust]], extender), axis=0)
-    #
-    #                 branch_singletons[[clust]][ns] = gene
-    #                 branch_singletonHeights[[clust]][ns] = dendro[merge, 2]
-    #
-    #             else:
-    #                 onBranch[gene] = clust
-    #
-    #             if nm >= len(branch_mergingHeights[[clust]]):
-    #                 branch_mergingHeights[[clust]] = np.concatenate((branch_mergingHeights[[clust]], extender), axis=0)
-    #
-    #             branch_mergingHeights[[clust]][nm] = dendro[merge, 2]
-    #             branch_size[clust] = branch_size[clust] + 1
-    #             branch_nMerge[clust] = nm
-    #             branch_nSingletons[clust] = ns
-    #             IndMergeToBranch[merge] = clust
-    #             RootBranch = clust
-    #
-    #         else:
-    #             clusts = IndMergeToBranch[dendro[merge, 0:2]]
-    #             sizes = branch_size[clusts]
-    #             rnk = stats.rankdata(sizes, method='ordinal')
-    #             small = clusts[rnk[1]]
-    #             large = clusts[rnk[2]]
-    #             sizes = sizes[rnk]
-    #             branch1 = branch_singletons[[large]][1:sizes[2]]
-    #             branch2 = branch_singletons[[small]][1:sizes[1]]
-    #             spyMatch = False
-    #             if spyIndex is not None:
-    #                 n1 = len(branch1.intersection(spyIndex))
-    #                 if n1 / len(branch1) > 0.99 and n1 / len(spyIndex) > 0.99:
-    #                     print("Found spy match for branch 1 on merge", merge, flush=True)
-    #                     spyMatch = True
-    #
-    #                 n2 = len(branch2.intersection(spyIndex))
-    #                 if n2 / len(branch1) > 0.99 and n2 / len(spyIndex) > 0.99:
-    #                     print("Found spy match for branch 2 on merge", merge, flush=True)
-    #                     spyMatch = True
-    #
-    #             if branch_isBasic[small]:
-    #                 coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize)
-    #                 Core = branch_singletons[[small]][0:coresize]
-    #                 SmAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
-    #             else:
-    #                 SmAveDist = 0
-    #
-    #             if branch_isBasic[large]:
-    #                 coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize)
-    #                 Core = branch_singletons[[large]][0:coresize]
-    #                 LgAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
-    #             else:
-    #                 LgAveDist = 0
-    #
-    #             mergeDiagnostics[merge, :] = [small, branch_size[small], SmAveDist, dendro[merge, 2] - SmAveDist,
-    #                                           large, branch_size[large], LgAveDist, dendro[merge, 2] - LgAveDist, None]
-    #             SmallerScores = [branch_isBasic[small], branch_size[small] < minClusterSize,
-    #                              SmAveDist > maxAbsCoreScatter, dendro[merge, 2] - SmAveDist < minAbsGap,
-    #                             dendro[merge, 2] < minAbsSplitHeight]
-    #             if SmallerScores[1] * sum(SmallerScores[-1]) > 0:
-    #                 DoMerge = True
-    #                 SmallerFailSize = not (SmallerScores[3] | SmallerScores[4])
-    #
-    #             else:
-    #                 LargerScores = [branch_isBasic[large],
-    #                                 branch_size[large] < minClusterSize, LgAveDist > maxAbsCoreScatter,
-    #                                 dendro[merge, 2] - LgAveDist < minAbsGap,
-    #                                 dendro[merge, 2] < minAbsSplitHeight]
-    #                 if LargerScores[1] * sum(LargerScores[-1]) > 0:
-    #                     DoMerge = True
-    #                     SmallerFailSize = not (LargerScores[3] | LargerScores[4])
-    #                     x = small
-    #                     small = large
-    #                     large = x
-    #                     sizes = sizes.reverse()
-    #                 else:
-    #                     DoMerge = False
-    #
-    #                 if DoMerge:
-    #                     mergeDiagnostics['merged'][merge] = 1
-    #
-    #                 if not DoMerge and nExternalSplits > 0 and branch_isBasic[small] and branch_isBasic[large]:
-    #                     if verbose > 4:
-    #                         print("Entering external split code on merge ", merge, flush=True)
-    #                     branch1 = branch_singletons[[large]][0:sizes[1]]
-    #                     branch2 = branch_singletons[[small]][0:sizes[0]]
-    #                     if verbose > 4 or spyMatch:
-    #                         print("  ..branch lengths: ", sizes[0], ", ", sizes[1], flush=True)
-    #                     es = 0
-    #                     while es < nExternalSplits and not DoMerge:
-    #                         es = es + 1
-    #                         args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[[es]],
-    #                                              'branch1': branch1, 'branch2': branch2})
-    #                         args['branch1'] = branch1
-    #                         args['branch2'] = branch2
-    #                         extSplit = do.call(externalBranchSplitFnc[[es]], args)
-    #                         if spyMatch:
-    #                             print(" .. external criterion ", es, ": ", extSplit, flush=True)
-    #                         DoMerge = extSplit < minExternalSplit[es]
-    #                         externalMergeDiags[merge, es] = extSplit
-    #                         mergeDiagnostics['merged'][merge] = 0
-    #                         if DoMerge:
-    #                             mergeDiagnostics['merged'][merge] = 2
-    #
-    #
-    #                 if DoMerge:
-    #                     branch_failSize[[small]] = SmallerFailSize
-    #                     branch_mergedInto[small] = large
-    #                     branch_attachHeight[small] = dendro[merge, 2]
-    #                     branch_isTopBasic[small] = False
-    #                     nss = branch_nSingletons[small]
-    #                     nsl = branch_nSingletons[large]
-    #                     ns = nss + nsl
-    #                     if branch_isBasic[large]:
-    #                         nExt = math.ceil((ns - len(branch_singletons[[large]])) / chunkSize)
-    #                         if nExt > 0:
-    #                             if verbose > 5:
-    #                                 print("Extending singletons for branch", large, "by", nExt, " extenders.", flush=True)
-    #                             branch_singletons[[large]] = np.concatenate((branch_singletons[[large]],
-    #                                                                          np.repeat(extender, nExt)), axis=0)
-    #                             branch_singletonHeights[[large]] = np.concatenate((branch_singletonHeights[[large]],
-    #                                                                               np.repeat(extender, nExt)), axis=0)
-    #
-    #                         branch_singletons[[large]][nsl:ns] = branch_singletons[[small]][0:nss]
-    #                         branch_singletonHeights[[large]][nsl:ns] = branch_singletonHeights[[small]][0:nss]
-    #                         branch_nSingletons[large] = ns
-    #                     else:
-    #                         if not branch_isBasic[small]:
-    #                             sys.exit("Internal error: merging two composite clusters. Sorry!")
-    #                         onBranch[branch_singletons[[small]]] = large
-    #
-    #                     nm = branch_nMerge[large] + 1
-    #                     if nm > len(branch_mergingHeights[[large]]):
-    #                         branch_mergingHeights[[large]] = np.concatenate((branch_mergingHeights[[large]], extender), axis=0)
-    #
-    #                     branch_mergingHeights[[large]][nm] = dendro[merge, 2]
-    #                     branch_nMerge[large] = nm
-    #                     branch_size[large] = branch_size[small] + branch_size[large]
-    #                     IndMergeToBranch[merge] = large
-    #                     RootBranch = large
-    #                 else:
-    #                     if branch_isBasic[large] and not branch_isBasic[small]:
-    #                         x = large
-    #                         large = small
-    #                         small = x
-    #                         sizes = sizes.reverse()
-    #
-    #                     if branch_isBasic[large] or (pamStage and pamRespectsDendro):
-    #                         nBranches = nBranches + 1
-    #                         branch_attachHeight[large, small] = dendro[merge, 2]
-    #                         branch_mergedInto[large, small] = nBranches
-    #                         if branch_isBasic[small]:
-    #                             addBasicClusters = small
-    #                         else:
-    #                             addBasicClusters = branch_basicClusters[[small]]
-    #                         if branch_isBasic[large]:
-    #                             addBasicClusters = [addBasicClusters, large]
-    #                         else:
-    #                             addBasicClusters = np.concatenate((addBasicClusters, branch_basicClusters[[large]]), axis=0)
-    #                         branch_isBasic[nBranches] = False
-    #                         branch_isTopBasic[nBranches] = False
-    #                         branch_basicClusters[[nBranches]] = addBasicClusters
-    #                         branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0)
-    #                         branch_nMerge[nBranches] = 2
-    #                         branch_size[nBranches] = sum(sizes)
-    #                         branch_nBasicClusters[nBranches] = len(addBasicClusters)
-    #                         IndMergeToBranch[merge] = nBranches
-    #                         RootBranch = nBranches
-    #                     else:
-    #                         addBasicClusters = branch_basicClusters[[small]]
-    #                         if branch_isBasic[small]:
-    #                             addBasicClusters = small
-    #                         nbl = branch_nBasicClusters[large]
-    #                         nb = branch_nBasicClusters[large] + len(addBasicClusters)
-    #                         if nb > len(branch_basicClusters[[large]]):
-    #                             nExt = math.ceil((nb - len(branch_basicClusters[[large]])) / chunkSize)
-    #                             branch_basicClusters[[large]] = np.concatenate((branch_basicClusters[[large]],
-    #                                                                             np.repeat(extender, nExt)), axis=0)
-    #
-    #                         branch_basicClusters[[large]][nbl:nb] = addBasicClusters
-    #                         branch_nBasicClusters[large] = nb
-    #                         branch_size[large] = branch_size[large] + branch_size[small]
-    #                         nm = branch_nMerge[large] + 1
-    #                         if nm > len(branch_mergingHeights[[large]]):
-    #                             branch_mergingHeights[[large]] = np.repeat((branch_mergingHeights[[large]], extender), axis=0)
-    #
-    #                         branch_mergingHeights[[large]][nm] = dendro[merge, 2]
-    #                         branch_nMerge[large] = nm
-    #                         branch_attachHeight[small] = dendro[merge, 2]
-    #                         branch_mergedInto[small] = large
-    #                         IndMergeToBranch[merge] = large
-    #                         RootBranch = large
-    #
-    #         if verbose > 2:
-    #             pind = updateProgInd(merge / nMerge, pind)
-    #
-    #     if verbose > 2:
-    #         pind = updateProgInd(1, pind)
-    #         print("", flush=True)
-    #
-    # if verbose > 2:
-    #     print("..Going through detected branches and marking clusters..", flush=True)
-    #
+    if externalBranchSplitFnc is not None:
+        nExternalSplits = len(externalBranchSplitFnc)
+        if len(minExternalSplit) < 1:
+            sys.exit("'minExternalBranchSplit' must be given.")
+        if assumeSimpleExternalSpecification and nExternalSplits == 1:
+            externalSplitOptions = pd.DataFrame(externalSplitOptions)
+        # TODO: externalBranchSplitFnc = lapply(externalBranchSplitFnc, match.fun)
+        for es in range(nExternalSplits):
+            externalSplitOptions['tree'][es] = dendro
+            if len(externalSplitFncNeedsDistance) == 0 or externalSplitFncNeedsDistance[es]:
+                externalSplitOptions['dissimMat'][es] = distM
+
+    MxBranches = nMergeBelowCut
+    branch_isBasic = np.repeat(True, MxBranches, axis=0)
+    branch_isTopBasic = np.repeat(True, MxBranches, axis=0)
+    branch_failSize = np.repeat(False, MxBranches, axis=0)
+    branch_rootHeight = np.repeat(np.NaN, MxBranches, axis=0)
+    branch_size = np.repeat(2, MxBranches, axis=0)
+    branch_nMerge = np.repeat(1, MxBranches, axis=0)
+    branch_nSingletons = np.repeat(2, MxBranches, axis=0)
+    branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
+    branch_mergedInto = np.repeat(0, MxBranches, axis=0)
+    branch_attachHeight = np.repeat(np.NaN, MxBranches, axis=0)
+    branch_singletons = pd.DataFrame()
+    branch_basicClusters = pd.DataFrame()
+    branch_mergingHeights = pd.DataFrame()
+    branch_singletonHeights = pd.DataFrame()
+    nBranches = -1
+    spyIndex = None
+    if path.exists("dynamicTreeCutSpyFile"):
+        spyIndex = pd.read_table("dynamicTreeCutSpyFile", header=False)
+        print("Found 'spy file' with indices of objects to watch for.", flush=True)
+        spyIndex = pd.to_numeric(spyIndex.values[:, 0])
+        print(list(spyIndex), flush=True)
+
+    defMCS = [0.64, 0.73, 0.82, 0.91, 0.95]
+    defMG = [(1.0 - defMC) * 3.0 / 4.0 for defMC in defMCS]
+    nSplitDefaults = len(defMCS)
+    if isinstance(deepSplit, bool):
+        deepSplit = pd.to_numeric(deepSplit) * (nSplitDefaults - 2)
+    if deepSplit < 0 or deepSplit > nSplitDefaults:
+        msg = "Parameter deepSplit (value" + str(deepSplit) + \
+              ") out of range: allowable range is 0 through", str(nSplitDefaults - 1)
+        sys.exit(msg)
+    if maxCoreScatter is None:
+        maxCoreScatter = interpolate(defMCS, deepSplit)
+    if minGap is None:
+        minGap = interpolate(defMG, deepSplit)
+    if maxAbsCoreScatter is None:
+        maxAbsCoreScatter = refHeight + maxCoreScatter * (cutHeight - refHeight)
+    if minAbsGap is None:
+        minAbsGap = minGap * (cutHeight - refHeight)
+    if minSplitHeight is None:
+        minSplitHeight = 0
+    if minAbsSplitHeight is None:
+        minAbsSplitHeight = refHeight + minSplitHeight * (cutHeight - refHeight)
+    nPoints = nMerge + 1
+    IndMergeToBranch = np.repeat(0, nMerge, axis=0)
+    onBranch = np.repeat(0, nPoints, axis=0)
+    RootBranch = 0
+    if verbose > 2:
+        print("..Going through the merge tree", flush=True)
+
+    mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.NaN, nMerge, axis=0),
+                                     'smSize': np.repeat(np.NaN, nMerge, axis=0),
+                                     'smCrSc': np.repeat(np.NaN, nMerge, axis=0),
+                                     'smGap': np.repeat(np.NaN, nMerge, axis=0),
+                                     'lgI': np.repeat(np.NaN, nMerge, axis=0),
+                                     'lgSize': np.repeat(np.NaN, nMerge, axis=0),
+                                     'lgCrSc': np.repeat(np.NAN, nMerge, axis=0),
+                                     'lgGap': np.repeat(np.NAN, nMerge, axis=0),
+                                     'merged': np.repeat(np.NAN, nMerge, axis=0)})
+    if externalBranchSplitFnc is not None:
+        externalMergeDiags = pd.DataFrame(np.NAN, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
+
+    extender = np.repeat(0, chunkSize, axis=0)
+
+    for merge in range(16):  # range(nMerge):
+        print("info dendro", merge, dendro[merge, :])
+        if dendro[merge, 2] <= cutHeight:
+            if dendro[merge, 0] < 0 and dendro[merge, 1] < 0:
+                print("A")
+                nBranches = nBranches + 1
+                branch_isBasic[nBranches] = True
+                branch_isTopBasic[nBranches] = True
+                branch_singletons.insert(nBranches, nBranches, np.concatenate((-1 * dendro[merge, 0:2], extender), axis=0))
+                branch_basicClusters.insert(nBranches, nBranches, extender)
+                branch_mergingHeights.insert(nBranches, nBranches,
+                                             np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0))
+                branch_singletonHeights.insert(nBranches, nBranches,
+                                               np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0))
+                IndMergeToBranch[merge] = nBranches
+                RootBranch = nBranches
+            elif np.sign(dendro[merge, 0]) * np.sign(dendro[merge, 1]) < 0:
+                print("C")
+                clust = IndMergeToBranch[int(np.max(dendro[merge, 0:2]))]
+                if clust == 0:
+                    sys.exit("Internal error: a previous merge has no associated cluster. Sorry!")
+                gene = -1 * min(dendro[merge, 0:2])
+                ns = branch_nSingletons[clust]
+                nm = branch_nMerge[clust]
+
+                if branch_isBasic[clust]:
+                    if ns > len(branch_singletons[[clust]]):
+                        branch_singletons[[clust]] = np.concatenate((branch_singletons[[clust]], extender), axis=0)
+                        branch_singletonHeights[[clust]] = np.concatenate((branch_singletonHeights[[clust]], extender),
+                                                                          axis=0)
+
+                    branch_singletons.loc[ns, clust] = gene
+                    branch_singletonHeights.loc[ns, clust] = dendro[merge, 2]
+
+                else:
+                    onBranch[gene] = clust
+
+                if nm >= len(branch_mergingHeights[[clust]]):
+                    branch_mergingHeights[[clust]] = np.concatenate((branch_mergingHeights[[clust]], extender), axis=0)
+
+                branch_mergingHeights.loc[nm, clust] = dendro[merge, 2]
+                branch_size[clust] = branch_size[clust] + 1
+                branch_nMerge[clust] = nm + 1
+                branch_nSingletons[clust] = ns + 1
+                IndMergeToBranch[merge] = clust
+                RootBranch = clust
+            else:
+                print("B")
+                clusts = IndMergeToBranch[dendro[merge, 0:2].astype(int)]
+                sizes = branch_size[clusts] - 1
+                rnk = stats.rankdata(sizes, method='ordinal')
+                rnk = rnk - 1
+                small = clusts[rnk[0]]
+                large = clusts[rnk[1]]
+                print("small", small)
+                print("large", large)
+                sizes = sizes[rnk]
+                branch1 = branch_singletons.loc[0:sizes[1], large]
+                branch2 = branch_singletons.loc[0:sizes[0], small]
+                spyMatch = False
+                if spyIndex is not None:
+                    n1 = len(branch1.intersection(spyIndex))
+                    if n1 / len(branch1) > 0.99 and n1 / len(spyIndex) > 0.99:
+                        print("Found spy match for branch 1 on merge", merge, flush=True)
+                        spyMatch = True
+
+                    n2 = len(branch2.intersection(spyIndex))
+                    if n2 / len(branch1) > 0.99 and n2 / len(spyIndex) > 0.99:
+                        print("Found spy match for branch 2 on merge", merge, flush=True)
+                        spyMatch = True
+
+                if branch_isBasic[small]:
+                    coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize)
+                    Core = branch_singletons.loc[0:coresize, small]
+                    Core = Core.astype(int).tolist()
+                    SmAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize)
+                else:
+                    SmAveDist = 0
+
+                if branch_isBasic[large]:
+                    coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize)
+                    Core = branch_singletons.loc[0:coresize, large]
+                    Core = Core.astype(int).tolist()
+                    LgAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize - 1)
+                else:
+                    LgAveDist = 0
+
+                mergeDiagnostics.loc[merge, :] = [small, branch_size[small], SmAveDist, dendro[merge, 2] - SmAveDist,
+                                                  large, branch_size[large], LgAveDist, dendro[merge, 2] - LgAveDist,
+                                                  None]
+                SmallerScores = [branch_isBasic[small], branch_size[small] < minClusterSize,
+                                 SmAveDist > maxAbsCoreScatter, dendro[merge, 2] - SmAveDist < minAbsGap,
+                                 dendro[merge, 2] < minAbsSplitHeight]
+                if SmallerScores[0] * np.count_nonzero(SmallerScores[1:]) > 0:
+                    DoMerge = True
+                    SmallerFailSize = not (SmallerScores[2] | SmallerScores[3])
+
+                else:
+                    LargerScores = [branch_isBasic[large],
+                                    branch_size[large] < minClusterSize, LgAveDist > maxAbsCoreScatter,
+                                    dendro[merge, 2] - LgAveDist < minAbsGap,
+                                    dendro[merge, 2] < minAbsSplitHeight]
+                    if LargerScores[0] * np.count_nonzero(LargerScores[1:]) > 0:
+                        DoMerge = True
+                        SmallerFailSize = not (LargerScores[2] | LargerScores[3])
+                        x = small
+                        small = large
+                        large = x
+                        sizes = sizes.reverse()
+                    else:
+                        DoMerge = False
+
+                if DoMerge:
+                    mergeDiagnostics['merged'][merge] = 1
+
+                if not DoMerge and nExternalSplits > 0 and branch_isBasic[small] and branch_isBasic[large]:
+                    if verbose > 4:
+                        print("Entering external split code on merge ", merge, flush=True)
+                    branch1 = branch_singletons[[large]][0:sizes[1]]
+                    branch2 = branch_singletons[[small]][0:sizes[0]]
+                    if verbose > 4 or spyMatch:
+                        print("  ..branch lengths: ", sizes[0], ", ", sizes[1], flush=True)
+                    es = 0
+                    while es < nExternalSplits and not DoMerge:
+                        es = es + 1
+                        args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[[es]],
+                                             'branch1': branch1, 'branch2': branch2})
+                        # TODO: extSplit = do.call(externalBranchSplitFnc[[es]], args)
+                        extSplit = None
+                        if spyMatch:
+                            print(" .. external criterion ", es, ": ", extSplit, flush=True)
+                        DoMerge = extSplit < minExternalSplit[es]
+                        externalMergeDiags[merge, es] = extSplit
+                        mergeDiagnostics['merged'][merge] = 0
+                        if DoMerge:
+                            mergeDiagnostics['merged'][merge] = 2
+
+                if DoMerge:
+                    branch_failSize[[small]] = SmallerFailSize
+                    branch_mergedInto[small] = large + 1
+                    branch_attachHeight[small] = dendro[merge, 2]
+                    branch_isTopBasic[small] = False
+                    nss = branch_nSingletons[small] - 1
+                    nsl = branch_nSingletons[large]
+                    ns = nss + nsl
+                    if branch_isBasic[large]:
+                        nExt = math.ceil((ns - len(branch_singletons[[large]])) / chunkSize)
+                        if nExt > 0:
+                            if verbose > 5:
+                                print("Extending singletons for branch", large, "by", nExt, " extenders.", flush=True)
+                            branch_singletons[[large]] = np.concatenate((branch_singletons[[large]],
+                                                                         np.repeat(extender, nExt)), axis=0)
+                            branch_singletonHeights[[large]] = np.concatenate((branch_singletonHeights[[large]],
+                                                                               np.repeat(extender, nExt)), axis=0)
+
+                        branch_singletons.loc[nsl:ns, large] = branch_singletons.loc[0:nss, small].values
+                        branch_singletonHeights.loc[nsl:ns, large] = branch_singletonHeights.loc[0:nss, small].values
+                        branch_nSingletons[large] = ns + 1
+                    else:
+                        if not branch_isBasic[small]:
+                            sys.exit("Internal error: merging two composite clusters. Sorry!")
+                        onBranch[branch_singletons[[small]]] = large + 1
+
+                    nm = branch_nMerge[large] + 1
+                    if nm > len(branch_mergingHeights[[large]]):
+                        branch_mergingHeights[[large]] = np.concatenate((branch_mergingHeights[[large]], extender),
+                                                                        axis=0)
+
+                    branch_mergingHeights.loc[nm, large] = dendro[merge, 2]
+                    branch_nMerge[large] = nm
+                    branch_size[large] = branch_size[small] + branch_size[large]
+                    IndMergeToBranch[merge] = large + 1
+                    RootBranch = large + 1
+                else:
+                    if branch_isBasic[large] and not branch_isBasic[small]:
+                        x = large
+                        large = small
+                        small = x
+                        sizes = sizes.reverse()
+
+                    if branch_isBasic[large] or (pamStage and pamRespectsDendro):
+                        nBranches = nBranches + 1
+                        branch_attachHeight[large, small] = dendro[merge, 2]
+                        branch_mergedInto[large, small] = nBranches
+                        if branch_isBasic[small]:
+                            addBasicClusters = small + 1
+                        else:
+                            addBasicClusters = branch_basicClusters[[small]]
+                        if branch_isBasic[large]:
+                            addBasicClusters = [addBasicClusters, large]
+                        else:
+                            addBasicClusters = np.concatenate((addBasicClusters, branch_basicClusters[[large]]),
+                                                              axis=0)
+                        branch_isBasic[nBranches] = False
+                        branch_isTopBasic[nBranches] = False
+                        branch_basicClusters[[nBranches]] = addBasicClusters
+                        branch_mergingHeights[[nBranches]] = np.concatenate(
+                            (np.repeat(dendro[merge, 2], 2), extender), axis=0)
+                        branch_nMerge[nBranches] = 2
+                        branch_size[nBranches] = sum(sizes) + 2
+                        branch_nBasicClusters[nBranches] = len(addBasicClusters)
+                        IndMergeToBranch[merge] = nBranches
+                        RootBranch = nBranches
+                    else:
+                        addBasicClusters = branch_basicClusters[[small]]
+                        if branch_isBasic[small]:
+                            addBasicClusters = small + 1
+                        nbl = branch_nBasicClusters[large]
+                        nb = branch_nBasicClusters[large] + len(addBasicClusters)
+                        if nb > len(branch_basicClusters[[large]]):
+                            nExt = math.ceil((nb - len(branch_basicClusters[[large]])) / chunkSize)
+                            branch_basicClusters[[large]] = np.concatenate((branch_basicClusters[[large]],
+                                                                            np.repeat(extender, nExt)), axis=0)
+
+                        branch_basicClusters[[large]][nbl:nb] = addBasicClusters
+                        branch_nBasicClusters[large] = nb
+                        branch_size[large] = branch_size[large] + branch_size[small]
+                        nm = branch_nMerge[large] + 1
+                        if nm > len(branch_mergingHeights[[large]]):
+                            branch_mergingHeights[[large]] = np.repeat((branch_mergingHeights[[large]], extender),
+                                                                       axis=0)
+
+                        branch_mergingHeights[[large]][nm] = dendro[merge, 2]
+                        branch_nMerge[large] = nm
+                        branch_attachHeight[small] = dendro[merge, 2]
+                        branch_mergedInto[small] = large + 1
+                        IndMergeToBranch[merge] = large + 1
+                        RootBranch = large + 1
+                print(dendro[merge, :])
+                print(small, "\n",
+                      large, "\n",
+                      clusts, "\n",
+                      nBranches, "\n",
+                      MxBranches, "\n",
+                      branch_isBasic[clusts], "\n",
+                      branch_isTopBasic[nBranches], "\n",
+                      branch_failSize, "\n",
+                      branch_rootHeight, "\n",
+                      branch_size[clusts], "\n",
+                      branch_nMerge[clusts], "\n",
+                      branch_nSingletons[clusts], "\n",
+                      branch_nBasicClusters, "\n",
+                      branch_mergedInto, "\n",
+                      branch_attachHeight, "\n",
+                      branch_singletons.loc[:, clusts], "\n",
+                      branch_basicClusters, "\n",
+                      branch_mergingHeights.loc[:, clusts], "\n",
+                      branch_singletonHeights.loc[:, clusts])
+
+    if verbose > 2:
+        print("..Going through detected branches and marking clusters..", flush=True)
+
     # isCluster = np.repeat(False, nBranches)
     # SmallLabels = np.repeat(0, nPoints)
     #
@@ -1120,7 +1161,6 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
     #                      'minAbsGap': minAbsGap, 'minExternalSplit': minExternalSplit}), \
     #        pd.DataFrame({'nBranches': nBranches, 'IndMergeToBranch': IndMergeToBranch, 'RootBranch': RootBranch,
     #                      'isCluster': isCluster, 'nPoints': nMerge + 1})
-
 
 
 # def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,

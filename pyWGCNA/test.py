@@ -126,12 +126,14 @@ def run_WGCNA1():
     plt.ylabel('')
     plt.tight_layout()
     plt.savefig('test/output/plots/dendrogram.png')
+    
+    pd.DataFrame(geneTree).to_csv('test/output/data/geneTree.csv')
 
     # We like large modules, so we set the minimum module size relatively high:
     minModuleSize = 50
     # Module identification using dynamic tree cut:
-    dynamicMods = WGCNA.cutreeHybrid(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
-                                     minClusterSize=minModuleSize)
+    dynamicMods = WGCNA.cutreeHybrid1(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
+                                      minClusterSize=minModuleSize)
 
 
 if __name__ == '__main__':
