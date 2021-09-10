@@ -6,112 +6,85 @@ library("ComplexHeatmap")
 ht_opt$message = FALSE
 library(stringr)
 options(stringsAsFactors = FALSE);
+library(analyze.stuff)
+library(dynamicTreeCut)
 
-###---------------------- 
-# Read data
-print("Read Data")
-expressionList = read.table('expressionList', header = TRUE);
-
-## Prepare and clean data
-#Remove rows with less than 1 TPM
-expressionList = expressionList[expressionList[,ncol(expressionList)]>1,]
-
-datExpr0 = as.data.frame(t(expressionList[,-c(1)]));
-names(datExpr0) = expressionList$gene_id
-rownames(datExpr0) = names(expressionList)[-c(1)];
-
-# Check that all genes and samples have sufficiently low numbers of missing values.
-gsg = goodSamplesGenes(datExpr0, verbose = 3);
-#if not okay 
-if (!gsg$allOK)
+.interpolate <- function (data, index) 
 {
-  # Optionally, print the gene and sample names that were removed:
-  if (sum(!gsg$goodGenes)>0)
-    printFlush(paste("Removing genes:", paste(names(datExpr0)[!gsg$goodGenes], collapse = ", ")));
-  if (sum(!gsg$goodSamples)>0)
-    printFlush(paste("Removing samples:", paste(rownames(datExpr0)[!gsg$goodSamples], collapse = ", ")));
-  # Remove the offending genes and samples from the data:
-  datExpr0 = datExpr0[gsg$goodSamples, gsg$goodGenes]
+  i = round(index)
+  n = length(data)
+  if (i < 1) 
+    return(data[1])
+  if (i >= n) 
+    return(data[n])
+  r = index - i
+  data[i] * (1 - r) + data[i + 1] * r
 }
 
-## Clustering
-sampleTree = hclust(dist(datExpr0), method = "average");
-# The user should change the dimensions if the window is too large or too small.
-pdf(file = "../sampleClusteringCleaning.pdf", width = 25, height = 6);
-par(cex = 0.6);
-par(mar = c(0,4,2,0))
-plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5,
-     cex.axis = 1.5, cex.main = 2)
-# Plot a line to show the cut
-abline(h = 50000, col = "red");
-dev.off();
-
-# Determine cluster under the line
-clust = cutreeStatic(sampleTree, cutHeight = 50000, minSize = 10)
-table(clust)
-# clust 1 contains the samples we want to keep.
-keepSamples = (clust!=0)
-
-datExpr = datExpr0[keepSamples, ]
-nGenes = ncol(datExpr)
-nSamples = nrow(datExpr)
-
-
-#convert trancript ID to gene ID
-datExpr = as.data.frame(t(datExpr))
-for (i in c(1:dim(datExpr)[1])) {
-  row.names(datExpr)[i] = strsplit(row.names(datExpr)[i], "\\.")[[1]][1]
+CoreSize <- function (BranchSize, minClusterSize) 
+{
+  BaseCoreSize = minClusterSize/2 + 1
+  if (BaseCoreSize < BranchSize) {
+    CoreSize = as.integer(BaseCoreSize + sqrt(BranchSize - 
+                                                BaseCoreSize))
+  }
+  else CoreSize = BranchSize
+  CoreSize
 }
-datExpr = as.data.frame(t(datExpr))
 
-collectGarbage();
+.chunkSize = 100
 
-save(datExpr, file = "../data/data_input.RData")
+minClusterSize = 50
+dendro = geneTree
+distM = dissTOM
+deepSplit = 2
+pamRespectsDend = FALSE
 
-###---------------------- 
-## Modules construction
-print("WGCNA")
+cutHeight = NULL
+method = "hybrid"
+maxCoreScatter = NULL
+minGap = NULL
+maxAbsCoreScatter = NULL
+minAbsGap = NULL
+minSplitHeight = NULL
+minAbsSplitHeight = NULL
+externalBranchSplitFnc = NULL
+minExternalSplit = NULL
+externalSplitOptions = list()
+externalSplitFncNeedsDistance = NULL
+assumeSimpleExternalSpecification = TRUE
+pamStage = TRUE
+pamRespectsDendro = TRUE
+useMedoids = FALSE
+maxDistToLabel = NULL
+maxPamDist = cutHeight
+respectSmallClusters = TRUE
+verbose = 2
+indent = 0
 
-# Choose a set of soft-thresholding powers
-powers = c(c(1:10), seq(from = 12, to=20, by=2))
-# Call the network topology analysis function
-sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5, networkType = "signed")
-# Plot the results:
-pdf(file = "../summarypower.pdf", width = 10, height = 5);
-par(mfrow = c(1,2));
-cex1 = 0.9;
-# Scale-free topology fit index as a function of the soft-thresholding power
-plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
-     xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",type="n",
-     main = paste("Scale independence"));
-text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
-     labels=powers,cex=cex1,col="red");
-# this line corresponds to using an R^2 cut-off of h
-abline(h=0.9,col="red")
-# Mean connectivity as a function of the soft-thresholding power
-plot(sft$fitIndices[,1], sft$fitIndices[,5],
-     xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",
-     main = paste("Mean connectivity"))
-text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
-dev.off();
-
-## Set Power
-softPower = 13;
-adjacency = adjacency(datExpr, power = softPower, type = "signed");
-
-# Turn adjacency into topological overlap
-TOM = TOMsimilarity(adjacency, TOMType = "signed");
-dissTOM = 1-TOM
-save(TOM, file = "../result_power5_signed/data/TOM.RData")
-
-# Call the hierarchical clustering function
-geneTree = hclust(as.dist(dissTOM), method = "average");
-# Plot the resulting clustering tree (dendrogram)
-pdf(file = "../dendrogram.pdf", width = 18, height = 6);
-plot(geneTree, xlab="", sub="", main = "Gene clustering on TOM-based dissimilarity",
-     labels = FALSE, hang = 0.04);
-dev.off();
-
+dendro = dendro
+distM = distM
+cutHeight = cutHeight
+minClusterSize = minClusterSize
+deepSplit = deepSplit
+maxCoreScatter = maxCoreScatter
+minGap = minGap
+maxAbsCoreScatter = maxAbsCoreScatter
+minAbsGap = minAbsGap
+minSplitHeight = minSplitHeight
+minAbsSplitHeight = minAbsSplitHeight
+externalBranchSplitFnc = externalBranchSplitFnc
+minExternalSplit = minExternalSplit
+externalSplitOptions = externalSplitOptions
+externalSplitFncNeedsDistance = externalSplitFncNeedsDistance
+assumeSimpleExternalSpecification = assumeSimpleExternalSpecification
+pamStage = pamStage
+amRespectsDendro = pamRespectsDendro
+useMedoids = useMedoids
+maxPamDist = maxPamDist
+respectSmallClusters = respectSmallClusters
+verbose = verbose
+indent = indent
 
 # We like large modules, so we set the minimum module size relatively high:
 minModuleSize = 50;
@@ -134,6 +107,7 @@ dev.off();
 # Calculate eigengenes
 MEList = moduleEigengenes(datExpr, colors = dynamicColors)
 MEs = MEList$eigengenes
+MEs$MEgrey = NULL
 # Calculate dissimilarity of module eigengenes
 MEDiss = 1-cor(MEs);
 # Cluster module eigengenes
@@ -166,9 +140,8 @@ colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
 MEs = mergedMEs;
 # Save module colors and labels for use in subsequent parts
-save(MEs, moduleLabels, moduleColors, geneTree, dynamicColors, file = "../result_power5_signed/data/Data-networkConstruction.RData")
+save(MEs, moduleLabels, moduleColors, geneTree, dynamicColors, file = "../data/Data-networkConstruction.RData")
 
-rm(list = ls())
 
 ###---------------------- 
 ## ANALYSING
@@ -501,3 +474,342 @@ plot_grid(plot, legend, nrow = 1, rel_widths = c(10, 1))
 dev.off()
 
 
+##-----------
+.chunkSize = 100
+
+minClusterSize = 50
+dendro = geneTree
+distM = dissTOM
+deepSplit = 2
+pamRespectsDend = FALSE
+
+cutHeight = NULL
+method = "hybrid"
+maxCoreScatter = NULL
+minGap = NULL
+maxAbsCoreScatter = NULL
+minAbsGap = NULL
+minSplitHeight = NULL
+minAbsSplitHeight = NULL
+externalBranchSplitFnc = NULL
+minExternalSplit = NULL
+externalSplitOptions = list()
+externalSplitFncNeedsDistance = NULL
+assumeSimpleExternalSpecification = TRUE
+pamStage = TRUE
+pamRespectsDendro = TRUE
+useMedoids = FALSE
+maxDistToLabel = NULL
+maxPamDist = cutHeight
+respectSmallClusters = TRUE
+verbose = 2
+indent = 0
+
+dendro = dendro
+distM = distM
+cutHeight = cutHeight
+minClusterSize = minClusterSize
+deepSplit = deepSplit
+maxCoreScatter = maxCoreScatter
+minGap = minGap
+maxAbsCoreScatter = maxAbsCoreScatter
+minAbsGap = minAbsGap
+minSplitHeight = minSplitHeight
+minAbsSplitHeight = minAbsSplitHeight
+externalBranchSplitFnc = externalBranchSplitFnc
+minExternalSplit = minExternalSplit
+externalSplitOptions = externalSplitOptions
+externalSplitFncNeedsDistance = externalSplitFncNeedsDistance
+assumeSimpleExternalSpecification = assumeSimpleExternalSpecification
+pamStage = pamStage
+amRespectsDendro = pamRespectsDendro
+useMedoids = useMedoids
+maxPamDist = maxPamDist
+respectSmallClusters = respectSmallClusters
+verbose = verbose
+indent = indent
+
+# We like large modules, so we set the minimum module size relatively high:
+minModuleSize = 50;
+
+for (merge in 1:16) if (dendro$height[merge] <= cutHeight) {
+  print(merge)
+  if (dendro$merge[merge, 1] < 0 & dendro$merge[merge, 
+                                                2] < 0) {
+    print("A")
+    nBranches = nBranches + 1
+    branch.isBasic[nBranches] = TRUE
+    branch.isTopBasic[nBranches] = TRUE
+    branch.singletons[[nBranches]] = c(-dendro$merge[merge, 
+    ], extender)
+    branch.basicClusters[[nBranches]] = extender
+    branch.mergingHeights[[nBranches]] = c(rep(dendro$height[merge], 
+                                               2), extender)
+    branch.singletonHeights[[nBranches]] = c(rep(dendro$height[merge], 
+                                                 2), extender)
+    IndMergeToBranch[merge] = nBranches
+    RootBranch = nBranches
+
+  }
+  else if (sign(dendro$merge[merge, 1]) * sign(dendro$merge[merge, 
+                                                            2]) < 0) {
+    print("C")
+    clust = IndMergeToBranch[max(dendro$merge[merge, 
+    ])]
+    if (clust == 0) 
+      stop("Internal error: a previous merge has no associated cluster. Sorry!")
+    gene = -min(dendro$merge[merge, ])
+    ns = branch.nSingletons[clust] + 1
+    nm = branch.nMerge[clust] + 1
+    if (branch.isBasic[clust]) {
+      if (ns > length(branch.singletons[[clust]])) {
+        branch.singletons[[clust]] = c(branch.singletons[[clust]], 
+                                       extender)
+        branch.singletonHeights[[clust]] = c(branch.singletonHeights[[clust]], 
+                                             extender)
+      }
+      branch.singletons[[clust]][ns] = gene
+      branch.singletonHeights[[clust]][ns] = dendro$height[merge]
+    }
+    else {
+      onBranch[gene] = clust
+    }
+    if (nm >= length(branch.mergingHeights[[clust]])) 
+      branch.mergingHeights[[clust]] = c(branch.mergingHeights[[clust]], 
+                                         extender)
+    branch.mergingHeights[[clust]][nm] = dendro$height[merge]
+    branch.size[clust] = branch.size[clust] + 1
+    branch.nMerge[clust] = nm
+    branch.nSingletons[clust] = ns
+    IndMergeToBranch[merge] = clust
+    RootBranch = clust
+  }
+  else {
+    print("B")
+    clusts = IndMergeToBranch[dendro$merge[merge, ]]
+    sizes = branch.size[clusts]
+    rnk = rank(sizes, ties.method = "first")
+    small = clusts[rnk[1]]
+    large = clusts[rnk[2]]
+    sizes = sizes[rnk]
+    branch1 = branch.singletons[[large]][1:sizes[2]]
+    branch2 = branch.singletons[[small]][1:sizes[1]]
+    spyMatch = FALSE
+    if (!is.null(spyIndex)) {
+      n1 = length(intersect(branch1, spyIndex))
+      if ((n1/length(branch1) > 0.99 && n1/length(spyIndex) > 
+           0.99)) {
+        printFlush(paste("Found spy match for branch 1 on merge", 
+                         merge))
+        spyMatch = TRUE
+      }
+      n2 = length(intersect(branch2, spyIndex))
+      if ((n2/length(branch1) > 0.99 && n2/length(spyIndex) > 
+           0.99)) {
+        printFlush(paste("Found spy match for branch 2 on merge", 
+                         merge))
+        spyMatch = TRUE
+      }
+    }
+    if (branch.isBasic[small]) {
+      coresize = CoreSize(branch.nSingletons[small], 
+                           minClusterSize)
+      Core = branch.singletons[[small]][c(1:coresize)]
+      SmAveDist = mean(colSums(distM[Core, Core, drop = FALSE])/(coresize - 
+                                                                   1))
+    }
+    else {
+      SmAveDist = 0
+    }
+    if (branch.isBasic[large]) {
+      coresize = CoreSize(branch.nSingletons[large], 
+                           minClusterSize)
+      Core = branch.singletons[[large]][c(1:coresize)]
+      LgAveDist = mean(colSums(distM[Core, Core])/(coresize - 
+                                                     1))
+    }
+    else {
+      LgAveDist = 0
+    }
+    mergeDiagnostics[merge, ] = c(small, branch.size[small], 
+                                  SmAveDist, dendro$height[merge] - SmAveDist, 
+                                  large, branch.size[large], LgAveDist, dendro$height[merge] - 
+                                    LgAveDist, NA)
+    SmallerScores = c(branch.isBasic[small], branch.size[small] < 
+                        minClusterSize, SmAveDist > maxAbsCoreScatter, 
+                      dendro$height[merge] - SmAveDist < minAbsGap, 
+                      dendro$height[merge] < minAbsSplitHeight)
+    if (SmallerScores[1] * sum(SmallerScores[-1]) > 
+        0) {
+      DoMerge = TRUE
+      SmallerFailSize = !(SmallerScores[3] | SmallerScores[4])
+    }
+    else {
+      LargerScores = c(branch.isBasic[large], branch.size[large] < 
+                         minClusterSize, LgAveDist > maxAbsCoreScatter, 
+                       dendro$height[merge] - LgAveDist < minAbsGap, 
+                       dendro$height[merge] < minAbsSplitHeight)
+      if (LargerScores[1] * sum(LargerScores[-1]) > 
+          0) {
+        DoMerge = TRUE
+        SmallerFailSize = !(LargerScores[3] | LargerScores[4])
+        x = small
+        small = large
+        large = x
+        sizes = rev(sizes)
+      }
+      else {
+        DoMerge = FALSE
+      }
+    }
+    if (DoMerge) {
+      mergeDiagnostics$merged[merge] = 1
+    }
+    if (!DoMerge && (nExternalSplits > 0) && branch.isBasic[small] && 
+        branch.isBasic[large]) {
+      if (verbose > 4) 
+        printFlush(paste0("Entering external split code on merge ", 
+                          merge))
+      branch1 = branch.singletons[[large]][1:sizes[2]]
+      branch2 = branch.singletons[[small]][1:sizes[1]]
+      if (verbose > 4 | spyMatch) 
+        printFlush(paste0("  ..branch lengths: ", 
+                          sizes[1], ", ", sizes[2]))
+      es = 0
+      while (es < nExternalSplits && !DoMerge) {
+        es = es + 1
+        args = externalSplitOptions[[es]]
+        args = c(args, list(branch1 = branch1, branch2 = branch2))
+        extSplit = do.call(externalBranchSplitFnc[[es]], 
+                           args)
+        if (spyMatch) 
+          printFlush(" .. external criterion ", es, 
+                     ": ", extSplit)
+        DoMerge = extSplit < minExternalSplit[es]
+        externalMergeDiags[merge, es] = extSplit
+        mergeDiagnostics$merged[merge] = if (DoMerge) 
+          2
+        else 0
+      }
+    }
+    if (DoMerge) {
+      print("HHHHH")
+      branch.failSize[[small]] = SmallerFailSize
+      branch.mergedInto[small] = large
+      branch.attachHeight[small] = dendro$height[merge]
+      branch.isTopBasic[small] = FALSE
+      nss = branch.nSingletons[small]
+      nsl = branch.nSingletons[large]
+      ns = nss + nsl
+      if (branch.isBasic[large]) {
+        nExt = ceiling((ns - length(branch.singletons[[large]]))/.chunkSize)
+        if (nExt > 0) {
+          if (verbose > 5) 
+            printFlush(paste("Extending singletons for branch", 
+                             large, "by", nExt, " extenders."))
+          branch.singletons[[large]] = c(branch.singletons[[large]], 
+                                         rep(extender, nExt))
+          branch.singletonHeights[[large]] = c(branch.singletonHeights[[large]], 
+                                               rep(extender, nExt))
+        }
+        branch.singletons[[large]][(nsl + 1):ns] = branch.singletons[[small]][1:nss]
+        branch.singletonHeights[[large]][(nsl + 1):ns] = branch.singletonHeights[[small]][1:nss]
+        branch.nSingletons[large] = ns
+      }
+      else {
+        if (!branch.isBasic[small]) 
+          stop("Internal error: merging two composite clusters. Sorry!")
+        onBranch[branch.singletons[[small]]] = large
+      }
+      nm = branch.nMerge[large] + 1
+      if (nm > length(branch.mergingHeights[[large]])) 
+        branch.mergingHeights[[large]] = c(branch.mergingHeights[[large]], 
+                                           extender)
+      branch.mergingHeights[[large]][nm] = dendro$height[merge]
+      branch.nMerge[large] = nm
+      branch.size[large] = branch.size[small] + branch.size[large]
+      IndMergeToBranch[merge] = large
+      RootBranch = large
+    }
+    else {
+      if (branch.isBasic[large] & !branch.isBasic[small]) {
+        x = large
+        large = small
+        small = x
+        sizes = rev(sizes)
+      }
+      if (branch.isBasic[large] | (pamStage & pamRespectsDendro)) {
+        nBranches = nBranches + 1
+        branch.attachHeight[c(large, small)] = dendro$height[merge]
+        branch.mergedInto[c(large, small)] = nBranches
+        if (branch.isBasic[small]) {
+          addBasicClusters = small
+        }
+        else addBasicClusters = branch.basicClusters[[small]]
+        if (branch.isBasic[large]) {
+          addBasicClusters = c(addBasicClusters, large)
+        }
+        else addBasicClusters = c(addBasicClusters, 
+                                  branch.basicClusters[[large]])
+        branch.isBasic[nBranches] = FALSE
+        branch.isTopBasic[nBranches] = FALSE
+        branch.basicClusters[[nBranches]] = addBasicClusters
+        branch.mergingHeights[[nBranches]] = c(rep(dendro$height[merge], 
+                                                   2), extender)
+        branch.nMerge[nBranches] = 2
+        branch.size[nBranches] = sum(sizes)
+        branch.nBasicClusters[nBranches] = length(addBasicClusters)
+        IndMergeToBranch[merge] = nBranches
+        RootBranch = nBranches
+      }
+      else {
+        addBasicClusters = if (branch.isBasic[small]) 
+          small
+        else branch.basicClusters[[small]]
+        nbl = branch.nBasicClusters[large]
+        nb = branch.nBasicClusters[large] + length(addBasicClusters)
+        if (nb > length(branch.basicClusters[[large]])) {
+          nExt = ceiling((nb - length(branch.basicClusters[[large]]))/.chunkSize)
+          branch.basicClusters[[large]] = c(branch.basicClusters[[large]], 
+                                            rep(extender, nExt))
+        }
+        branch.basicClusters[[large]][(nbl + 1):nb] = addBasicClusters
+        branch.nBasicClusters[large] = nb
+        branch.size[large] = branch.size[large] + 
+          branch.size[small]
+        nm = branch.nMerge[large] + 1
+        if (nm > length(branch.mergingHeights[[large]])) 
+          branch.mergingHeights[[large]] = c(branch.mergingHeights[[large]], 
+                                             extender)
+        branch.mergingHeights[[large]][nm] = dendro$height[merge]
+        branch.nMerge[large] = nm
+        branch.attachHeight[small] = dendro$height[merge]
+        branch.mergedInto[small] = large
+        IndMergeToBranch[merge] = large
+        RootBranch = large
+      }
+    }
+  }
+  if (verbose > 2) 
+    pind = .updateProgInd(merge/nMerge, pind)
+}
+
+
+
+print(clust)
+#print(nBranches)
+print(MxBranches)
+print(branch.isBasic[clusts])
+print(branch.isTopBasic[nBranches])
+print(branch.failSize)
+print(branch.rootHeight)
+print(branch.size[clusts])
+print(branch.nMerge[clusts])
+print(branch.nSingletons[clusts])
+print(branch.nBasicClusters)
+print(branch.mergedInto)
+print(branch.attachHeight)
+print(branch.singletons[[2]])
+#print(branch.basicClusters[[merge]])
+print(branch.mergingHeights[[clust]])
+print(branch.singletonHeights[[clust]])
