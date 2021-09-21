@@ -926,170 +926,175 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
 
     Colors = np.repeat(0, nPoints)
     coreLabels = np.repeat(0, nPoints)
-    tmp = list(compress(range(len(isCluster)), isCluster))
-    print(int(tmp))
-    clusterBranches = list(range(nBranches))[int(tmp)]
+    clusterBranches = (np.where(isCluster)[0] + 1).tolist()
     branchLabels = np.repeat(0, nBranches)
     color = 0
     for clust in clusterBranches:
         color = color + 1
-        Colors[branch_singletons[[clust]]] = color
-        SmallLabels[branch_singletons[[clust]]] = 0
+        Colors[branch_singletons[[clust]].astype(int).values] = color
+        SmallLabels[branch_singletons[[clust]].astype(int).values] = 0
         coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-        Core = branch_singletons.loc[0:coresize, clust]
+        Core = branch_singletons.loc[0:coresize, clust].astype(int).tolist()
         coreLabels[Core] = color
         branchLabels[clust] = color
-    #
-    # Labeled = list(range(nPoints))[Colors != 0]
-    # Unlabeled = list(range(nPoints))[Colors == 0]
-    # nUnlabeled = len(Unlabeled)
-    # UnlabeledExist = nUnlabeled > 0
-    #
-    # if len(Labeled) > 0:
-    #     LabelFac = factor(Colors[Labeled])
-    #     nProperLabels = nlevels(LabelFac)
-    #
-    # else:
-    #     nProperLabels = 0
-    #
-    # if pamStage and UnlabeledExist and nProperLabels > 0:
-    #     if verbose > 2:
-    #         print("..Assigning PAM stage labels..", flush=True)
-    #     nPAMed = 0
-    #     if useMedoids:
-    #         Medoids = np.repeat(0, nProperLabels)
-    #         ClusterRadii = np.repeat(0, nProperLabels)
-    #         for cluster in range(nProperLabels):
-    #             InCluster = list(range(nPoints))[Colors == cluster]
-    #             DistInCluster = distM[InCluster, InCluster]
-    #             DistSums = DistInCluster.sum(axis=0)
-    #             Medoids[cluster] = InCluster[DistSums.idxmin()]
-    #             ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
-    #
-    #         if respectSmallClusters:
-    #             FSmallLabels = factor(SmallLabels)
-    #             SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
-    #             nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
-    #
-    #             if nSmallClusters > 0:
-    #                 for sclust in SmallLabLevs[SmallLabLevs != 0]:
-    #                     InCluster = list(range(nPoints))[SmallLabels == sclust]
-    #                     if pamRespectsDendro:
-    #                         onBr = np.unique(onBranch[InCluster])
-    #                         if len(onBr) > 1:
-    #                             msg = "Internal error: objects in a small cluster are marked to belong\n " \
-    #                                   "to several large branches:" + str(onBr)
-    #                             sys.exit(msg)
-    #
-    #                         if onBr > 0:
-    #                             basicOnBranch = branch_basicClusters[[onBr]]
-    #                             labelsOnBranch = branchLabels[basicOnBranch]
-    #                         else:
-    #                             labelsOnBranch = None
-    #                     else:
-    #                         labelsOnBranch = list(range(nProperLabels))
-    #
-    #                     DistInCluster = distM[InCluster, InCluster]
-    #
-    #                     if len(labelsOnBranch) > 0:
-    #                         if len(InCluster) > 1:
-    #                             DistSums = apply(DistInCluster, 2, sum)
-    #                             smed = InCluster[DistSums.idxmin()]
-    #                             DistToMeds = distM[Medoids[labelsOnBranch], smed]
-    #                             closest = DistToMeds.idxmin()
-    #                             DistToClosest = DistToMeds[closest]
-    #                             closestLabel = labelsOnBranch[closest]
-    #                             if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
-    #                                 Colors[InCluster] = closestLabel
-    #                                 nPAMed = nPAMed + len(InCluster)
-    #                         else:
-    #                             Colors[InCluster] = -1
-    #                     else:
-    #                         Colors[InCluster] = -1
-    #
-    #             Unlabeled = list(range(nPoints))[Colors == 0]
-    #             if len(Unlabeled > 0):
-    #                 for obj in Unlabeled:
-    #                     if pamRespectsDendro:
-    #                         onBr = onBranch[obj]
-    #                         if onBr > 0:
-    #                             basicOnBranch = branch_basicClusters[[onBr]]
-    #                             labelsOnBranch = branchLabels[basicOnBranch]
-    #                         else:
-    #                             labelsOnBranch = None
-    #                     else:
-    #                         labelsOnBranch = list(range(nProperLabels))
-    #
-    #                     if labelsOnBranch is not None:
-    #                         UnassdToMedoidDist = distM[Medoids[labelsOnBranch], obj]
-    #                         nearest = UnassdToMedoidDist.idxmin()
-    #                         NearestCenterDist = UnassdToMedoidDist[nearest]
-    #                         nearestMed = labelsOnBranch[nearest]
-    #                         if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
-    #                             Colors[obj] = nearestMed
-    #                             nPAMed = nPAMed + 1
-    #                 UnlabeledExist = (sum(Colors == 0) > 0)
-    #     else:
-    #         ClusterDiam = np.repeat(0, nProperLabels)
-    #         for cluster in range(nProperLabels):
-    #             InCluster = list(range(nPoints))[Colors == cluster]
-    #             nInCluster = len(InCluster)
-    #             DistInCluster = distM[InCluster, InCluster]
-    #             if nInCluster > 1:
-    #                 AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
-    #                 ClusterDiam[cluster] = max(AveDistInClust)
-    #
-    #             else:
-    #                 ClusterDiam[cluster] = 0
-    #
-    #         ColorsX = Colors
-    #         if respectSmallClusters:
-    #             FSmallLabels = factor(SmallLabels)
-    #             SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
-    #             nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
-    #             if nSmallClusters > 0:
-    #                 if pamRespectsDendro:
-    #                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
-    #                         InCluster = list(range(nPoints))[SmallLabels == sclust]
-    #                         onBr = unique(onBranch[InCluster])
-    #                         if len(onBr) > 1:
-    #                             msg = "Internal error: objects in a small cluster are marked to belong\n" \
-    #                                   "to several large branches:" + str(onBr)
-    #                             sys.exit(msg)
-    #                         if onBr > 0:
-    #                             basicOnBranch = branch_basicClusters[[onBr]]
-    #                             labelsOnBranch = branchLabels[basicOnBranch]
-    #                             useObjects = ColorsX in np.unique(labelsOnBranch)
-    #                             DistSClustClust = distM[InCluster, useObjects]
-    #                             MeanDist = DistSClustClust.mean(axis=0)
-    #                             useColorsFac = factor(ColorsX[useObjects])
-    #                             MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
-    #                             nearest = MeanMeanDist.idxmin()
-    #                             NearestDist = MeanMeanDist[nearest]
-    #                             nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-    #                             if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-    #                                 Colors[InCluster] = nearestLabel
-    #                                 nPAMed = nPAMed + len(InCluster)
-    #                             else:
-    #                                 Colors[InCluster] = -1
-    #                 else:
-    #                     labelsOnBranch = list(range(nProperLabels))
-    #                     useObjects = list(range(nPoints))[ColorsX != 0]
-    #                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
-    #                         InCluster = list(range(nPoints))[SmallLabels == sclust]
-    #                         DistSClustClust = distM[InCluster, useObjects]
-    #                         MeanDist = DistSClustClust.mean(axis=0)
-    #                         useColorsFac = factor(ColorsX[useObjects])
-    #                         MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
-    #                         nearest = MeanMeanDist.idxmin()
-    #                         NearestDist = MeanMeanDist[nearest]
-    #                         nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-    #                         if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-    #                             Colors[InCluster] = nearestLabel
-    #                             nPAMed = nPAMed + len(InCluster)
-    #                         else:
-    #                             Colors[InCluster] = -1
-    #
+
+    print("AAAAAA", pd.Categorical(SmallLabels).categories)
+
+    Labeled = np.where(Colors != 0)[0].tolist()
+    Unlabeled = np.where(Colors == 0)[0].tolist()
+    nUnlabeled = len(Unlabeled)
+    UnlabeledExist = nUnlabeled > 0
+
+    if len(Labeled) > 0:
+        LabelFac = pd.Categorical(Colors[Labeled])
+        nProperLabels = len(LabelFac.categories)
+
+    else:
+        nProperLabels = 0
+
+    if pamStage and UnlabeledExist and nProperLabels > 0:
+        if verbose > 2:
+            print("..Assigning PAM stage labels..", flush=True)
+        nPAMed = 0
+        if useMedoids:
+            Medoids = np.repeat(0, nProperLabels)
+            ClusterRadii = np.repeat(0, nProperLabels)
+            for cluster in range(nProperLabels):
+                InCluster = np.where(Colors == cluster)[0].tolist()
+                DistInCluster = distM.iloc[InCluster, InCluster]
+                DistSums = DistInCluster.sum(axis=0)
+                Medoids[cluster] = InCluster[DistSums.idxmin()]
+                ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
+
+            if respectSmallClusters:
+                FSmallLabels = pd.Categorical(SmallLabels)
+                SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
+                nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
+
+                if nSmallClusters > 0:
+                    for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                        InCluster = np.where(SmallLabels == sclust)[0].tolist()
+                        if pamRespectsDendro:
+                            onBr = np.unique(onBranch[InCluster])
+                            if len(onBr) > 1:
+                                msg = "Internal error: objects in a small cluster are marked to belong\n " \
+                                      "to several large branches:" + str(onBr)
+                                sys.exit(msg)
+
+                            if onBr > 0:
+                                basicOnBranch = branch_basicClusters[[onBr]]
+                                labelsOnBranch = branchLabels[basicOnBranch]
+                            else:
+                                labelsOnBranch = None
+                        else:
+                            labelsOnBranch = list(range(nProperLabels))
+
+                        DistInCluster = distM.iloc[InCluster, InCluster]
+
+                        if len(labelsOnBranch) > 0:
+                            if len(InCluster) > 1:
+                                DistSums = DistInCluster.sum(axis=1)
+                                smed = InCluster[DistSums.idxmin()]
+                                DistToMeds = distM.iloc[Medoids[labelsOnBranch], smed]
+                                closest = DistToMeds.idxmin()
+                                DistToClosest = DistToMeds[closest]
+                                closestLabel = labelsOnBranch[closest]
+                                if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
+                                    Colors[InCluster] = closestLabel
+                                    nPAMed = nPAMed + len(InCluster)
+                            else:
+                                Colors[InCluster] = -1
+                        else:
+                            Colors[InCluster] = -1
+
+            Unlabeled = np.where(Colors == 0)[0].tolist()
+            if len(Unlabeled > 0):
+                for obj in Unlabeled:
+                    if pamRespectsDendro:
+                        onBr = onBranch[obj]
+                        if onBr > 0:
+                            basicOnBranch = branch_basicClusters[[onBr]]
+                            labelsOnBranch = branchLabels[basicOnBranch]
+                        else:
+                            labelsOnBranch = None
+                    else:
+                        labelsOnBranch = list(range(nProperLabels))
+
+                    if labelsOnBranch is not None:
+                        UnassdToMedoidDist = distM.iloc[Medoids[labelsOnBranch], obj]
+                        nearest = UnassdToMedoidDist.idxmin()
+                        NearestCenterDist = UnassdToMedoidDist[nearest]
+                        nearestMed = labelsOnBranch[nearest]
+                        if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
+                            Colors[obj] = nearestMed
+                            nPAMed = nPAMed + 1
+                UnlabeledExist = (sum(Colors == 0) > 0)
+        else:
+            ClusterDiam = np.repeat(0, nProperLabels)
+            for cluster in range(nProperLabels):
+                InCluster = np.where(Colors == cluster)[0].tolist()
+                nInCluster = len(InCluster)
+                DistInCluster = distM.iloc[InCluster, InCluster]
+                if nInCluster > 1:
+                    AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
+                    ClusterDiam[cluster] = max(AveDistInClust)
+
+                else:
+                    ClusterDiam[cluster] = 0
+
+            ColorsX = Colors
+            if respectSmallClusters:
+                FSmallLabels = pd.Categorical(SmallLabels)
+                SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
+                nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
+                print(FSmallLabels.categories)
+                print(len(FSmallLabels.categories), SmallLabLevs[1] == 0, nSmallClusters)
+                if nSmallClusters > 0:
+                    if pamRespectsDendro:
+                        for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                            InCluster = list(range(nPoints))[SmallLabels == sclust]
+                            onBr = pd.unique(onBranch[InCluster])
+                            if len(onBr) > 1:
+                                msg = "Internal error: objects in a small cluster are marked to belong\n" \
+                                      "to several large branches:" + str(onBr)
+                                sys.exit(msg)
+                            if onBr > 0:
+                                basicOnBranch = branch_basicClusters[[onBr]]
+                                labelsOnBranch = branchLabels[basicOnBranch]
+                                useObjects = ColorsX in np.unique(labelsOnBranch)
+                                DistSClustClust = distM[InCluster, useObjects]
+                                MeanDist = DistSClustClust.mean(axis=0)
+                                useColorsFac = pd.Categorical(ColorsX[useObjects])
+                                # TODO
+                                MeanMeanDist = MeanDist.groupby('useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
+                                nearest = MeanMeanDist.idxmin()
+                                NearestDist = MeanMeanDist[nearest]
+                                nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                                if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+                                    Colors[InCluster] = nearestLabel
+                                    nPAMed = nPAMed + len(InCluster)
+                                else:
+                                    Colors[InCluster] = -1
+                    else:
+                        labelsOnBranch = list(range(nProperLabels))
+                        useObjects = np.where(ColorsX != 0)[0].tolist()
+                        for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                            InCluster = np.where(SmallLabels == sclust)[0].tolist()
+                            DistSClustClust = distM.iloc[InCluster, useObjects]
+                            MeanDist = DistSClustClust.mean(axis=0)
+                            useColorsFac = pd.Categorical(ColorsX[useObjects])
+                            print(MeanDist)
+                            print(useColorsFac)
+                            MeanMeanDist = MeanDist.groupby('useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
+                            nearest = MeanMeanDist.idxmin()
+                            NearestDist = MeanMeanDist[nearest]
+                            nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                            if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+                                Colors[InCluster] = nearestLabel
+                                nPAMed = nPAMed + len(InCluster)
+                            else:
+                                Colors[InCluster] = -1
+
     #         Unlabeled = list(range(nPoints))[Colors == 0]
     #         if len(Unlabeled) > 0:
     #             if pamRespectsDendro:
