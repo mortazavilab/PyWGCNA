@@ -118,16 +118,6 @@ def run_WGCNA1():
 
     # Call the hierarchical clustering function
     geneTree = WGCNA.hclust(squareform(dissTOM.values), method="average")
-    # Plot the resulting clustering tree (dendrogram)
-    plt.figure(figsize=(18, 5))
-    dendrogram(geneTree, color_threshold=0, no_labels=True, leaf_rotation=90, above_threshold_color='black')
-    plt.title('Gene clustering on TOM-based dissimilarity')
-    plt.xlabel('')
-    plt.ylabel('')
-    plt.tight_layout()
-    plt.savefig('test/output/plots/dendrogram.png')
-    
-    pd.DataFrame(geneTree).to_csv('test/output/data/geneTree.csv')
 
     # We like large modules, so we set the minimum module size relatively high:
     minModuleSize = 50
