@@ -10,14 +10,14 @@ import networkx as nx
 from statsmodels.formula.api import ols
 import resource
 
-# public values
-networkTypes = ["unsigned", "signed"]
-adjacencyTypes = ["unsigned", "signed"]
-TOMTypes = ["NA", "unsigned", "signed"]
-TOMDenoms = ["min", "mean"]
-
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
+
+# public values
+networkTypes = ["unsigned", "signed", "signed hybrid"]
+adjacencyTypes = ["unsigned", "signed", "signed hybrid"]
+TOMTypes = ["NA", "unsigned", "signed"]
+TOMDenoms = ["min", "mean"]
 
 
 def replaceMissing(x, replaceWith):
@@ -268,16 +268,16 @@ def scaleFreeFitIndex(k, nBreaks=10):
 
 
 # Call the network topology analysis function
-def pickSoftThreshold(data, dataIsExpr=True, weights=None,
+def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
                       powerVector=np.concatenate((np.arange(1, 10, 1), np.arange(12, 20, 2))),
                       nBreaks=10, blockSize=None, corOptions=None, networkType="unsigned",
-                      moreNetworkConcepts=False, gcInterval=None, verbose=0):
+                      moreNetworkConcepts=False, gcInterval=None):
     powerVector = np.sort(powerVector)
     intType = networkTypes.index(networkType)
     if intType is None:
         sys.exit(("Unrecognized 'networkType'. Recognized values are", str(networkTypes)))
 
-    nGenes = data.shape[1]  # col
+    nGenes = data.shape[1]
     if nGenes < 3:
         sys.exit("The input data data contain fewer than 3 rows (nodes).\n"
                  "This would result in a trivial correlation network.")
@@ -289,8 +289,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None,
 
     if blockSize is None:
         blockSize = calBlockSize(nGenes, rectangularBlocks=True, maxMemoryAllocation=2 ** 30)
-        if verbose > 0:
-            print("pickSoftThreshold: will use block size ", blockSize, flush=True)
+        print("pickSoftThreshold: will use block size ", blockSize, flush=True)
 
     if gcInterval is None or len(gcInterval) == 0:
         gcInterval = 4 * blockSize
@@ -302,10 +301,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None,
 
     datout = pd.DataFrame(np.full((len(powerVector), len(colname1)), 666), columns=colname1, dtype=object)
     datout['Power'] = powerVector
-    if verbose > 0:
-        print("pickSoftThreshold: calculating connectivity for given powers...", flush=True)
-    else:
-        print("\n")
+    print("pickSoftThreshold: calculating connectivity for given powers...", flush=True)
 
     datk = np.zeros((nGenes, len(powerVector)))
     nPowers = len(powerVector)
@@ -326,8 +322,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None,
 
     while startG <= nGenes:
         endG = min(startG + blockSize, nGenes)
-        if verbose > 1:
-            print("\t..working on genes", startG, "through", endG, "of", nGenes, flush=True)
+        print("\t..working on genes", startG, "through", endG, "of", nGenes, flush=True)
 
         useGenes = list(range(startG, endG))
         nGenes1 = len(useGenes)
@@ -341,6 +336,8 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None,
                 corx = abs(corx)
             elif intType == 1:
                 corx = (1 + corx) / 2
+            elif intType == 2:
+                corx[corx < 0] = 0
 
             if np.count_nonzero(np.isnan(corx)) != 0:
                 msg = "Some correlations are NA in block " + str(startG) + ":" + str(endG) + "."
@@ -395,12 +392,25 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None,
 
     print(datout)
 
-    return datout
+    # detect threshold more than 0.9 by default
+    ind = datout['SFT.R.sq'] > RsquaredCut
+    if np.sum(ind) > 0:
+        powerEstimate = np.min(powerVector[ind])
+        print("Selected power to have scale free network is ", powerEstimate, "\n\n")
+    else:
+        ind = np.argsort(datout['SFT.R.sq']).tolist()
+        powerEstimate = powerVector[ind[-1]]
+        print("No power detected to have scale free network!\n",
+              "Found the best given power which is ", powerEstimate, "\n\n")
+
+    return powerEstimate, datout
 
 
-def adjacency(datExpr, selectCols=None, networkType="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
-              weightArgNames=["weights.x", "weights.y"]):
-    intType = networkTypes.index(networkType)
+def adjacency(datExpr, selectCols=None, adjacencyType="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
+              weightArgNames=None):
+    if weightArgNames is None:
+        weightArgNames = ["weights.x", "weights.y"]
+    intType = adjacencyTypes.index(adjacencyType)
     if intType is None:
         sys.exit(("Unrecognized 'type'. Recognized values are", str(adjacencyTypes)))
     weights = checkAndScaleWeights(weights, datExpr, scaleByMax=False)
@@ -432,6 +442,8 @@ def adjacency(datExpr, selectCols=None, networkType="unsigned", power=6, corOpti
         cor_mat = abs(cor_mat)
     elif intType == 1:
         cor_mat = (1 + cor_mat) / 2
+    elif intType == 2:
+        cor_mat[cor_mat < 0] = 0
 
     return cor_mat ** power
 
@@ -472,7 +484,7 @@ def TomSimilarityFromAdj(adjMat, TOMDenom, TOMType):
     return tom
 
 
-def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min", verbose=1):
+def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min"):
     TOMTypeC = TOMTypes.index(TOMType)
     if TOMTypeC is None:
         sys.exit(("Invalid 'TOMType'. Recognized values are", str(TOMTypes)))
@@ -488,13 +500,11 @@ def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min", verbose=1):
     checkAdjMat(adjMat, min=min, max=1)
     np.nan_to_num(adjMat, copy=False, nan=0)
 
-    if verbose > 0:
-        print("..connectivity..\n")
+    print("..connectivity..")
 
     tom = TomSimilarityFromAdj(adjMat, TOMDenomC, TOMTypeC)
 
-    if verbose > 0:
-        print("..done..\n")
+    print("..done..\n\n")
 
     return tom
 
@@ -839,10 +849,10 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         IndMergeToBranch[merge] = large
                         RootBranch = large
 
-    # print(MxBranches, "\n", branch_isBasic, "\n", branch_isTopBasic, "\n", branch_failSize, "\n", branch_rootHeight,
-    #       "\n", branch_size, "\n", branch_nMerge, "\n", branch_nSingletons, "\n", branch_nBasicClusters, "\n",
-    #       branch_mergedInto, "\n", branch_attachHeight, "\n", branch_singletons, "\n", branch_basicClusters, "\n",
-    #       branch_mergingHeights, "\n", branch_singletonHeights)
+    print(MxBranches, "\n", branch_isBasic, "\n", branch_isTopBasic, "\n", branch_failSize, "\n", branch_rootHeight,
+          "\n", branch_size, "\n", branch_nMerge, "\n", branch_nSingletons, "\n", branch_nBasicClusters, "\n",
+          branch_mergedInto, "\n", branch_attachHeight, "\n", branch_singletons, "\n", branch_basicClusters, "\n",
+          branch_mergingHeights, "\n", branch_singletonHeights)
 
     if verbose > 2:
         print("..Going through detected branches and marking clusters..", flush=True)

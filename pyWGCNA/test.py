@@ -33,7 +33,7 @@ def preprocess():
     # Clustering
     sampleTree = WGCNA.hclust(pdist(expressionList.T), method="average")
 
-    cut = 400000
+    cut = 15000
     dendrogram(sampleTree, color_threshold=cut, labels=expressionList.T.index, leaf_rotation=90, leaf_font_size=8)
     plt.axhline(y=cut, c='grey', lw=1, linestyle='dashed')
     plt.title('Sample clustering to detect outliers')
@@ -65,7 +65,7 @@ def run_WGCNA():
     powers = list(range(1, 11)) + list(range(11, 21, 2))
 
     # Call the network topology analysis function
-    sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, networkType="signed", verbose=5)
+    softPower, sft = WGCNA.pickSoftThreshold(datExpr, powerVector=powers, networkType="signed hybrid")
 
     fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
 
@@ -90,8 +90,7 @@ def run_WGCNA():
     fig.savefig('test/output/plots/summarypower.png')
 
     # Set Power
-    softPower = 11
-    adjacency = WGCNA.adjacency(datExpr, power=softPower, networkType="signed")
+    adjacency = WGCNA.adjacency(datExpr, power=softPower, adjacencyType="signed hybrid")
 
     # Turn adjacency into topological overlap
     TOM = WGCNA.TOMsimilarity(adjacency, TOMType="signed")
