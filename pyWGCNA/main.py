@@ -9,9 +9,27 @@ from scipy.cluster.hierarchy import linkage, cut_tree
 import networkx as nx
 from statsmodels.formula.api import ols
 import resource
+from matplotlib import colors as mcolors
+from sklearn.impute import KNNImputer
+from sklearn.preprocessing import scale
+import random
+random.seed(10)
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 # public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
@@ -46,7 +64,7 @@ def checkAndScaleWeights(weights, expr, scaleByMax=True, verbose=1):
     nf = np.isinf(weights)
     if any(nf):
         if verbose > 0:
-            warnings.WarningMessage("Found non-finite weights. The corresponding data points will be removed.")
+            print(f"{bcolors.WARNING}Found non-finite weights. The corresponding data points will be removed.{bcolors.ENDC}")
             weights[nf] = None
 
     if scaleByMax:
@@ -340,8 +358,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
                 corx[corx < 0] = 0
 
             if np.count_nonzero(np.isnan(corx)) != 0:
-                msg = "Some correlations are NA in block " + str(startG) + ":" + str(endG) + "."
-                warnings.warn(msg)
+                print(f"{bcolors.WARNING}Some correlations are NA in block {str(startG)} : {str(endG)}.{bcolors.ENDC}")
         else:
             corx = data[:, useGenes]
 
@@ -530,15 +547,14 @@ def coreSizeFunc(BranchSize, minClusterSize):
     return CoreSize - 1
 
 
-def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
-                  maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
-                  minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
-                  externalBranchSplitFnc=None, nExternalSplits=0, minExternalSplit=None,
-                  externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
-                  assumeSimpleExternalSpecification=True, pamStage=True,
-                  pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
-                  respectSmallClusters=True, verbose=2):
-
+def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
+                 maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
+                 minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
+                 externalBranchSplitFnc=None, nExternalSplits=0, minExternalSplit=None,
+                 externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
+                 assumeSimpleExternalSpecification=True, pamStage=True,
+                 pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
+                 respectSmallClusters=True, verbose=2):
     tmp = dendro[:, 0] > dendro.shape[0]
     dendro[tmp, 0] = dendro[tmp, 0] - dendro.shape[0]
     dendro[np.logical_not(tmp), 0] = -1 * (dendro[np.logical_not(tmp), 0] + 1)
@@ -806,13 +822,15 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         if branch_isBasic[small]:
                             addBasicClusters = [small + 1]
                         else:
-                            addBasicClusters = branch_basicClusters.loc[(branch_basicClusters[[small]] != 0).all(axis=1), small]
+                            addBasicClusters = branch_basicClusters.loc[
+                                (branch_basicClusters[[small]] != 0).all(axis=1), small]
                         if branch_isBasic[large]:
                             addBasicClusters = np.concatenate((addBasicClusters, [large + 1]), axis=0)
                         else:
                             addBasicClusters = np.concatenate((addBasicClusters,
                                                                branch_basicClusters.loc[(
-                                                                           branch_basicClusters[[large]] != 0).all(
+                                                                                                branch_basicClusters[
+                                                                                                    [large]] != 0).all(
                                                                    axis=1), large]),
                                                               axis=0)
                         branch_isBasic[nBranches] = False
@@ -834,7 +852,8 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         if branch_isBasic[small]:
                             addBasicClusters = [small + 1]
                         else:
-                            addBasicClusters = branch_basicClusters.loc[(branch_basicClusters[[small]] != 0).all(axis=1), small]
+                            addBasicClusters = branch_basicClusters.loc[
+                                (branch_basicClusters[[small]] != 0).all(axis=1), small]
 
                         nbl = branch_nBasicClusters[large]
                         nb = branch_nBasicClusters[large] + len(addBasicClusters)
@@ -848,11 +867,6 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         branch_mergedInto[small] = large + 1
                         IndMergeToBranch[merge] = large
                         RootBranch = large
-
-    print(MxBranches, "\n", branch_isBasic, "\n", branch_isTopBasic, "\n", branch_failSize, "\n", branch_rootHeight,
-          "\n", branch_size, "\n", branch_nMerge, "\n", branch_nSingletons, "\n", branch_nBasicClusters, "\n",
-          branch_mergedInto, "\n", branch_attachHeight, "\n", branch_singletons, "\n", branch_basicClusters, "\n",
-          branch_mergingHeights, "\n", branch_singletonHeights)
 
     if verbose > 2:
         print("..Going through detected branches and marking clusters..", flush=True)
@@ -875,7 +889,7 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
         else:
             CoreScatter = 0
         if branch_failSize[clust]:
-            SmallLabels[branch_singletons[[clust]].astype(int)] = clust
+            SmallLabels[branch_singletons[[clust]].astype(int) - 1] = clust + 1
 
     if not respectSmallClusters:
         SmallLabels = np.repeat(0, nPoints)
@@ -891,15 +905,13 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
 
     for clust in clusterBranches:
         color = color + 1
-        Colors[branch_singletons[[clust]].astype(int).values] = color
-        SmallLabels[branch_singletons[[clust]].astype(int).values] = 0
+        Colors[branch_singletons[[clust]].astype(int) - 1] = color
+        SmallLabels[branch_singletons[[clust]].astype(int) - 1] = 0
         coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
         Core = branch_singletons.loc[0:coresize, clust] - 1
         Core = Core.astype(int).tolist()
         coreLabels[Core] = color
         branchLabels[clust] = color
-
-    print("AAAAAA", pd.Categorical(SmallLabels).categories)
 
     Labeled = np.where(Colors != 0)[0].tolist()
     Unlabeled = np.where(Colors == 0)[0].tolist()
@@ -909,813 +921,439 @@ def cutreeHybrid1(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
     if len(Labeled) > 0:
         LabelFac = pd.Categorical(Colors[Labeled])
         nProperLabels = len(LabelFac.categories)
-
     else:
         nProperLabels = 0
-    #
-    # if pamStage and UnlabeledExist and nProperLabels > 0:
-    #     if verbose > 2:
-    #         print("..Assigning PAM stage labels..", flush=True)
-    #     nPAMed = 0
-    #     if useMedoids:
-    #         Medoids = np.repeat(0, nProperLabels)
-    #         ClusterRadii = np.repeat(0, nProperLabels)
-    #         for cluster in range(nProperLabels):
-    #             InCluster = np.where(Colors == cluster)[0].tolist()
-    #             DistInCluster = distM.iloc[InCluster, InCluster]
-    #             DistSums = DistInCluster.sum(axis=0)
-    #             Medoids[cluster] = InCluster[DistSums.idxmin()]
-    #             ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
-    #
-    #         if respectSmallClusters:
-    #             FSmallLabels = pd.Categorical(SmallLabels)
-    #             SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
-    #             nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
-    #
-    #             if nSmallClusters > 0:
-    #                 for sclust in SmallLabLevs[SmallLabLevs != 0]:
-    #                     InCluster = np.where(SmallLabels == sclust)[0].tolist()
-    #                     if pamRespectsDendro:
-    #                         onBr = np.unique(onBranch[InCluster])
-    #                         if len(onBr) > 1:
-    #                             msg = "Internal error: objects in a small cluster are marked to belong\n " \
-    #                                   "to several large branches:" + str(onBr)
-    #                             sys.exit(msg)
-    #
-    #                         if onBr > 0:
-    #                             basicOnBranch = branch_basicClusters[[onBr]]
-    #                             labelsOnBranch = branchLabels[basicOnBranch]
-    #                         else:
-    #                             labelsOnBranch = None
-    #                     else:
-    #                         labelsOnBranch = list(range(nProperLabels))
-    #
-    #                     DistInCluster = distM.iloc[InCluster, InCluster]
-    #
-    #                     if len(labelsOnBranch) > 0:
-    #                         if len(InCluster) > 1:
-    #                             DistSums = DistInCluster.sum(axis=1)
-    #                             smed = InCluster[DistSums.idxmin()]
-    #                             DistToMeds = distM.iloc[Medoids[labelsOnBranch], smed]
-    #                             closest = DistToMeds.idxmin()
-    #                             DistToClosest = DistToMeds[closest]
-    #                             closestLabel = labelsOnBranch[closest]
-    #                             if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
-    #                                 Colors[InCluster] = closestLabel
-    #                                 nPAMed = nPAMed + len(InCluster)
-    #                         else:
-    #                             Colors[InCluster] = -1
-    #                     else:
-    #                         Colors[InCluster] = -1
-    #
-    #         Unlabeled = np.where(Colors == 0)[0].tolist()
-    #         if len(Unlabeled > 0):
-    #             for obj in Unlabeled:
-    #                 if pamRespectsDendro:
-    #                     onBr = onBranch[obj]
-    #                     if onBr > 0:
-    #                         basicOnBranch = branch_basicClusters[[onBr]]
-    #                         labelsOnBranch = branchLabels[basicOnBranch]
-    #                     else:
-    #                         labelsOnBranch = None
-    #                 else:
-    #                     labelsOnBranch = list(range(nProperLabels))
-    #
-    #                 if labelsOnBranch is not None:
-    #                     UnassdToMedoidDist = distM.iloc[Medoids[labelsOnBranch], obj]
-    #                     nearest = UnassdToMedoidDist.idxmin()
-    #                     NearestCenterDist = UnassdToMedoidDist[nearest]
-    #                     nearestMed = labelsOnBranch[nearest]
-    #                     if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
-    #                         Colors[obj] = nearestMed
-    #                         nPAMed = nPAMed + 1
-    #             UnlabeledExist = (sum(Colors == 0) > 0)
-    #     else:
-    #         ClusterDiam = np.repeat(0, nProperLabels)
-    #         for cluster in range(nProperLabels):
-    #             InCluster = np.where(Colors == cluster)[0].tolist()
-    #             nInCluster = len(InCluster)
-    #             DistInCluster = distM.iloc[InCluster, InCluster]
-    #             if nInCluster > 1:
-    #                 AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
-    #                 ClusterDiam[cluster] = max(AveDistInClust)
-    #
-    #             else:
-    #                 ClusterDiam[cluster] = 0
-    #
-    #         ColorsX = Colors
-    #         if respectSmallClusters:
-    #             FSmallLabels = pd.Categorical(SmallLabels)
-    #             SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
-    #             nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
-    #             print(FSmallLabels.categories)
-    #             print(len(FSmallLabels.categories), SmallLabLevs[1] == 0, nSmallClusters)
-    #             if nSmallClusters > 0:
-    #                 if pamRespectsDendro:
-    #                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
-    #                         InCluster = list(range(nPoints))[SmallLabels == sclust]
-    #                         onBr = pd.unique(onBranch[InCluster])
-    #                         if len(onBr) > 1:
-    #                             msg = "Internal error: objects in a small cluster are marked to belong\n" \
-    #                                   "to several large branches:" + str(onBr)
-    #                             sys.exit(msg)
-    #                         if onBr > 0:
-    #                             basicOnBranch = branch_basicClusters[[onBr]]
-    #                             labelsOnBranch = branchLabels[basicOnBranch]
-    #                             useObjects = ColorsX in np.unique(labelsOnBranch)
-    #                             DistSClustClust = distM[InCluster, useObjects]
-    #                             MeanDist = DistSClustClust.mean(axis=0)
-    #                             useColorsFac = pd.Categorical(ColorsX[useObjects])
-    #                             # TODO
-    #                             MeanMeanDist = MeanDist.groupby('useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
-    #                             nearest = MeanMeanDist.idxmin()
-    #                             NearestDist = MeanMeanDist[nearest]
-    #                             nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-    #                             if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-    #                                 Colors[InCluster] = nearestLabel
-    #                                 nPAMed = nPAMed + len(InCluster)
-    #                             else:
-    #                                 Colors[InCluster] = -1
-    #                 else:
-    #                     labelsOnBranch = list(range(nProperLabels))
-    #                     useObjects = np.where(ColorsX != 0)[0].tolist()
-    #                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
-    #                         InCluster = np.where(SmallLabels == sclust)[0].tolist()
-    #                         DistSClustClust = distM.iloc[InCluster, useObjects]
-    #                         MeanDist = DistSClustClust.mean(axis=0)
-    #                         useColorsFac = pd.Categorical(ColorsX[useObjects])
-    #                         print(MeanDist)
-    #                         print(useColorsFac)
-    #                         MeanMeanDist = MeanDist.groupby('useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
-    #                         nearest = MeanMeanDist.idxmin()
-    #                         NearestDist = MeanMeanDist[nearest]
-    #                         nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-    #                         if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-    #                             Colors[InCluster] = nearestLabel
-    #                             nPAMed = nPAMed + len(InCluster)
-    #                         else:
-    #                             Colors[InCluster] = -1
 
-    #         Unlabeled = list(range(nPoints))[Colors == 0]
-    #         if len(Unlabeled) > 0:
-    #             if pamRespectsDendro:
-    #                 unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
-    #                 for obj in unlabOnBranch:
-    #                     onBr = onBranch[obj]
-    #                     basicOnBranch = branch_basicClusters[[onBr]]
-    #                     labelsOnBranch = branchLabels[basicOnBranch]
-    #                     useObjects = ColorsX in np.unique(labelsOnBranch)
-    #                     useColorsFac = factor(ColorsX[useObjects])
-    #                     UnassdToClustDist = tapply(distM[useObjects, obj], useColorsFac, mean)
-    #                     nearest = UnassdToClustDist.idxmin()
-    #                     NearestClusterDist = UnassdToClustDist[nearest]
-    #                     nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-    #                     if NearestClusterDist < ClusterDiam[nearestLabel] or NearestClusterDist < maxPamDist:
-    #                         Colors[obj] = nearestLabel
-    #                         nPAMed = nPAMed + 1
-    #             else:
-    #                 useObjects = list(range(nPoints))[ColorsX != 0]
-    #                 useColorsFac = factor(ColorsX[useObjects])
-    #                 nUseColors = nlevels(useColorsFac)
-    #                 UnassdToClustDist = apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
-    #                 UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
-    #                 nearest = apply(UnassdToClustDist, 2, which.min)
-    #                 nearestDist = apply(UnassdToClustDist, 2, min)
-    #                 nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-    #                 assign = nearestDist < ClusterDiam[nearestLabel] or nearestDist < maxPamDist
-    #                 Colors[Unlabeled[assign]] = nearestLabel[assign]
-    #                 nPAMed = nPAMed + sum(assign)
-    #
-    #     if verbose > 2:
-    #         print("....assigned", nPAMed, "objects to existing clusters.", flush=True)
-    # Colors[Colors < 0] = 0
-    # UnlabeledExist = (sum(Colors == 0) > 0)
-    # NumLabs = pd.to_numeric(as.factor(Colors))
-    # Sizes = table(NumLabs)
-    # if UnlabeledExist:
-    #     if len(Sizes) > 1:
-    #         SizeRank = np.concatenate((1, (stats.rankdata(-1 * Sizes[2:len(Sizes)], method='ordinal') + 1)), axis=0)
-    #     else:
-    #         SizeRank = 1
-    #     OrdNumLabs = SizeRank[NumLabs]
-    #
-    # else:
-    #     SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
-    #     OrdNumLabs = SizeRank[NumLabs]
-    #
-    # ordCoreLabels = OrdNumLabs - UnlabeledExist
-    # ordCoreLabels[coreLabels == 0] = 0
-    # if verbose > 0:
-    #     print("..done.", flush=True)
-    #
-    # mergeDiagnostics = np.concatenate((mergeDiagnostics, externalMergeDiags), axis=0)
-    # if nExternalSplits == 0:
-    #     mergeDiagnostics = mergeDiagnostics
-    #
-    # return (OrdNumLabs - UnlabeledExist), ordCoreLabels, SmallLabels, onBranch, mergeDiagnostics, \
-    #        pd.DataFrame({'maxCoreScatter': maxCoreScatter, 'minGap': minGap, 'maxAbsCoreScatter': maxAbsCoreScatter,
-    #                      'minAbsGap': minAbsGap, 'minExternalSplit': minExternalSplit}), \
-    #        pd.DataFrame({'nBranches': nBranches, 'IndMergeToBranch': IndMergeToBranch, 'RootBranch': RootBranch,
-    #                      'isCluster': isCluster, 'nPoints': nMerge + 1})
+    if pamStage and UnlabeledExist and nProperLabels > 0:
+        if verbose > 2:
+            print("..Assigning PAM stage labels..", flush=True)
+        nPAMed = 0
+        if useMedoids:
+            Medoids = np.repeat(0, nProperLabels)
+            ClusterRadii = np.repeat(0, nProperLabels)
+            for cluster in range(nProperLabels):
+                InCluster = np.where(Colors == cluster)[0].tolist()
+                DistInCluster = distM.iloc[InCluster, InCluster]
+                DistSums = DistInCluster.sum(axis=0)
+                Medoids[cluster] = InCluster[DistSums.idxmin()]
+                ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
+
+            if respectSmallClusters:
+                FSmallLabels = pd.Categorical(SmallLabels)
+                SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
+                nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
+
+                if nSmallClusters > 0:
+                    for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                        InCluster = np.where(SmallLabels == sclust)[0].tolist()
+                        if pamRespectsDendro:
+                            onBr = np.unique(onBranch[InCluster])
+                            if len(onBr) > 1:
+                                msg = "Internal error: objects in a small cluster are marked to belong\n " \
+                                      "to several large branches:" + str(onBr)
+                                sys.exit(msg)
+
+                            if onBr > 0:
+                                basicOnBranch = branch_basicClusters[[onBr]]
+                                labelsOnBranch = branchLabels[basicOnBranch]
+                            else:
+                                labelsOnBranch = None
+                        else:
+                            labelsOnBranch = list(range(nProperLabels))
+
+                        DistInCluster = distM.iloc[InCluster, InCluster]
+
+                        if len(labelsOnBranch) > 0:
+                            if len(InCluster) > 1:
+                                DistSums = DistInCluster.sum(axis=1)
+                                smed = InCluster[DistSums.idxmin()]
+                                DistToMeds = distM.iloc[Medoids[labelsOnBranch], smed]
+                                closest = DistToMeds.idxmin()
+                                DistToClosest = DistToMeds[closest]
+                                closestLabel = labelsOnBranch[closest]
+                                if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
+                                    Colors[InCluster] = closestLabel
+                                    nPAMed = nPAMed + len(InCluster)
+                            else:
+                                Colors[InCluster] = -1
+                        else:
+                            Colors[InCluster] = -1
+
+            Unlabeled = np.where(Colors == 0)[0].tolist()
+            if len(Unlabeled > 0):
+                for obj in Unlabeled:
+                    if pamRespectsDendro:
+                        onBr = onBranch[obj]
+                        if onBr > 0:
+                            basicOnBranch = branch_basicClusters[[onBr]]
+                            labelsOnBranch = branchLabels[basicOnBranch]
+                        else:
+                            labelsOnBranch = None
+                    else:
+                        labelsOnBranch = list(range(nProperLabels))
+
+                    if labelsOnBranch is not None:
+                        UnassdToMedoidDist = distM.iloc[Medoids[labelsOnBranch], obj]
+                        nearest = UnassdToMedoidDist.idxmin()
+                        NearestCenterDist = UnassdToMedoidDist[nearest]
+                        nearestMed = labelsOnBranch[nearest]
+                        if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
+                            Colors[obj] = nearestMed
+                            nPAMed = nPAMed + 1
+                UnlabeledExist = (sum(Colors == 0) > 0)
+        else:
+            ClusterDiam = np.repeat(0, nProperLabels)
+            for cluster in range(nProperLabels):
+                InCluster = np.where(Colors == cluster)[0].tolist()
+                nInCluster = len(InCluster)
+                DistInCluster = distM.iloc[InCluster, InCluster]
+                if nInCluster > 1:
+                    AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
+                    ClusterDiam[cluster] = max(AveDistInClust)
+
+                else:
+                    ClusterDiam[cluster] = 0
+
+            ColorsX = Colors
+            if respectSmallClusters:
+                FSmallLabels = pd.Categorical(SmallLabels)
+                SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
+                nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
+                if nSmallClusters > 0:
+                    if pamRespectsDendro:
+                        for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                            InCluster = list(range(nPoints))[SmallLabels == sclust]
+                            onBr = pd.unique(onBranch[InCluster])
+                            if len(onBr) > 1:
+                                msg = "Internal error: objects in a small cluster are marked to belong\n" \
+                                      "to several large branches:" + str(onBr)
+                                sys.exit(msg)
+                            if onBr > 0:
+                                basicOnBranch = branch_basicClusters[[onBr]]
+                                labelsOnBranch = branchLabels[basicOnBranch]
+                                useObjects = ColorsX in np.unique(labelsOnBranch)
+                                DistSClustClust = distM[InCluster, useObjects]
+                                MeanDist = DistSClustClust.mean(axis=0)
+                                useColorsFac = pd.Categorical(ColorsX[useObjects])
+                                # TODO
+                                MeanMeanDist = MeanDist.groupby(
+                                    'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
+                                nearest = MeanMeanDist.idxmin()
+                                NearestDist = MeanMeanDist[nearest]
+                                nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                                if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+                                    Colors[InCluster] = nearestLabel
+                                    nPAMed = nPAMed + len(InCluster)
+                                else:
+                                    Colors[InCluster] = -1
+                    else:
+                        labelsOnBranch = list(range(nProperLabels))
+                        useObjects = np.where(ColorsX != 0)[0].tolist()
+                        for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                            InCluster = np.where(SmallLabels == sclust)[0].tolist()
+                            DistSClustClust = distM.loc[InCluster, useObjects]
+                            MeanDist = DistSClustClust.mean(axis=0)
+                            useColorsFac = pd.Categorical(ColorsX[useObjects])
+                            MeanMeanDist = MeanDist.groupby(
+                                'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
+                            nearest = MeanMeanDist.idxmin()
+                            NearestDist = MeanMeanDist[nearest]
+                            nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                            if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+                                Colors[InCluster] = nearestLabel
+                                nPAMed = nPAMed + len(InCluster)
+                            else:
+                                Colors[InCluster] = -1
+            #
+            Unlabeled = list(range(nPoints))[Colors == 0]
+            if len(Unlabeled) > 0:
+                if pamRespectsDendro:
+                    unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
+                    for obj in unlabOnBranch:
+                        onBr = onBranch[obj]
+                        basicOnBranch = branch_basicClusters[[onBr]]
+                        labelsOnBranch = branchLabels[basicOnBranch]
+                        useObjects = ColorsX in np.unique(labelsOnBranch)
+                        useColorsFac = pd.Categorical(ColorsX[useObjects])
+                        UnassdToClustDist = distM[useObjects, obj].groupby(
+                            'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
+                        nearest = UnassdToClustDist.idxmin()
+                        NearestClusterDist = UnassdToClustDist[nearest]
+                        nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                        if NearestClusterDist < ClusterDiam[nearestLabel] or NearestClusterDist < maxPamDist:
+                            Colors[obj] = nearestLabel
+                            nPAMed = nPAMed + 1
+                else:
+                    useObjects = list(range(nPoints))[ColorsX != 0]
+                    useColorsFac = pd.Categorical(ColorsX[useObjects])
+                    nUseColors = len(useColorsFac.categories)
+                    UnassdToClustDist = np.mean(distM[useObjects, Unlabeled].groupby(
+                        'useColorsFac'), axis=0)  # apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
+                    UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
+                    nearest = np.argmin(UnassdToClustDist, axis=0)  # apply(UnassdToClustDist, 2, which.min)
+                    nearestDist = np.amin(UnassdToClustDist, axis=0)  # apply(UnassdToClustDist, 2, min)
+                    nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                    assign = nearestDist < ClusterDiam[nearestLabel] or nearestDist < maxPamDist
+                    Colors[Unlabeled[assign]] = nearestLabel[assign]
+                    nPAMed = nPAMed + sum(assign)
+
+        if verbose > 2:
+            print("....assigned", nPAMed, "objects to existing clusters.", flush=True)
+
+    Colors[Colors < 0] = 0
+    UnlabeledExist = (sum(Colors == 0) > 0)
+    NumLabs = pd.Categorical(Colors).codes
+    Sizes = pd.DataFrame(NumLabs).value_counts()
+    OrdNumLabs = np.repeat(1, len(NumLabs))
+    if UnlabeledExist:
+        if len(Sizes) > 1:
+            SizeRank = stats.rankdata(-1 * Sizes[1:len(Sizes)], method='ordinal') + 1
+            for i in range(1, len(Sizes)):
+                OrdNumLabs[NumLabs == Sizes[i]] = SizeRank[i - 1]
+    else:
+        SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
+        for i in range(len(Sizes)):
+            OrdNumLabs[NumLabs == Sizes[i]] = SizeRank[i]
+
+    ordCoreLabels = OrdNumLabs - UnlabeledExist
+    ordCoreLabels[coreLabels == 0] = 0
+    if verbose > 0:
+        print("..done.", flush=True)
+
+    if nExternalSplits == 0:
+        mergeDiagnostics = mergeDiagnostics
+    else:
+        mergeDiagnostics = np.concatenate((mergeDiagnostics, externalMergeDiags), axis=0)
+
+    return OrdNumLabs - UnlabeledExist
+    # , ordCoreLabels, SmallLabels, onBranch, mergeDiagnostics, maxCoreScatter, \
+    #    minGap, maxAbsCoreScatter, minAbsGap, minExternalSplit, nBranches, IndMergeToBranch, RootBranch, isCluster, \
+    #    nMerge + 1
 
 
-# def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
-#                  maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
-#                  minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
-#                  externalBranchSplitFnc=None, minExternalSplit=None,
-#                  externalSplitOptions=pd.DataFrame(), externalSplitFncNeedsDistance=None,
-#                  assumeSimpleExternalSpecification=True, pamStage=True,
-#                  pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
-#                  respectSmallClusters=True, verbose=2):
-#     if maxPamDist is None:
-#         maxPamDist = cutHeight
-#
-#     nMerge = dendro.shape[0]
-#     if nMerge < 1:
-#         sys.exit("The given dendrogram is suspicious: number of merges is zero.")
-#     if distM is None:
-#         sys.exit("distM must be non-NULL")
-#     if distM.shape is None:
-#         sys.exit("distM must be a matrix.")
-#     if distM.shape[0] != nMerge + 1 or distM.shape[1] != nMerge + 1:
-#         sys.exit("distM has incorrect dimensions.")
-#     if pamRespectsDendro and not respectSmallClusters:
-#         print("cutreeHybrid Warning: parameters pamRespectsDendro (TRUE) "
-#               "and respectSmallClusters (FALSE) imply contradictory intent.\n"
-#               "Although the code will work, please check you really intented "
-#               "these settings for the two arguments.", flush=True)
-#     if any(np.diag(distM) != 0):
-#         np.fill_diagonal(distM, 0)
-#     refQuantile = 0.05
-#     refMerge = round(nMerge * refQuantile)
-#     if refMerge < 1:
-#         refMerge = 1
-#     refHeight = dendro[refMerge, 2]
-#     if cutHeight is None:
-#         cutHeight = 0.99 * (np.max(dendro[:, 2]) - refHeight) + refHeight
-#         if verbose > 0:
-#             print("..cutHeight not given, setting it to", round(cutHeight, 3),
-#                   " ===>  99% of the (truncated) height range in dendro.", flush=True)
-#     else:
-#         if cutHeight > np.max(dendro[:, 2]):
-#             cutHeight = np.max(dendro[:, 2])
-#     if maxPamDist is None:
-#         maxPamDist = cutHeight
-#     nMergeBelowCut = np.count_nonzero(dendro[:, 2] <= cutHeight)
-#     if nMergeBelowCut < minClusterSize:
-#         if verbose > 0:
-#             print("cutHeight set too low: no merges below the cut.", flush=True)
-#         return pd.DataFrame({'labels': np.repeat(0, nMerge + 1, axis=0)})
-#
-#     nExternalSplits = len(externalBranchSplitFnc)
-#     if nExternalSplits > 0:
-#         if len(minExternalSplit) < 1:
-#             sys.exit("'minExternalBranchSplit' must be given.")
-#         if assumeSimpleExternalSpecification and nExternalSplits == 1:
-#             externalSplitOptions = pd.DataFrame(externalSplitOptions)
-#         # TODO: externalBranchSplitFnc = lapply(externalBranchSplitFnc, match.fun)
-#         for es in range(nExternalSplits):
-#             externalSplitOptions['tree'][es] = dendro
-#             if len(externalSplitFncNeedsDistance) == 0 or externalSplitFncNeedsDistance[es]:
-#                 externalSplitOptions['dissimMat'][es] = distM
-#
-#     MxBranches = nMergeBelowCut
-#     branch_isBasic = np.repeat(True, MxBranches, axis=0)
-#     branch_isTopBasic = np.repeat(True, MxBranches, axis=0)
-#     branch_failSize = np.repeat(False, MxBranches, axis=0)
-#     branch_rootHeight = np.repeat(np.NaN, MxBranches, axis=0)
-#     branch_size = np.repeat(2, MxBranches, axis=0)
-#     branch_nMerge = np.repeat(1, MxBranches, axis=0)
-#     branch_nSingletons = np.repeat(2, MxBranches, axis=0)
-#     branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
-#     branch_mergedInto = np.repeat(0, MxBranches, axis=0)
-#     branch_attachHeight = np.repeat(np.NaN, MxBranches, axis=0)
-#     branch_singletons = pd.DataFrame([], columns=list(range(MxBranches)))
-#     branch_basicClusters = pd.DataFrame([], columns=list(range(MxBranches)))
-#     branch_mergingHeights = pd.DataFrame([], columns=list(range(MxBranches)))
-#     branch_singletonHeights = pd.DataFrame([], columns=list(range(MxBranches)))
-#     nBranches = 0
-#     spyIndex = None
-#     if path.exists("dynamicTreeCutSpyFile"):
-#         spyIndex = pd.read_table("dynamicTreeCutSpyFile", header=False)
-#         print("Found 'spy file' with indices of objects to watch for.", flush=True)
-#         spyIndex = pd.to_numeric(spyIndex.values[:, 0])
-#         print(list(spyIndex), flush=True)
-#
-#     defMCS = [0.64, 0.73, 0.82, 0.91, 0.95]
-#     defMG = (1.0 - defMCS) * 3.0 / 4.0
-#     nSplitDefaults = len(defMCS)
-#     if isinstance(deepSplit, bool):
-#         deepSplit = pd.to_numeric(deepSplit) * (nSplitDefaults - 2)
-#     if deepSplit < 0 or deepSplit > nSplitDefaults:
-#         msg = "Parameter deepSplit (value" + str(deepSplit) + \
-#               ") out of range: allowable range is 0 through", str(nSplitDefaults - 1)
-#         sys.exit(msg)
-#     if maxCoreScatter is None:
-#         maxCoreScatter = interpolate(defMCS, deepSplit)
-#     if minGap is None:
-#         minGap = interpolate(defMG, deepSplit)
-#     if maxAbsCoreScatter is None:
-#         maxAbsCoreScatter = refHeight + maxCoreScatter * (cutHeight - refHeight)
-#     if minAbsGap is None:
-#         minAbsGap = minGap * (cutHeight - refHeight)
-#     if minSplitHeight is None:
-#         minSplitHeight = 0
-#     if minAbsSplitHeight is None:
-#         minAbsSplitHeight = refHeight + minSplitHeight * (cutHeight - refHeight)
-#     nPoints = nMerge + 1
-#     IndMergeToBranch = np.repeat(0, nMerge, axis=0)
-#     onBranch = np.repeat(0, nPoints, axis=0)
-#     RootBranch = 0
-#     if verbose > 2:
-#         print("..Going through the merge tree", flush=True)
-#
-#     mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.NaN, nMerge, axis=0),
-#                                      'smSize': np.repeat(np.NaN, nMerge, axis=0),
-#                                      'smCrSc': np.repeat(np.NaN, nMerge, axis=0),
-#                                      'smGap': np.repeat(np.NaN, nMerge, axis=0),
-#                                      'lgI': np.repeat(np.NaN, nMerge, axis=0),
-#                                      'lgSize': np.repeat(np.NaN, nMerge, axis=0),
-#                                      'lgCrSc': np.repeat(np.NAN, nMerge, axis=0),
-#                                      'lgGap': np.repeat(np.NAN, nMerge, axis=0),
-#                                      'merged': np.repeat(np.NAN, nMerge, axis=0)})
-#     if nExternalSplits > 0:
-#         externalMergeDiags = pd.DataFrame(np.NAN, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
-#
-#     extender = np.repeat(0, 10, axis=0)
-#     for merge in range(nMerge):
-#         if dendro[merge, 0] <= cutHeight:
-#             if dendro[merge, 0] < 0 and dendro[merge, 1] < 0:
-#                 nBranches = nBranches + 1
-#                 branch_isBasic[nBranches] = True
-#                 branch_isTopBasic[nBranches] = True
-#                 branch_singletons[[nBranches]] = [-1 * dendro[merge, 0:2], extender]
-#                 branch_basicClusters[[nBranches]] = extender
-#                 branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
-#                 branch_singletonHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2],2), extender), axis=0)
-#                 IndMergeToBranch[merge] = nBranches
-#                 RootBranch = nBranches
-#             elif np.sign(dendro[merge, 0]) * np.sign(dendro[merge, 1]) < 0:
-#                 clust = IndMergeToBranch[max(dendro[merge, 0:2])]
-#                 if clust == 0:
-#                     sys.exit("Internal error: a previous merge has no associated cluster. Sorry!")
-#                 gene = -1 * min(dendro[merge, 0:2])
-#                 ns = branch_nSingletons[clust] + 1
-#                 nm = branch_nMerge[clust] + 1
-#                 if branch_isBasic[clust]:
-#                     if ns > len(branch_singletons[[clust]]):
-#                         branch_singletons[[clust]] = np.concatenate((branch_singletons[[clust]], extender), axis=0)
-#                         branch_singletonHeights[[clust]] = np.concatenate((branch_singletonHeights[[clust]], extender), axis=0)
-#
-#                     branch_singletons[[clust]][ns] = gene
-#                     branch_singletonHeights[[clust]][ns] = dendro[merge, 2]
-#
-#                 else:
-#                     onBranch[gene] = clust
-#
-#                 if nm >= len(branch_mergingHeights[[clust]]):
-#                     branch_mergingHeights[[clust]] = np.concatenate((branch_mergingHeights[[clust]], extender), axis=0)
-#
-#                 branch_mergingHeights[[clust]][nm] = dendro[merge, 2]
-#                 branch_size[clust] = branch_size[clust] + 1
-#                 branch_nMerge[clust] = nm
-#                 branch_nSingletons[clust] = ns
-#                 IndMergeToBranch[merge] = clust
-#                 RootBranch = clust
-#
-#             else:
-#                 clusts = IndMergeToBranch[dendro[merge, 0:2]]
-#                 sizes = branch_size[clusts]
-#                 rnk = stats.rankdata(sizes, method='ordinal')
-#                 small = clusts[rnk[1]]
-#                 large = clusts[rnk[2]]
-#                 sizes = sizes[rnk]
-#                 branch1 = branch_singletons[[large]][1:sizes[2]]
-#                 branch2 = branch_singletons[[small]][1:sizes[1]]
-#                 spyMatch = False
-#                 if spyIndex is not None:
-#                     n1 = len(branch1.intersection(spyIndex))
-#                     if n1 / len(branch1) > 0.99 and n1 / len(spyIndex) > 0.99:
-#                         print("Found spy match for branch 1 on merge", merge, flush=True)
-#                         spyMatch = True
-#
-#                     n2 = len(branch2.intersection(spyIndex))
-#                     if n2 / len(branch1) > 0.99 and n2 / len(spyIndex) > 0.99:
-#                         print("Found spy match for branch 2 on merge", merge, flush=True)
-#                         spyMatch = True
-#
-#                 if branch_isBasic[small]:
-#                     coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize)
-#                     Core = branch_singletons[[small]][0:coresize]
-#                     SmAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
-#                 else:
-#                     SmAveDist = 0
-#
-#                 if branch_isBasic[large]:
-#                     coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize)
-#                     Core = branch_singletons[[large]][0:coresize]
-#                     LgAveDist = np.mean(distM[Core, Core].sum(axis=1) / (coresize - 1))
-#                 else:
-#                     LgAveDist = 0
-#
-#                 mergeDiagnostics[merge, :] = [small, branch_size[small], SmAveDist, dendro[merge, 2] - SmAveDist,
-#                                               large, branch_size[large], LgAveDist, dendro[merge, 2] - LgAveDist, None]
-#                 SmallerScores = [branch_isBasic[small], branch_size[small] < minClusterSize,
-#                                  SmAveDist > maxAbsCoreScatter, dendro[merge, 2] - SmAveDist < minAbsGap,
-#                                 dendro[merge, 2] < minAbsSplitHeight]
-#                 if SmallerScores[1] * sum(SmallerScores[-1]) > 0:
-#                     DoMerge = True
-#                     SmallerFailSize = not (SmallerScores[3] | SmallerScores[4])
-#
-#                 else:
-#                     LargerScores = [branch_isBasic[large],
-#                                     branch_size[large] < minClusterSize, LgAveDist > maxAbsCoreScatter,
-#                                     dendro[merge, 2] - LgAveDist < minAbsGap,
-#                                     dendro[merge, 2] < minAbsSplitHeight]
-#                     if LargerScores[1] * sum(LargerScores[-1]) > 0:
-#                         DoMerge = True
-#                         SmallerFailSize = not (LargerScores[3] | LargerScores[4])
-#                         x = small
-#                         small = large
-#                         large = x
-#                         sizes = sizes.reverse()
-#                     else:
-#                         DoMerge = False
-#
-#                     if DoMerge:
-#                         mergeDiagnostics['merged'][merge] = 1
-#
-#                     if not DoMerge and nExternalSplits > 0 and branch_isBasic[small] and branch_isBasic[large]:
-#                         if verbose > 4:
-#                             print("Entering external split code on merge ", merge, flush=True)
-#                         branch1 = branch_singletons[[large]][0:sizes[1]]
-#                         branch2 = branch_singletons[[small]][0:sizes[0]]
-#                         if verbose > 4 or spyMatch:
-#                             print("  ..branch lengths: ", sizes[0], ", ", sizes[1], flush=True)
-#                         es = 0
-#                         while es < nExternalSplits and not DoMerge:
-#                             es = es + 1
-#                             args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[[es]],
-#                                                  'branch1': branch1, 'branch2': branch2})
-#                             args['branch1'] = branch1
-#                             args['branch2'] = branch2
-#                             extSplit = do.call(externalBranchSplitFnc[[es]], args)
-#                             if spyMatch:
-#                                 print(" .. external criterion ", es, ": ", extSplit, flush=True)
-#                             DoMerge = extSplit < minExternalSplit[es]
-#                             externalMergeDiags[merge, es] = extSplit
-#                             mergeDiagnostics['merged'][merge] = 0
-#                             if DoMerge:
-#                                 mergeDiagnostics['merged'][merge] = 2
-#
-#
-#                     if DoMerge:
-#                         branch_failSize[[small]] = SmallerFailSize
-#                         branch_mergedInto[small] = large
-#                         branch_attachHeight[small] = dendro[merge, 2]
-#                         branch_isTopBasic[small] = False
-#                         nss = branch_nSingletons[small]
-#                         nsl = branch_nSingletons[large]
-#                         ns = nss + nsl
-#                         if branch_isBasic[large]:
-#                             nExt = math.ceil((ns - len(branch_singletons[[large]])) / chunkSize)
-#                             if nExt > 0:
-#                                 if verbose > 5:
-#                                     print("Extending singletons for branch", large, "by", nExt, " extenders.", flush=True)
-#                                 branch_singletons[[large]] = np.concatenate((branch_singletons[[large]],
-#                                                                              np.repeat(extender, nExt)), axis=0)
-#                                 branch_singletonHeights[[large]] = np.concatenate((branch_singletonHeights[[large]],
-#                                                                                   np.repeat(extender, nExt)), axis=0)
-#
-#                             branch_singletons[[large]][nsl:ns] = branch_singletons[[small]][0:nss]
-#                             branch_singletonHeights[[large]][nsl:ns] = branch_singletonHeights[[small]][0:nss]
-#                             branch_nSingletons[large] = ns
-#                         else:
-#                             if not branch_isBasic[small]:
-#                                 sys.exit("Internal error: merging two composite clusters. Sorry!")
-#                             onBranch[branch_singletons[[small]]] = large
-#
-#                         nm = branch_nMerge[large] + 1
-#                         if nm > len(branch_mergingHeights[[large]]):
-#                             branch_mergingHeights[[large]] = np.concatenate((branch_mergingHeights[[large]], extender), axis=0)
-#
-#                         branch_mergingHeights[[large]][nm] = dendro[merge, 2]
-#                         branch_nMerge[large] = nm
-#                         branch_size[large] = branch_size[small] + branch_size[large]
-#                         IndMergeToBranch[merge] = large
-#                         RootBranch = large
-#                     else:
-#                         if branch_isBasic[large] and not branch_isBasic[small]:
-#                             x = large
-#                             large = small
-#                             small = x
-#                             sizes = sizes.reverse()
-#
-#                         if branch_isBasic[large] or (pamStage and pamRespectsDendro):
-#                             nBranches = nBranches + 1
-#                             branch_attachHeight[large, small] = dendro[merge, 2]
-#                             branch_mergedInto[large, small] = nBranches
-#                             if branch_isBasic[small]:
-#                                 addBasicClusters = small
-#                             else:
-#                                 addBasicClusters = branch_basicClusters[[small]]
-#                             if branch_isBasic[large]:
-#                                 addBasicClusters = [addBasicClusters, large]
-#                             else:
-#                                 addBasicClusters = np.concatenate((addBasicClusters, branch_basicClusters[[large]]), axis=0)
-#                             branch_isBasic[nBranches] = False
-#                             branch_isTopBasic[nBranches] = False
-#                             branch_basicClusters[[nBranches]] = addBasicClusters
-#                             branch_mergingHeights[[nBranches]] = np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0)
-#                             branch_nMerge[nBranches] = 2
-#                             branch_size[nBranches] = sum(sizes)
-#                             branch_nBasicClusters[nBranches] = len(addBasicClusters)
-#                             IndMergeToBranch[merge] = nBranches
-#                             RootBranch = nBranches
-#                         else:
-#                             addBasicClusters = branch_basicClusters[[small]]
-#                             if branch_isBasic[small]:
-#                                 addBasicClusters = small
-#                             nbl = branch_nBasicClusters[large]
-#                             nb = branch_nBasicClusters[large] + len(addBasicClusters)
-#                             if nb > len(branch_basicClusters[[large]]):
-#                                 nExt = math.ceil((nb - len(branch_basicClusters[[large]])) / chunkSize)
-#                                 branch_basicClusters[[large]] = np.concatenate((branch_basicClusters[[large]],
-#                                                                                 np.repeat(extender, nExt)), axis=0)
-#
-#                             branch_basicClusters[[large]][nbl:nb] = addBasicClusters
-#                             branch_nBasicClusters[large] = nb
-#                             branch_size[large] = branch_size[large] + branch_size[small]
-#                             nm = branch_nMerge[large] + 1
-#                             if nm > len(branch_mergingHeights[[large]]):
-#                                 branch_mergingHeights[[large]] = np.repeat((branch_mergingHeights[[large]], extender), axis=0)
-#
-#                             branch_mergingHeights[[large]][nm] = dendro[merge, 2]
-#                             branch_nMerge[large] = nm
-#                             branch_attachHeight[small] = dendro[merge, 2]
-#                             branch_mergedInto[small] = large
-#                             IndMergeToBranch[merge] = large
-#                             RootBranch = large
-#
-#             if verbose > 2:
-#                 pind = updateProgInd(merge / nMerge, pind)
-#
-#         if verbose > 2:
-#             pind = updateProgInd(1, pind)
-#             print("", flush=True)
-#
-#     if verbose > 2:
-#         print("..Going through detected branches and marking clusters..", flush=True)
-#
-#     isCluster = np.repeat(False, nBranches)
-#     SmallLabels = np.repeat(0, nPoints)
-#
-#     for clust in range(nBranches):
-#         if branch_attachHeight[clust] is None:
-#             branch_attachHeight[clust] = cutHeight
-#         if branch_isTopBasic[clust]:
-#             coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-#             Core = branch_singletons[[clust]][0:coresize]
-#             CoreScatter = np.mean(distM[Core, Core].sum(axis=0) / (coresize - 1))
-#             isCluster[clust] = (branch_isTopBasic[clust] and branch_size[clust] >= minClusterSize and
-#                                     CoreScatter < maxAbsCoreScatter and branch_attachHeight[clust] - CoreScatter > minAbsGap)
-#         else:
-#             CoreScatter = 0
-#
-#         if branch_failSize[clust]:
-#             SmallLabels[branch_singletons[[clust]]] = clust
-#
-#     if not respectSmallClusters:
-#         SmallLabels = np.repeat(0, nPoints)
-#
-#     if verbose > 2:
-#         print("..Assigning Tree Cut stage labels..", flush=True)
-#
-#     Colors = np.repeat(0, nPoints)
-#     coreLabels = np.repeat(0, nPoints)
-#     clusterBranches = list(range(nBranches))[isCluster]
-#     branchLabels = np.repeat(0, nBranches)
-#     color = 0
-#     for clust in clusterBranches:
-#         color = color + 1
-#         Colors[branch_singletons[[clust]]] = color
-#         SmallLabels[branch_singletons[[clust]]] = 0
-#         coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-#         Core = branch_singletons[[clust]][0:coresize]
-#         coreLabels[Core] = color
-#         branchLabels[clust] = color
-#
-#     Labeled = list(range(nPoints))[Colors != 0]
-#     Unlabeled = list(range(nPoints))[Colors == 0]
-#     nUnlabeled = len(Unlabeled)
-#     UnlabeledExist = nUnlabeled > 0
-#
-#     if len(Labeled) > 0:
-#         LabelFac = factor(Colors[Labeled])
-#         nProperLabels = nlevels(LabelFac)
-#
-#     else:
-#         nProperLabels = 0
-#
-#     if pamStage and UnlabeledExist and nProperLabels > 0:
-#         if verbose > 2:
-#             print("..Assigning PAM stage labels..", flush=True)
-#         nPAMed = 0
-#         if useMedoids:
-#             Medoids = np.repeat(0, nProperLabels)
-#             ClusterRadii = np.repeat(0, nProperLabels)
-#             for cluster in range(nProperLabels):
-#                 InCluster = list(range(nPoints))[Colors == cluster]
-#                 DistInCluster = distM[InCluster, InCluster]
-#                 DistSums = DistInCluster.sum(axis=0)
-#                 Medoids[cluster] = InCluster[DistSums.idxmin()]
-#                 ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
-#
-#             if respectSmallClusters:
-#                 FSmallLabels = factor(SmallLabels)
-#                 SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
-#                 nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
-#
-#                 if nSmallClusters > 0:
-#                     for sclust in SmallLabLevs[SmallLabLevs != 0]:
-#                         InCluster = list(range(nPoints))[SmallLabels == sclust]
-#                         if pamRespectsDendro:
-#                             onBr = np.unique(onBranch[InCluster])
-#                             if len(onBr) > 1:
-#                                 msg = "Internal error: objects in a small cluster are marked to belong\n " \
-#                                       "to several large branches:" + str(onBr)
-#                                 sys.exit(msg)
-#
-#                             if onBr > 0:
-#                                 basicOnBranch = branch_basicClusters[[onBr]]
-#                                 labelsOnBranch = branchLabels[basicOnBranch]
-#                             else:
-#                                 labelsOnBranch = None
-#                         else:
-#                             labelsOnBranch = list(range(nProperLabels))
-#
-#                         DistInCluster = distM[InCluster, InCluster]
-#
-#                         if len(labelsOnBranch) > 0:
-#                             if len(InCluster) > 1:
-#                                 DistSums = apply(DistInCluster, 2, sum)
-#                                 smed = InCluster[DistSums.idxmin()]
-#                                 DistToMeds = distM[Medoids[labelsOnBranch], smed]
-#                                 closest = DistToMeds.idxmin()
-#                                 DistToClosest = DistToMeds[closest]
-#                                 closestLabel = labelsOnBranch[closest]
-#                                 if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
-#                                     Colors[InCluster] = closestLabel
-#                                     nPAMed = nPAMed + len(InCluster)
-#                             else:
-#                                 Colors[InCluster] = -1
-#                         else:
-#                             Colors[InCluster] = -1
-#
-#                 Unlabeled = list(range(nPoints))[Colors == 0]
-#                 if len(Unlabeled > 0):
-#                     for obj in Unlabeled:
-#                         if pamRespectsDendro:
-#                             onBr = onBranch[obj]
-#                             if onBr > 0:
-#                                 basicOnBranch = branch_basicClusters[[onBr]]
-#                                 labelsOnBranch = branchLabels[basicOnBranch]
-#                             else:
-#                                 labelsOnBranch = None
-#                         else:
-#                             labelsOnBranch = list(range(nProperLabels))
-#
-#                         if labelsOnBranch is not None:
-#                             UnassdToMedoidDist = distM[Medoids[labelsOnBranch], obj]
-#                             nearest = UnassdToMedoidDist.idxmin()
-#                             NearestCenterDist = UnassdToMedoidDist[nearest]
-#                             nearestMed = labelsOnBranch[nearest]
-#                             if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
-#                                 Colors[obj] = nearestMed
-#                                 nPAMed = nPAMed + 1
-#                     UnlabeledExist = (sum(Colors == 0) > 0)
-#         else:
-#             ClusterDiam = np.repeat(0, nProperLabels)
-#             for cluster in range(nProperLabels):
-#                 InCluster = list(range(nPoints))[Colors == cluster]
-#                 nInCluster = len(InCluster)
-#                 DistInCluster = distM[InCluster, InCluster]
-#                 if nInCluster > 1:
-#                     AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
-#                     ClusterDiam[cluster] = max(AveDistInClust)
-#
-#                 else:
-#                     ClusterDiam[cluster] = 0
-#
-#             ColorsX = Colors
-#             if respectSmallClusters:
-#                 FSmallLabels = factor(SmallLabels)
-#                 SmallLabLevs = pd.to_numeric(levels(FSmallLabels))
-#                 nSmallClusters = nlevels(FSmallLabels) - (SmallLabLevs[1] == 0)
-#                 if nSmallClusters > 0:
-#                     if pamRespectsDendro:
-#                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
-#                             InCluster = list(range(nPoints))[SmallLabels == sclust]
-#                             onBr = unique(onBranch[InCluster])
-#                             if len(onBr) > 1:
-#                                 msg = "Internal error: objects in a small cluster are marked to belong\n" \
-#                                       "to several large branches:" + str(onBr)
-#                                 sys.exit(msg)
-#                             if onBr > 0:
-#                                 basicOnBranch = branch_basicClusters[[onBr]]
-#                                 labelsOnBranch = branchLabels[basicOnBranch]
-#                                 useObjects = ColorsX in np.unique(labelsOnBranch)
-#                                 DistSClustClust = distM[InCluster, useObjects]
-#                                 MeanDist = DistSClustClust.mean(axis=0)
-#                                 useColorsFac = factor(ColorsX[useObjects])
-#                                 MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
-#                                 nearest = MeanMeanDist.idxmin()
-#                                 NearestDist = MeanMeanDist[nearest]
-#                                 nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-#                                 if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-#                                     Colors[InCluster] = nearestLabel
-#                                     nPAMed = nPAMed + len(InCluster)
-#                                 else:
-#                                     Colors[InCluster] = -1
-#                     else:
-#                         labelsOnBranch = list(range(nProperLabels))
-#                         useObjects = list(range(nPoints))[ColorsX != 0]
-#                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
-#                             InCluster = list(range(nPoints))[SmallLabels == sclust]
-#                             DistSClustClust = distM[InCluster, useObjects]
-#                             MeanDist = DistSClustClust.mean(axis=0)
-#                             useColorsFac = factor(ColorsX[useObjects])
-#                             MeanMeanDist = tapply(MeanDist, useColorsFac, mean)
-#                             nearest = MeanMeanDist.idxmin()
-#                             NearestDist = MeanMeanDist[nearest]
-#                             nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-#                             if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-#                                 Colors[InCluster] = nearestLabel
-#                                 nPAMed = nPAMed + len(InCluster)
-#                             else:
-#                                 Colors[InCluster] = -1
-#
-#             Unlabeled = list(range(nPoints))[Colors == 0]
-#             if len(Unlabeled) > 0:
-#                 if pamRespectsDendro:
-#                     unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
-#                     for obj in unlabOnBranch:
-#                         onBr = onBranch[obj]
-#                         basicOnBranch = branch_basicClusters[[onBr]]
-#                         labelsOnBranch = branchLabels[basicOnBranch]
-#                         useObjects = ColorsX in np.unique(labelsOnBranch)
-#                         useColorsFac = factor(ColorsX[useObjects])
-#                         UnassdToClustDist = tapply(distM[useObjects, obj], useColorsFac, mean)
-#                         nearest = UnassdToClustDist.idxmin()
-#                         NearestClusterDist = UnassdToClustDist[nearest]
-#                         nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-#                         if NearestClusterDist < ClusterDiam[nearestLabel] or NearestClusterDist < maxPamDist:
-#                             Colors[obj] = nearestLabel
-#                             nPAMed = nPAMed + 1
-#                 else:
-#                     useObjects = list(range(nPoints))[ColorsX != 0]
-#                     useColorsFac = factor(ColorsX[useObjects])
-#                     nUseColors = nlevels(useColorsFac)
-#                     UnassdToClustDist = apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
-#                     UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
-#                     nearest = apply(UnassdToClustDist, 2, which.min)
-#                     nearestDist = apply(UnassdToClustDist, 2, min)
-#                     nearestLabel = pd.to_numeric(levels(useColorsFac)[nearest])
-#                     assign = nearestDist < ClusterDiam[nearestLabel] or nearestDist < maxPamDist
-#                     Colors[Unlabeled[assign]] = nearestLabel[assign]
-#                     nPAMed = nPAMed + sum(assign)
-#
-#         if verbose > 2:
-#             print("....assigned", nPAMed, "objects to existing clusters.", flush=True)
-#     Colors[Colors < 0] = 0
-#     UnlabeledExist = (sum(Colors == 0) > 0)
-#     NumLabs = pd.to_numeric(as.factor(Colors))
-#     Sizes = table(NumLabs)
-#     if UnlabeledExist:
-#         if len(Sizes) > 1:
-#             SizeRank = np.concatenate((1, (stats.rankdata(-1 * Sizes[2:len(Sizes)], method='ordinal') + 1)), axis=0)
-#         else:
-#             SizeRank = 1
-#         OrdNumLabs = SizeRank[NumLabs]
-#
-#     else:
-#         SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
-#         OrdNumLabs = SizeRank[NumLabs]
-#
-#     ordCoreLabels = OrdNumLabs - UnlabeledExist
-#     ordCoreLabels[coreLabels == 0] = 0
-#     if verbose > 0:
-#         print("..done.", flush=True)
-#
-#     mergeDiagnostics = np.concatenate((mergeDiagnostics, externalMergeDiags), axis=0)
-#     if nExternalSplits == 0:
-#         mergeDiagnostics = mergeDiagnostics
-#
-#     return (OrdNumLabs - UnlabeledExist), ordCoreLabels, SmallLabels, onBranch, mergeDiagnostics, \
-#            pd.DataFrame({'maxCoreScatter': maxCoreScatter, 'minGap': minGap, 'maxAbsCoreScatter': maxAbsCoreScatter,
-#                          'minAbsGap': minAbsGap, 'minExternalSplit': minExternalSplit}), \
-#            pd.DataFrame({'nBranches': nBranches, 'IndMergeToBranch': IndMergeToBranch, 'RootBranch': RootBranch,
-#                          'isCluster': isCluster, 'nPoints': nMerge + 1})
+def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
+    if colorSeq is None:
+        colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+        # Sort colors by hue, saturation, value and name.
+        by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
+                        for name, color in colors.items())
+        colorSeq = [name for hsv, name in by_hsv]
+
+    if all(isinstance(x, int) for x in labels):
+        if zeroIsGrey:
+            minLabel = 0
+        else:
+            minLabel = 1
+        if np.any(labels < 0):
+            minLabel = np.min(labels)
+        nLabels = labels
+    else:
+        factors = pd.Categorical(labels)
+        nLabels = factors.codes
+        nLabels.shape = labels.shape
+
+    if np.max(nLabels) > len(colorSeq):
+        nRepeats = int((np.max(labels) - 1) / len(colorSeq)) + 1
+        print(f"{bcolors.WARNING}labels2colors: Number of labels exceeds number of avilable colors.\n"
+              f"Some colors will be repeated {str(nRepeats)} times.{bcolors.ENDC}")
+        extColorSeq = colorSeq
+        for rep in range(nRepeats):
+            tmp = [str(item) + "." + str(rep) for item in colorSeq]
+            extColorSeq = np.concatenate((extColorSeq, tmp), axis=None)
+    else:
+        nRepeats = 1
+        extColorSeq = colorSeq
+
+    colors = np.repeat("grey", len(nLabels))
+    fin = [v is not None for v in nLabels]
+    colors[np.where(not fin)[0].tolist()] = naColor
+    finLabels = nLabels[np.where(fin)[0].tolist()]
+    if len(finLabels[np.where(finLabels != 0)]) != 0:
+        colors[np.where(fin)[0].tolist() and np.where(finLabels != 0)] = extColorSeq[finLabels[np.where(finLabels != 0)]]
+
+    if labels.shape is None:
+        colors.shape = labels.shape
+
+    return colors
+
+
+def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along average", excludeGrey = False, grey = "grey",
+                     subHubs = True, softPower = 6, scale = True, verbose = 0, trapErrors = False):
+    if all(isinstance(x, int) for x in colors):
+        grey = 0
+    if verbose == 1:
+        print("moduleEigengenes: Calculating", len(pd.Categorical(colors).categories), "module eigengenes in given set.", flush=True)
+    if expr is None:
+        sys.exit("moduleEigengenes: Error: expr is NULL.")
+    if colors is None:
+        sys.exit("moduleEigengenes: Error: colors is NULL.")
+    if expr.shape is None or len(expr.shape) != 2:
+        sys.exit("moduleEigengenes: Error: expr must be two-dimensional.")
+    if expr.shape[1] != len(colors):
+        sys.exit("moduleEigengenes: Error: ncol(expr) and length(colors) must be equal (one color per gene).")
+    #TODO: "Argument 'colors' contains unused levels (empty modules). Use colors[, drop=TRUE] to get rid of them."
+    if softPower < 0:
+        sys.exit("softPower must be non-negative")
+    maxVarExplained = 10
+    if nPC > maxVarExplained:
+        print(f"{bcolors.WARNING}Given nPC is too large. Will use value {str(maxVarExplained)}{bcolors.ENDC}")
+    nVarExplained = np.min(nPC, maxVarExplained)
+    modlevels = pd.Categorical(colors).categories
+    if excludeGrey:
+        if len(np.whare(modlevels != grey)) > 0:
+            modlevels = modlevels[np.whare(modlevels != grey)]
+        else:
+            sys.exit("Color levels are empty. Possible reason: the only color is grey and grey module is excluded from the calculation.")
+    PrinComps = np.empty((expr.shape[0], len(modlevels)))
+    PrinComps[:] = np.NaN
+    PrinComps = pd.DataFrame(PrinComps)
+    averExpr = np.empty((expr.shape[0], len(modlevels)))
+    averExpr[:] = np.NaN
+    averExpr = pd.DataFrame(averExpr)
+    varExpl = np.empty((nVarExplained, len(modlevels)))
+    varExpl[:] = np.NaN
+    varExpl = pd.DataFrame(varExpl)
+    validMEs = np.repeat(True, len(modlevels))
+    validAEs = np.repeat(False, len(modlevels))
+    isPC = np.repeat(True, len(modlevels))
+    isHub = np.repeat(False, len(modlevels))
+    validColors = colors
+    PrinComps.index = ["ME" + str(modlevel) for modlevel in modlevels]
+    averExpr.index = ["AE" + str(modlevel) for modlevel in modlevels]
+    if expr.index is None:
+        PrinComps.index = np.unique(expr.index)
+        averExpr.index = np.unique(expr.index)
+    for i in range(len(modlevels)):
+        if verbose > 1:
+            print("moduleEigengenes : Working on ME for module", modlevels[i], flush=True)
+        modulename = modlevels[i]
+        restrict1 = (colors == modulename)
+        if verbose > 2:
+            print(" ...", sum(restrict1), "genes", flush=True)
+        datModule = expr[:, restrict1].transpose().values
+        n = datModule.shape[0]
+        p = datModule.shape[1]
+        try:
+            if datModule.shape[1] > 1 and impute:
+                seedSaved = True
+                if any(datModule is None):
+                    if verbose > 5:
+                        print(" ...imputing missing data", flush=True)
+                    # define imputer
+                    imputer = KNNImputer(n_neighbors=np.min(10, datModule.shape[0] - 1))
+                    # fit on the dataset
+                    imputer.fit(datModule)
+                    # transform the dataset
+                    datModule = imputer.transform(datModule) #datModule = impute.knn(datModule, k = min(10, nrow(datModule) - 1))
+                    try:
+                        if datModule['data'] is not None:
+                            datModule = datModule['data']
+                    except:
+                        pass
+            if verbose > 5:
+                print(" ...scaling", flush=True)
+            if scale:
+                datModule = scale(datModule.transpose()).transpose()
+            if verbose > 5:
+                print(" ...calculating SVD", flush=True)
+            svd1 = np.linalg.svd(datModule) #TODO:, nu = min(n, p, nPC), nv = min(n, p, nPC))
+            if verbose > 5:
+                print(" ...calculating PVE", flush=True)
+            veMat = np.corrcoef(svd1['v', 0:np.min(n, p, nVarExplained)], datModule.transpose())
+            varExpl[0:np.min(n, p, nVarExplained), i] = (veMat**2).mean(axis=0)
+            pc = svd1['v', 0]
+        except:
+            if not subHubs:
+                sys.exit(str(pc))
+            if subHubs:
+                if verbose > 0:
+                    print(" ..principal component calculation for module", modulename, "failed with the following error:", flush=True)
+                    print("     ", pc, " ..hub genes will be used instead of principal components.", flush=True)
+
+                isPC[i] = False
+                try:
+                    scaledExpr = scale(datModule.tranpose())
+                    covEx = np.cov(scaledExpr)
+                    covEx[not np.isfinite(covEx)] = 0
+                    modAdj = np.abs(covEx)**softPower
+                    kIM = (modAdj.mean(axis=0))**3
+                    if np.max(kIM) > 1:
+                        kIM = kIM - 1
+                    kIM[np.where(kIM is None)] = 0
+                    hub = np.argmax(kIM)
+                    alignSign = np.sign(covEx[:, hub])
+                    alignSign[np.where(alignSign is None)] = 0
+                    isHub[i] = True
+                    tmp = np.array(kIM * alignSign)
+                    tmp.shape = scaledExpr.shape
+                    pcxMat = scaledExpr * tmp / sum(kIM)
+                    pcx = pcxMat.mean(axis=0)
+                    varExpl[0, i] = np.mean(np.corrcoef(pcx, datModule.transpose())**2)
+                    pc = pcx
+                except:
+                    if not trapErrors:
+                        sys.exit(pc)
+                    if verbose > 0:
+                        print(" ..ME calculation of module", modulename, "failed with the following error:", flush=True)
+                        print("     ", pc, " ..the offending module has been removed.", flush=True)
+                    msg = "Eigengene calculation of module" + modulename + "failed with the following error \n" + pc + \
+                          "The offending module has been removed.\n"
+                    print(f"{bcolors.WARNING}Eigengene calculation of module {modulename} failed with the following error \n"
+                          f"{pc} The offending module has been removed.{bcolors.ENDC}")
+                    validMEs[i] = False
+                    isPC[i] = False
+                    isHub[i] = False
+                    validColors[restrict1] = grey
+  #   else {
+  #     PrinComps[, i] = pc
+  #     ae = try({
+  #       if (isPC[i])
+  #         scaledExpr = scale(t(datModule))
+  #       averExpr[, i] = rowMeans(scaledExpr, na.rm = TRUE)
+  #       if (align == "along average") {
+  #         if (verbose > 4)
+  #           printFlush(paste(spaces, " .. aligning module eigengene with average expression."))
+  #         corAve = cor(averExpr[, i], PrinComps[, i],
+  #           use = "p")
+  #         if (!is.finite(corAve))
+  #           corAve = 0
+  #         if (corAve < 0)
+  #           PrinComps[, i] = -PrinComps[, i]
+  #       }
+  #       0
+  #     }, silent = TRUE)
+  #     if (inherits(ae, "try-error")) {
+  #       if (!trapErrors)
+  #         stop(ae)
+  #       if (verbose > 0) {
+  #         printFlush(paste(spaces, " ..Average expression calculation of module",
+  #           modulename, "failed with the following error:"))
+  #         printFlush(paste(spaces, "     ", ae, spaces,
+  #           " ..the returned average expression vector will be invalid."))
+  #       }
+  #       warning(paste("Average expression calculation of module",
+  #         modulename, "failed with the following error \n     ",
+  #         ae, "The returned average expression vector will be invalid.\n"))
+  #     }
+  #     validAEs[i] = !inherits(ae, "try-error")
+  #   }
+  # }
+  # allOK = (sum(!validMEs) == 0)
+  # if (returnValidOnly && sum(!validMEs) > 0) {
+  #   PrinComps = PrinComps[, validMEs, drop = FALSE]
+  #   averExpr = averExpr[, validMEs, drop = FALSE]
+  #   varExpl = varExpl[, validMEs, drop = FALSE]
+  #   validMEs = rep(TRUE, times = ncol(PrinComps))
+  #   isPC = isPC[validMEs]
+  #   isHub = isHub[validMEs]
+  #   validAEs = validAEs[validMEs]
+  # }
+  # allPC = (sum(!isPC) == 0)
+  # allAEOK = (sum(!validAEs) == 0)
+  # list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl,
+  #   nPC = nPC, validMEs = validMEs, validColors = validColors,
+  #   allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub,
+  #   validAEs = validAEs, allAEOK = allAEOK)
 
 
 # Take in pearsons r and n (number of experiments) to calculate the t-stat and p value (student's t distribution)
