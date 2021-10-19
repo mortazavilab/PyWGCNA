@@ -96,6 +96,7 @@ def run_WGCNA():
     # Turn adjacency into topological overlap
     TOM = WGCNA.TOMsimilarity(adjacency, TOMType="signed")
     dissTOM = 1 - TOM
+    dissTOM = dissTOM.round(decimals=8)
     pd.DataFrame(TOM).to_csv('test/output/data/TOM')
 
     # Call the hierarchical clustering function
@@ -138,6 +139,8 @@ def run_WGCNA1():
     dynamicMods = WGCNA.cutreeHybrid(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
                                      minClusterSize=minModuleSize)
 
+    print(dynamicMods)
+
     # Convert numeric lables into colors
     dynamicColors = WGCNA.labels2colors(dynamicMods)
 
@@ -153,8 +156,8 @@ def run_WGCNA1():
 
 
 if __name__ == '__main__':
-    preprocess()
+    # preprocess()
 
-    run_WGCNA()
+    # run_WGCNA()
 
-    # run_WGCNA1()
+    run_WGCNA1()

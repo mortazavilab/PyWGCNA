@@ -13,6 +13,7 @@ from matplotlib import colors as mcolors
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import scale
 import random
+
 random.seed(10)
 
 # remove runtime warning (divided by zero)
@@ -64,7 +65,8 @@ def checkAndScaleWeights(weights, expr, scaleByMax=True, verbose=1):
     nf = np.isinf(weights)
     if any(nf):
         if verbose > 0:
-            print(f"{bcolors.WARNING}Found non-finite weights. The corresponding data points will be removed.{bcolors.ENDC}")
+            print(
+                f"{bcolors.WARNING}Found non-finite weights. The corresponding data points will be removed.{bcolors.ENDC}")
             weights[nf] = None
 
     if scaleByMax:
@@ -336,11 +338,11 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
             sys.exit("Weights can only be used when 'data' represents expression data ('dataIsExpr' must be TRUE).")
         if data.shape != weights.shape:
             sys.exit("When 'weights' are given, dimensions of 'data' and 'weights' must be the same.")
-        corOptions[:, 2] = weights
+        corOptions['weights.x'] = weights
 
-    while startG <= nGenes:
+    while startG < nGenes:
         endG = min(startG + blockSize, nGenes)
-        print("\t..working on genes", startG, "through", endG, "of", nGenes, flush=True)
+        print("\t..working on genes", (startG+1), "through", endG, "of", nGenes, flush=True)
 
         useGenes = list(range(startG, endG))
         nGenes1 = len(useGenes)
@@ -349,7 +351,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
             if weights is not None:
                 corOptions['weights.y'] = [weights.iloc[:, useGenes]]
             corx = np.corrcoef(corOptions.x[0], corOptions.y[0], rowvar=False)
-            corx = corx[0:corOptions.x[0].shape[1], 0:corOptions.y[0].shape[1]]
+            corx = corx[0:corOptions.x[0].shape[1], useGenes]
             if intType == 0:
                 corx = abs(corx)
             elif intType == 1:
@@ -364,7 +366,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
 
         corx[useGenes, list(range(len(useGenes)))] = 1
         datk_local = np.empty((nGenes1, nPowers))
-        datk_local[:] = np.NaN
+        datk_local[:] = np.nan
         corxPrev = np.ones(corx.shape)
         powerVector1 = [0]
         powerVector1.extend(powerVector[:-1])
@@ -385,9 +387,12 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
 
         datk[startG:endG, :] = datk_local
 
-        startG = endG + 1
+        startG = endG
         if 0 < gcInterval < startG - lastGC:
             lastGC = startG
+
+    pd.DataFrame(datk).to_csv('test/output/data/datk')
+    print(datk.shape)
 
     for i in range(len(powerVector)):
         khelp = datk[:, i]
@@ -523,7 +528,7 @@ def TOMsimilarity(adjMat, TOMType="unsigned", TOMDenom="min"):
 
     print("..done..\n\n")
 
-    return tom
+    return pd.dataframe(tom)
 
 
 def interpolate(data, index):
@@ -544,7 +549,7 @@ def coreSizeFunc(BranchSize, minClusterSize):
     else:
         CoreSize = BranchSize
 
-    return CoreSize - 1
+    return CoreSize
 
 
 def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
@@ -620,13 +625,13 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
     branch_isBasic = np.repeat(True, MxBranches, axis=0)
     branch_isTopBasic = np.repeat(True, MxBranches, axis=0)
     branch_failSize = np.repeat(False, MxBranches, axis=0)
-    branch_rootHeight = np.repeat(np.NaN, MxBranches, axis=0)
+    branch_rootHeight = np.repeat(np.nan, MxBranches, axis=0)
     branch_size = np.repeat(2, MxBranches, axis=0)
     branch_nMerge = np.repeat(1, MxBranches, axis=0)
     branch_nSingletons = np.repeat(2, MxBranches, axis=0)
     branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
     branch_mergedInto = np.repeat(0, MxBranches, axis=0)
-    branch_attachHeight = np.repeat(np.NaN, MxBranches, axis=0)
+    branch_attachHeight = np.repeat(np.nan, MxBranches, axis=0)
     branch_singletons = pd.DataFrame()
     branch_basicClusters = pd.DataFrame()
     branch_mergingHeights = pd.DataFrame()
@@ -661,17 +666,17 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
     if verbose > 2:
         print("..Going through the merge tree", flush=True)
 
-    mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.NaN, nMerge, axis=0),
-                                     'smSize': np.repeat(np.NaN, nMerge, axis=0),
-                                     'smCrSc': np.repeat(np.NaN, nMerge, axis=0),
-                                     'smGap': np.repeat(np.NaN, nMerge, axis=0),
-                                     'lgI': np.repeat(np.NaN, nMerge, axis=0),
-                                     'lgSize': np.repeat(np.NaN, nMerge, axis=0),
-                                     'lgCrSc': np.repeat(np.NAN, nMerge, axis=0),
-                                     'lgGap': np.repeat(np.NAN, nMerge, axis=0),
-                                     'merged': np.repeat(np.NAN, nMerge, axis=0)})
+    mergeDiagnostics = pd.DataFrame({'smI': np.repeat(np.nan, nMerge, axis=0),
+                                     'smSize': np.repeat(np.nan, nMerge, axis=0),
+                                     'smCrSc': np.repeat(np.nan, nMerge, axis=0),
+                                     'smGap': np.repeat(np.nan, nMerge, axis=0),
+                                     'lgI': np.repeat(np.nan, nMerge, axis=0),
+                                     'lgSize': np.repeat(np.nan, nMerge, axis=0),
+                                     'lgCrSc': np.repeat(np.nan, nMerge, axis=0),
+                                     'lgGap': np.repeat(np.nan, nMerge, axis=0),
+                                     'merged': np.repeat(np.nan, nMerge, axis=0)})
     if externalBranchSplitFnc is not None:
-        externalMergeDiags = pd.DataFrame(np.NAN, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
+        externalMergeDiags = pd.DataFrame(np.nan, index=list(range(nMerge)), columns=list(range(nExternalSplits)))
 
     extender = np.repeat(0, chunkSize, axis=0)
 
@@ -721,7 +726,7 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                 sizes = sizes[rnk]
 
                 if branch_isBasic[small]:
-                    coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize)
+                    coresize = coreSizeFunc(branch_nSingletons[small], minClusterSize) - 1
                     Core = branch_singletons.loc[0:coresize, small] - 1
                     Core = Core.astype(int).tolist()
                     SmAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize)
@@ -729,7 +734,7 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                     SmAveDist = 0
 
                 if branch_isBasic[large]:
-                    coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize)
+                    coresize = coreSizeFunc(branch_nSingletons[large], minClusterSize) - 1
                     Core = branch_singletons.loc[0:coresize, large] - 1
                     Core = Core.astype(int).tolist()
                     LgAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize)
@@ -839,8 +844,8 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                                                     np.concatenate((addBasicClusters,
                                                                     np.repeat(0, chunkSize - len(addBasicClusters))),
                                                                    axis=0))
-                        branch_singletons.insert(nBranches, nBranches, np.repeat(np.NaN, chunkSize + 2))
-                        branch_singletonHeights.insert(nBranches, nBranches, np.repeat(np.NaN, chunkSize + 2))
+                        branch_singletons.insert(nBranches, nBranches, np.repeat(np.nan, chunkSize + 2))
+                        branch_singletonHeights.insert(nBranches, nBranches, np.repeat(np.nan, chunkSize + 2))
                         branch_mergingHeights.insert(nBranches, nBranches,
                                                      np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0))
                         branch_nMerge[nBranches] = 2
@@ -876,13 +881,13 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
     SmallLabels = np.repeat(0, nPoints)
 
     for clust in range(nBranches):
-        if branch_attachHeight[clust] is np.NaN:
+        if np.isnan(branch_attachHeight[clust]):
             branch_attachHeight[clust] = cutHeight
         if branch_isTopBasic[clust]:
             coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-            Core = branch_singletons.loc[0:coresize, clust] - 1
+            Core = branch_singletons.iloc[0:coresize, clust] - 1
             Core = Core.astype(int).tolist()
-            CoreScatter = np.mean(distM.iloc[Core, Core].sum() / coresize)
+            CoreScatter = np.mean(distM.iloc[Core, Core].sum() / (coresize - 1))
             isCluster[clust] = (branch_isTopBasic[clust] and branch_size[clust] >= minClusterSize and
                                 CoreScatter < maxAbsCoreScatter and branch_attachHeight[
                                     clust] - CoreScatter > minAbsGap)
@@ -1018,7 +1023,7 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
             if respectSmallClusters:
                 FSmallLabels = pd.Categorical(SmallLabels)
                 SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
-                nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[1] == 0)
+                nSmallClusters = len(FSmallLabels.categories) - (SmallLabLevs[0] == 0)
                 if nSmallClusters > 0:
                     if pamRespectsDendro:
                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
@@ -1032,7 +1037,7 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                                 basicOnBranch = branch_basicClusters[[onBr]]
                                 labelsOnBranch = branchLabels[basicOnBranch]
                                 useObjects = ColorsX in np.unique(labelsOnBranch)
-                                DistSClustClust = distM[InCluster, useObjects]
+                                DistSClustClust = distM.iloc[InCluster, useObjects]
                                 MeanDist = DistSClustClust.mean(axis=0)
                                 useColorsFac = pd.Categorical(ColorsX[useObjects])
                                 # TODO
@@ -1050,21 +1055,24 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         labelsOnBranch = list(range(nProperLabels))
                         useObjects = np.where(ColorsX != 0)[0].tolist()
                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
+                            print(sclust)
                             InCluster = np.where(SmallLabels == sclust)[0].tolist()
-                            DistSClustClust = distM.loc[InCluster, useObjects]
+                            DistSClustClust = distM.iloc[InCluster, useObjects]
                             MeanDist = DistSClustClust.mean(axis=0)
                             useColorsFac = pd.Categorical(ColorsX[useObjects])
-                            MeanMeanDist = MeanDist.groupby(
-                                'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
-                            nearest = MeanMeanDist.idxmin()
-                            NearestDist = MeanMeanDist[nearest]
-                            nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-                            if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
+                            MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
+                            MeanMeanDist = MeanDist.groupby('useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
+                            nearest = MeanMeanDist[['MeanDist']].idxmin()
+                            NearestDist = MeanMeanDist.loc[nearest, 'MeanDist']
+                            print(NearestDist)
+                            nearestLabel = pd.to_numeric(useColorsFac.categories[nearest - 1])
+                            print(nearestLabel)
+                            print(np.all(NearestDist < ClusterDiam[nearestLabel]))
+                            if np.all(NearestDist < ClusterDiam[nearestLabel]) or NearestDist < maxPamDist:
                                 Colors[InCluster] = nearestLabel
                                 nPAMed = nPAMed + len(InCluster)
                             else:
                                 Colors[InCluster] = -1
-            #
             Unlabeled = list(range(nPoints))[Colors == 0]
             if len(Unlabeled) > 0:
                 if pamRespectsDendro:
@@ -1075,8 +1083,7 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         labelsOnBranch = branchLabels[basicOnBranch]
                         useObjects = ColorsX in np.unique(labelsOnBranch)
                         useColorsFac = pd.Categorical(ColorsX[useObjects])
-                        UnassdToClustDist = distM[useObjects, obj].groupby(
-                            'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
+                        UnassdToClustDist = distM.iloc[useObjects, obj].groupby('useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
                         nearest = UnassdToClustDist.idxmin()
                         NearestClusterDist = UnassdToClustDist[nearest]
                         nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
@@ -1087,8 +1094,7 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                     useObjects = list(range(nPoints))[ColorsX != 0]
                     useColorsFac = pd.Categorical(ColorsX[useObjects])
                     nUseColors = len(useColorsFac.categories)
-                    UnassdToClustDist = np.mean(distM[useObjects, Unlabeled].groupby(
-                        'useColorsFac'), axis=0)  # apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
+                    UnassdToClustDist = np.mean(distM.iloc[useObjects, Unlabeled].groupby('useColorsFac'), axis=0)  # apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
                     UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
                     nearest = np.argmin(UnassdToClustDist, axis=0)  # apply(UnassdToClustDist, 2, which.min)
                     nearestDist = np.amin(UnassdToClustDist, axis=0)  # apply(UnassdToClustDist, 2, min)
@@ -1169,7 +1175,8 @@ def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
     colors[np.where(not fin)[0].tolist()] = naColor
     finLabels = nLabels[np.where(fin)[0].tolist()]
     if len(finLabels[np.where(finLabels != 0)]) != 0:
-        colors[np.where(fin)[0].tolist() and np.where(finLabels != 0)] = extColorSeq[finLabels[np.where(finLabels != 0)]]
+        colors[np.where(fin)[0].tolist() and np.where(finLabels != 0)] = extColorSeq[
+            finLabels[np.where(finLabels != 0)]]
 
     if labels.shape is None:
         colors.shape = labels.shape
@@ -1177,12 +1184,13 @@ def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
     return colors
 
 
-def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along average", excludeGrey = False, grey = "grey",
-                     subHubs = True, softPower = 6, scale = True, verbose = 0, trapErrors = False):
+def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", excludeGrey=False, grey="grey",
+                     subHubs=True, softPower=6, scale=True, verbose=0, trapErrors=False):
     if all(isinstance(x, int) for x in colors):
         grey = 0
     if verbose == 1:
-        print("moduleEigengenes: Calculating", len(pd.Categorical(colors).categories), "module eigengenes in given set.", flush=True)
+        print("moduleEigengenes: Calculating", len(pd.Categorical(colors).categories),
+              "module eigengenes in given set.", flush=True)
     if expr is None:
         sys.exit("moduleEigengenes: Error: expr is NULL.")
     if colors is None:
@@ -1191,7 +1199,7 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
         sys.exit("moduleEigengenes: Error: expr must be two-dimensional.")
     if expr.shape[1] != len(colors):
         sys.exit("moduleEigengenes: Error: ncol(expr) and length(colors) must be equal (one color per gene).")
-    #TODO: "Argument 'colors' contains unused levels (empty modules). Use colors[, drop=TRUE] to get rid of them."
+    # TODO: "Argument 'colors' contains unused levels (empty modules). Use colors[, drop=TRUE] to get rid of them."
     if softPower < 0:
         sys.exit("softPower must be non-negative")
     maxVarExplained = 10
@@ -1203,15 +1211,16 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
         if len(np.whare(modlevels != grey)) > 0:
             modlevels = modlevels[np.whare(modlevels != grey)]
         else:
-            sys.exit("Color levels are empty. Possible reason: the only color is grey and grey module is excluded from the calculation.")
+            sys.exit("Color levels are empty. Possible reason: the only color is grey and grey module is excluded "
+                     "from the calculation.")
     PrinComps = np.empty((expr.shape[0], len(modlevels)))
-    PrinComps[:] = np.NaN
+    PrinComps[:] = np.nan
     PrinComps = pd.DataFrame(PrinComps)
     averExpr = np.empty((expr.shape[0], len(modlevels)))
-    averExpr[:] = np.NaN
+    averExpr[:] = np.nan
     averExpr = pd.DataFrame(averExpr)
     varExpl = np.empty((nVarExplained, len(modlevels)))
-    varExpl[:] = np.NaN
+    varExpl[:] = np.nan
     varExpl = pd.DataFrame(varExpl)
     validMEs = np.repeat(True, len(modlevels))
     validAEs = np.repeat(False, len(modlevels))
@@ -1244,7 +1253,8 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
                     # fit on the dataset
                     imputer.fit(datModule)
                     # transform the dataset
-                    datModule = imputer.transform(datModule) #datModule = impute.knn(datModule, k = min(10, nrow(datModule) - 1))
+                    datModule = imputer.transform(
+                        datModule)  # datModule = impute.knn(datModule, k = min(10, nrow(datModule) - 1))
                     try:
                         if datModule['data'] is not None:
                             datModule = datModule['data']
@@ -1256,18 +1266,19 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
                 datModule = scale(datModule.transpose()).transpose()
             if verbose > 5:
                 print(" ...calculating SVD", flush=True)
-            svd1 = np.linalg.svd(datModule) #TODO:, nu = min(n, p, nPC), nv = min(n, p, nPC))
+            svd1 = np.linalg.svd(datModule)  # TODO:, nu = min(n, p, nPC), nv = min(n, p, nPC))
             if verbose > 5:
                 print(" ...calculating PVE", flush=True)
             veMat = np.corrcoef(svd1['v', 0:np.min(n, p, nVarExplained)], datModule.transpose())
-            varExpl[0:np.min(n, p, nVarExplained), i] = (veMat**2).mean(axis=0)
+            varExpl[0:np.min(n, p, nVarExplained), i] = (veMat ** 2).mean(axis=0)
             pc = svd1['v', 0]
         except:
             if not subHubs:
                 sys.exit(str(pc))
             if subHubs:
                 if verbose > 0:
-                    print(" ..principal component calculation for module", modulename, "failed with the following error:", flush=True)
+                    print(" ..principal component calculation for module", modulename,
+                          "failed with the following error:", flush=True)
                     print("     ", pc, " ..hub genes will be used instead of principal components.", flush=True)
 
                 isPC[i] = False
@@ -1275,8 +1286,8 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
                     scaledExpr = scale(datModule.tranpose())
                     covEx = np.cov(scaledExpr)
                     covEx[not np.isfinite(covEx)] = 0
-                    modAdj = np.abs(covEx)**softPower
-                    kIM = (modAdj.mean(axis=0))**3
+                    modAdj = np.abs(covEx) ** softPower
+                    kIM = (modAdj.mean(axis=0)) ** 3
                     if np.max(kIM) > 1:
                         kIM = kIM - 1
                     kIM[np.where(kIM is None)] = 0
@@ -1288,7 +1299,7 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
                     tmp.shape = scaledExpr.shape
                     pcxMat = scaledExpr * tmp / sum(kIM)
                     pcx = pcxMat.mean(axis=0)
-                    varExpl[0, i] = np.mean(np.corrcoef(pcx, datModule.transpose())**2)
+                    varExpl[0, i] = np.mean(np.corrcoef(pcx, datModule.transpose()) ** 2)
                     pc = pcx
                 except:
                     if not trapErrors:
@@ -1298,62 +1309,65 @@ def moduleEigengenes(expr, colors, impute = True, nPC = 1, align = "along averag
                         print("     ", pc, " ..the offending module has been removed.", flush=True)
                     msg = "Eigengene calculation of module" + modulename + "failed with the following error \n" + pc + \
                           "The offending module has been removed.\n"
-                    print(f"{bcolors.WARNING}Eigengene calculation of module {modulename} failed with the following error \n"
-                          f"{pc} The offending module has been removed.{bcolors.ENDC}")
+                    print(
+                        f"{bcolors.WARNING}Eigengene calculation of module {modulename} failed with the following error \n"
+                        f"{pc} The offending module has been removed.{bcolors.ENDC}")
                     validMEs[i] = False
                     isPC[i] = False
                     isHub[i] = False
                     validColors[restrict1] = grey
-  #   else {
-  #     PrinComps[, i] = pc
-  #     ae = try({
-  #       if (isPC[i])
-  #         scaledExpr = scale(t(datModule))
-  #       averExpr[, i] = rowMeans(scaledExpr, na.rm = TRUE)
-  #       if (align == "along average") {
-  #         if (verbose > 4)
-  #           printFlush(paste(spaces, " .. aligning module eigengene with average expression."))
-  #         corAve = cor(averExpr[, i], PrinComps[, i],
-  #           use = "p")
-  #         if (!is.finite(corAve))
-  #           corAve = 0
-  #         if (corAve < 0)
-  #           PrinComps[, i] = -PrinComps[, i]
-  #       }
-  #       0
-  #     }, silent = TRUE)
-  #     if (inherits(ae, "try-error")) {
-  #       if (!trapErrors)
-  #         stop(ae)
-  #       if (verbose > 0) {
-  #         printFlush(paste(spaces, " ..Average expression calculation of module",
-  #           modulename, "failed with the following error:"))
-  #         printFlush(paste(spaces, "     ", ae, spaces,
-  #           " ..the returned average expression vector will be invalid."))
-  #       }
-  #       warning(paste("Average expression calculation of module",
-  #         modulename, "failed with the following error \n     ",
-  #         ae, "The returned average expression vector will be invalid.\n"))
-  #     }
-  #     validAEs[i] = !inherits(ae, "try-error")
-  #   }
-  # }
-  # allOK = (sum(!validMEs) == 0)
-  # if (returnValidOnly && sum(!validMEs) > 0) {
-  #   PrinComps = PrinComps[, validMEs, drop = FALSE]
-  #   averExpr = averExpr[, validMEs, drop = FALSE]
-  #   varExpl = varExpl[, validMEs, drop = FALSE]
-  #   validMEs = rep(TRUE, times = ncol(PrinComps))
-  #   isPC = isPC[validMEs]
-  #   isHub = isHub[validMEs]
-  #   validAEs = validAEs[validMEs]
-  # }
-  # allPC = (sum(!isPC) == 0)
-  # allAEOK = (sum(!validAEs) == 0)
-  # list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl,
-  #   nPC = nPC, validMEs = validMEs, validColors = validColors,
-  #   allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub,
-  #   validAEs = validAEs, allAEOK = allAEOK)
+
+
+#   else {
+#     PrinComps[, i] = pc
+#     ae = try({
+#       if (isPC[i])
+#         scaledExpr = scale(t(datModule))
+#       averExpr[, i] = rowMeans(scaledExpr, na.rm = TRUE)
+#       if (align == "along average") {
+#         if (verbose > 4)
+#           printFlush(paste(spaces, " .. aligning module eigengene with average expression."))
+#         corAve = cor(averExpr[, i], PrinComps[, i],
+#           use = "p")
+#         if (!is.finite(corAve))
+#           corAve = 0
+#         if (corAve < 0)
+#           PrinComps[, i] = -PrinComps[, i]
+#       }
+#       0
+#     }, silent = TRUE)
+#     if (inherits(ae, "try-error")) {
+#       if (!trapErrors)
+#         stop(ae)
+#       if (verbose > 0) {
+#         printFlush(paste(spaces, " ..Average expression calculation of module",
+#           modulename, "failed with the following error:"))
+#         printFlush(paste(spaces, "     ", ae, spaces,
+#           " ..the returned average expression vector will be invalid."))
+#       }
+#       warning(paste("Average expression calculation of module",
+#         modulename, "failed with the following error \n     ",
+#         ae, "The returned average expression vector will be invalid.\n"))
+#     }
+#     validAEs[i] = !inherits(ae, "try-error")
+#   }
+# }
+# allOK = (sum(!validMEs) == 0)
+# if (returnValidOnly && sum(!validMEs) > 0) {
+#   PrinComps = PrinComps[, validMEs, drop = FALSE]
+#   averExpr = averExpr[, validMEs, drop = FALSE]
+#   varExpl = varExpl[, validMEs, drop = FALSE]
+#   validMEs = rep(TRUE, times = ncol(PrinComps))
+#   isPC = isPC[validMEs]
+#   isHub = isHub[validMEs]
+#   validAEs = validAEs[validMEs]
+# }
+# allPC = (sum(!isPC) == 0)
+# allAEOK = (sum(!validAEs) == 0)
+# list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl,
+#   nPC = nPC, validMEs = validMEs, validColors = validColors,
+#   allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub,
+#   validAEs = validAEs, allAEOK = allAEOK)
 
 
 # Take in pearsons r and n (number of experiments) to calculate the t-stat and p value (student's t distribution)
