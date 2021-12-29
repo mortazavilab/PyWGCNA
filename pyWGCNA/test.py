@@ -118,6 +118,8 @@ def run_WGCNA():
     dynamicMods = WGCNA.cutreeHybrid(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
                                      minClusterSize=minModuleSize)
 
+    print("dynamicMods")
+
     # Convert numeric lables into colors
     dynamicColors = WGCNA.labels2colors(dynamicMods)
 

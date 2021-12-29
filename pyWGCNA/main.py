@@ -342,7 +342,7 @@ def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9,
 
     while startG < nGenes:
         endG = min(startG + blockSize, nGenes)
-        print("\t..working on genes", (startG+1), "through", endG, "of", nGenes, flush=True)
+        print("\t..working on genes", (startG + 1), "through", endG, "of", nGenes, flush=True)
 
         useGenes = list(range(startG, endG))
         nGenes1 = len(useGenes)
@@ -902,16 +902,20 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
     if verbose > 2:
         print("..Assigning Tree Cut stage labels..", flush=True)
 
-    Colors = np.repeat(0, nPoints)
-    coreLabels = np.repeat(0, nPoints)
+    Colors = np.zeros((nPoints,))
+    coreLabels = np.zeros((nPoints,))
     clusterBranches = np.where(isCluster)[0].tolist()
-    branchLabels = np.repeat(0, nBranches)
+    branchLabels = np.zeros((nBranches,))
     color = 0
 
     for clust in clusterBranches:
         color = color + 1
-        Colors[branch_singletons[[clust]].astype(int) - 1] = color
-        SmallLabels[branch_singletons[[clust]].astype(int) - 1] = 0
+        tmp = branch_singletons[[clust]].astype(int) - 1
+        tmp = tmp[tmp != -1]
+        tmp.dropna(inplace=True)
+        tmp = tmp.iloc[:, 0].astype(int)
+        Colors[tmp] = color
+        SmallLabels[tmp] = 0
         coresize = coreSizeFunc(branch_nSingletons[clust], minClusterSize)
         Core = branch_singletons.loc[0:coresize, clust] - 1
         Core = Core.astype(int).tolist()
@@ -1007,19 +1011,19 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                             nPAMed = nPAMed + 1
                 UnlabeledExist = (sum(Colors == 0) > 0)
         else:
-            ClusterDiam = np.repeat(0, nProperLabels)
+            ClusterDiam = np.zeros((nProperLabels,))
             for cluster in range(nProperLabels):
-                InCluster = np.where(Colors == cluster)[0].tolist()
+                InCluster = np.where(Colors == (cluster + 1))[0].tolist()
                 nInCluster = len(InCluster)
                 DistInCluster = distM.iloc[InCluster, InCluster]
                 if nInCluster > 1:
-                    AveDistInClust = DistInCluster.sum(axis=0) / (nInCluster - 1)
-                    ClusterDiam[cluster] = max(AveDistInClust)
-
+                    AveDistInClust = DistInCluster.sum(axis=1) / (nInCluster - 1)
+                    AveDistInClust.reset_index(drop=True, inplace=True)
+                    ClusterDiam[cluster] = AveDistInClust.max()
                 else:
                     ClusterDiam[cluster] = 0
 
-            ColorsX = Colors
+            ColorsX = Colors.copy()
             if respectSmallClusters:
                 FSmallLabels = pd.Categorical(SmallLabels)
                 SmallLabLevs = pd.to_numeric(FSmallLabels.categories)
@@ -1045,9 +1049,9 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                                     'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
                                 nearest = MeanMeanDist.idxmin()
                                 NearestDist = MeanMeanDist[nearest]
-                                nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-                                if NearestDist < ClusterDiam[nearestLabel] or NearestDist < maxPamDist:
-                                    Colors[InCluster] = nearestLabel
+                                if np.logical_or(np.all(NearestDist < ClusterDiam[nearest]),
+                                                 NearestDist < maxPamDist).tolist()[0]:
+                                    Colors[InCluster] = nearest
                                     nPAMed = nPAMed + len(InCluster)
                                 else:
                                     Colors[InCluster] = -1
@@ -1055,25 +1059,22 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         labelsOnBranch = list(range(nProperLabels))
                         useObjects = np.where(ColorsX != 0)[0].tolist()
                         for sclust in SmallLabLevs[SmallLabLevs != 0]:
-                            print(sclust)
                             InCluster = np.where(SmallLabels == sclust)[0].tolist()
                             DistSClustClust = distM.iloc[InCluster, useObjects]
                             MeanDist = DistSClustClust.mean(axis=0)
                             useColorsFac = pd.Categorical(ColorsX[useObjects])
                             MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
-                            MeanMeanDist = MeanDist.groupby('useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
-                            nearest = MeanMeanDist[['MeanDist']].idxmin()
-                            NearestDist = MeanMeanDist.loc[nearest, 'MeanDist']
-                            print(NearestDist)
-                            nearestLabel = pd.to_numeric(useColorsFac.categories[nearest - 1])
-                            print(nearestLabel)
-                            print(np.all(NearestDist < ClusterDiam[nearestLabel]))
-                            if np.all(NearestDist < ClusterDiam[nearestLabel]) or NearestDist < maxPamDist:
-                                Colors[InCluster] = nearestLabel
+                            MeanMeanDist = MeanDist.groupby(
+                                'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
+                            nearest = MeanMeanDist[['MeanDist']].idxmin().astype(int)
+                            NearestDist = MeanMeanDist[['MeanDist']].min()
+                            if np.logical_or(np.all(NearestDist < ClusterDiam[nearest]),
+                                             NearestDist < maxPamDist).tolist()[0]:
+                                Colors[InCluster] = nearest
                                 nPAMed = nPAMed + len(InCluster)
                             else:
                                 Colors[InCluster] = -1
-            Unlabeled = list(range(nPoints))[Colors == 0]
+            Unlabeled = np.where(Colors == 0)[0].tolist()
             if len(Unlabeled) > 0:
                 if pamRespectsDendro:
                     unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
@@ -1083,58 +1084,58 @@ def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                         labelsOnBranch = branchLabels[basicOnBranch]
                         useObjects = ColorsX in np.unique(labelsOnBranch)
                         useColorsFac = pd.Categorical(ColorsX[useObjects])
-                        UnassdToClustDist = distM.iloc[useObjects, obj].groupby('useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
+                        UnassdToClustDist = distM.iloc[useObjects, obj].groupby(
+                            'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
                         nearest = UnassdToClustDist.idxmin()
                         NearestClusterDist = UnassdToClustDist[nearest]
                         nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-                        if NearestClusterDist < ClusterDiam[nearestLabel] or NearestClusterDist < maxPamDist:
-                            Colors[obj] = nearestLabel
+                        if np.logical_or(np.all(NearestClusterDist < ClusterDiam[nearest]),
+                                         NearestClusterDist < maxPamDist).tolist()[0]:
+                            Colors[obj] = nearest
                             nPAMed = nPAMed + 1
                 else:
-                    useObjects = list(range(nPoints))[ColorsX != 0]
+                    useObjects = np.where(ColorsX != 0)[0].tolist()
                     useColorsFac = pd.Categorical(ColorsX[useObjects])
-                    nUseColors = len(useColorsFac.categories)
-                    UnassdToClustDist = np.mean(distM.iloc[useObjects, Unlabeled].groupby('useColorsFac'), axis=0)  # apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
-                    UnassdToClustDist.shape = (nUseColors, len(Unlabeled))
-                    nearest = np.argmin(UnassdToClustDist, axis=0)  # apply(UnassdToClustDist, 2, which.min)
-                    nearestDist = np.amin(UnassdToClustDist, axis=0)  # apply(UnassdToClustDist, 2, min)
-                    nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-                    assign = nearestDist < ClusterDiam[nearestLabel] or nearestDist < maxPamDist
-                    Colors[Unlabeled[assign]] = nearestLabel[assign]
-                    nPAMed = nPAMed + sum(assign)
-
+                    tmp = pd.DataFrame(distM.iloc[useObjects, Unlabeled])
+                    tmp['group'] = useColorsFac
+                    UnassdToClustDist = tmp.groupby(
+                        ['group']).mean()  # apply(distM[useObjects, Unlabeled], 2, tapply, useColorsFac, mean)
+                    nearest = np.subtract(UnassdToClustDist.idxmin(axis=0), np.ones(UnassdToClustDist.shape[1])).astype(
+                        int)  # apply(UnassdToClustDist, 2, which.min)
+                    nearestDist = UnassdToClustDist.min(axis=0)  # apply(UnassdToClustDist, 2, min)
+                    nearestLabel = nearest + 1
+                    sumAssign = np.sum(np.logical_or(nearestDist < ClusterDiam[nearest], nearestDist < maxPamDist))
+                    assign = np.where(np.logical_or(nearestDist < ClusterDiam[nearest], nearestDist < maxPamDist))[
+                        0].tolist()
+                    tmp = [Unlabeled[x] for x in assign]
+                    Colors[tmp] = [nearestLabel[x] for x in assign]
+                    nPAMed = nPAMed + sumAssign
         if verbose > 2:
             print("....assigned", nPAMed, "objects to existing clusters.", flush=True)
 
     Colors[Colors < 0] = 0
     UnlabeledExist = (sum(Colors == 0) > 0)
-    NumLabs = pd.Categorical(Colors).codes
-    Sizes = pd.DataFrame(NumLabs).value_counts()
-    OrdNumLabs = np.repeat(1, len(NumLabs))
+    NumLabs = list(map(int, Colors.copy()))
+    Sizes = pd.DataFrame(NumLabs).value_counts().sort_index()
+    OrdNumLabs = pd.DataFrame({"Name": NumLabs, "Value": np.repeat(1, len(NumLabs))})
+
     if UnlabeledExist:
         if len(Sizes) > 1:
-            SizeRank = stats.rankdata(-1 * Sizes[1:len(Sizes)], method='ordinal') + 1
-            for i in range(1, len(Sizes)):
-                OrdNumLabs[NumLabs == Sizes[i]] = SizeRank[i - 1]
+            SizeRank = np.insert(stats.rankdata(-1 * Sizes[1:len(Sizes)], method='ordinal') + 1, 0, 1)
+        else:
+            SizeRank = 1
+        for i in range(len(NumLabs)):
+            OrdNumLabs.Value[i] = SizeRank[NumLabs[i]]
     else:
         SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
-        for i in range(len(Sizes)):
-            OrdNumLabs[NumLabs == Sizes[i]] = SizeRank[i]
+        for i in range(len(NumLabs)):
+            OrdNumLabs.Value[i] = SizeRank[NumLabs[i]]
 
-    ordCoreLabels = OrdNumLabs - UnlabeledExist
-    ordCoreLabels[coreLabels == 0] = 0
     if verbose > 0:
         print("..done.", flush=True)
 
-    if nExternalSplits == 0:
-        mergeDiagnostics = mergeDiagnostics
-    else:
-        mergeDiagnostics = np.concatenate((mergeDiagnostics, externalMergeDiags), axis=0)
-
-    return OrdNumLabs - UnlabeledExist
-    # , ordCoreLabels, SmallLabels, onBranch, mergeDiagnostics, maxCoreScatter, \
-    #    minGap, maxAbsCoreScatter, minAbsGap, minExternalSplit, nBranches, IndMergeToBranch, RootBranch, isCluster, \
-    #    nMerge + 1
+    OrdNumLabs.Value = OrdNumLabs.Value - UnlabeledExist
+    return OrdNumLabs
 
 
 def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
