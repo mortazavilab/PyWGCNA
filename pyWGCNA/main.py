@@ -1,4 +1,6 @@
 import math
+from _curses import flushinp
+
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
@@ -1145,8 +1147,9 @@ def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
         by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
                         for name, color in colors.items())
         colorSeq = [name for hsv, name in by_hsv]
+        colorSeq.remove(naColor)
 
-    if all(isinstance(x, int) for x in labels):
+    if all(isinstance(x, int) for x in labels.Value):
         if zeroIsGrey:
             minLabel = 0
         else:
@@ -1157,10 +1160,9 @@ def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
     else:
         factors = pd.Categorical(labels)
         nLabels = factors.codes
-        nLabels.shape = labels.shape
 
-    if np.max(nLabels) > len(colorSeq):
-        nRepeats = int((np.max(labels) - 1) / len(colorSeq)) + 1
+    if np.max(nLabels.Value) > len(colorSeq):
+        nRepeats = int((np.max(labels.Value) - 1) / len(colorSeq)) + 1
         print(f"{bcolors.WARNING}labels2colors: Number of labels exceeds number of avilable colors.\n"
               f"Some colors will be repeated {str(nRepeats)} times.{bcolors.ENDC}")
         extColorSeq = colorSeq
@@ -1171,22 +1173,21 @@ def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
         nRepeats = 1
         extColorSeq = colorSeq
 
-    colors = np.repeat("grey", len(nLabels))
-    fin = [v is not None for v in nLabels]
+    colors = np.repeat("grey", nLabels.shape[0])
+    fin = [v is not None for v in nLabels.Value]
     colors[np.where(not fin)[0].tolist()] = naColor
-    finLabels = nLabels[np.where(fin)[0].tolist()]
-    if len(finLabels[np.where(finLabels != 0)]) != 0:
-        colors[np.where(fin)[0].tolist() and np.where(finLabels != 0)] = extColorSeq[
-            finLabels[np.where(finLabels != 0)]]
-
-    if labels.shape is None:
-        colors.shape = labels.shape
+    finLabels = nLabels.loc[fin, :]
+    if len(finLabels.Value[finLabels.Value != 0]) != 0:
+        colors[fin and finLabels.Value != 0] = [extColorSeq[x] for x in finLabels.Value[finLabels.Value != 0].tolist()]
 
     return colors
 
 
 def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", excludeGrey=False, grey="grey",
-                     subHubs=True, softPower=6, scale=True, verbose=0, trapErrors=False):
+                     subHubs=True, softPower=6, scaleVar=True, verbose=0, trapErrors=False):
+    check = True
+    pc = None
+    returnValidOnly = trapErrors
     if all(isinstance(x, int) for x in colors):
         grey = 0
     if verbose == 1:
@@ -1206,7 +1207,7 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
     maxVarExplained = 10
     if nPC > maxVarExplained:
         print(f"{bcolors.WARNING}Given nPC is too large. Will use value {str(maxVarExplained)}{bcolors.ENDC}")
-    nVarExplained = np.min(nPC, maxVarExplained)
+    nVarExplained = min(nPC, maxVarExplained)
     modlevels = pd.Categorical(colors).categories
     if excludeGrey:
         if len(np.whare(modlevels != grey)) > 0:
@@ -1228,9 +1229,9 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
     isPC = np.repeat(True, len(modlevels))
     isHub = np.repeat(False, len(modlevels))
     validColors = colors
-    PrinComps.index = ["ME" + str(modlevel) for modlevel in modlevels]
-    averExpr.index = ["AE" + str(modlevel) for modlevel in modlevels]
-    if expr.index is None:
+    PrinComps.columns = ["ME" + str(modlevel) for modlevel in modlevels]
+    averExpr.columns = ["AE" + str(modlevel) for modlevel in modlevels]
+    if expr.index is not None:
         PrinComps.index = np.unique(expr.index)
         averExpr.index = np.unique(expr.index)
     for i in range(len(modlevels)):
@@ -1239,14 +1240,14 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
         modulename = modlevels[i]
         restrict1 = (colors == modulename)
         if verbose > 2:
-            print(" ...", sum(restrict1), "genes", flush=True)
-        datModule = expr[:, restrict1].transpose().values
+            print(" ...", np.sum(restrict1), "genes", flush=True)
+        datModule = expr.loc[:, restrict1].T
         n = datModule.shape[0]
         p = datModule.shape[1]
         try:
-            if datModule.shape[1] > 1 and impute:
+            if datModule.shape[0] > 1 and impute:
                 seedSaved = True
-                if any(datModule is None):
+                if datModule.isnull().values.any():
                     if verbose > 5:
                         print(" ...imputing missing data", flush=True)
                     # define imputer
@@ -1256,35 +1257,35 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
                     # transform the dataset
                     datModule = imputer.transform(
                         datModule)  # datModule = impute.knn(datModule, k = min(10, nrow(datModule) - 1))
-                    try:
-                        if datModule['data'] is not None:
-                            datModule = datModule['data']
-                    except:
-                        pass
             if verbose > 5:
                 print(" ...scaling", flush=True)
-            if scale:
-                datModule = scale(datModule.transpose()).transpose()
+            if scaleVar:
+                datModule = pd.DataFrame(scale(datModule.T).T, index=datModule.index, columns=datModule.columns)
             if verbose > 5:
                 print(" ...calculating SVD", flush=True)
-            svd1 = np.linalg.svd(datModule)  # TODO:, nu = min(n, p, nPC), nv = min(n, p, nPC))
+            u, d, v = np.linalg.svd(datModule)
+            u = u[:, 0:min(n, p, nPC)]
+            v = v[0:min(n, p, nPC), :]
             if verbose > 5:
                 print(" ...calculating PVE", flush=True)
-            veMat = np.corrcoef(svd1['v', 0:np.min(n, p, nVarExplained)], datModule.transpose())
-            varExpl[0:np.min(n, p, nVarExplained), i] = (veMat ** 2).mean(axis=0)
-            pc = svd1['v', 0]
+            tmp = datModule.T.copy()
+            tmp[[str(x) for x in range(min(n, p, nVarExplained))]] = v[0:min(n, p, nVarExplained), :].T
+            veMat = pd.DataFrame(np.corrcoef(tmp.T)).iloc[-1, :-1].T
+            varExpl.iloc[0:min(n, p, nVarExplained), i] = (veMat ** 2).mean(axis=0)
+            pc = v[0].tolist()
         except:
             if not subHubs:
-                sys.exit(str(pc))
+                sys.exit("Error!")
             if subHubs:
                 if verbose > 0:
                     print(" ..principal component calculation for module", modulename,
                           "failed with the following error:", flush=True)
-                    print("     ", pc, " ..hub genes will be used instead of principal components.", flush=True)
+                    print("     ..hub genes will be used instead of principal components.", flush=True)
 
                 isPC[i] = False
+                check = True
                 try:
-                    scaledExpr = scale(datModule.tranpose())
+                    scaledExpr = pd.DataFrame(scale(datModule.T).T, index=datModule.index, columns=datModule.columns)
                     covEx = np.cov(scaledExpr)
                     covEx[not np.isfinite(covEx)] = 0
                     modAdj = np.abs(covEx) ** softPower
@@ -1303,72 +1304,61 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
                     varExpl[0, i] = np.mean(np.corrcoef(pcx, datModule.transpose()) ** 2)
                     pc = pcx
                 except:
-                    if not trapErrors:
-                        sys.exit(pc)
-                    if verbose > 0:
-                        print(" ..ME calculation of module", modulename, "failed with the following error:", flush=True)
-                        print("     ", pc, " ..the offending module has been removed.", flush=True)
-                    msg = "Eigengene calculation of module" + modulename + "failed with the following error \n" + pc + \
-                          "The offending module has been removed.\n"
-                    print(
-                        f"{bcolors.WARNING}Eigengene calculation of module {modulename} failed with the following error \n"
-                        f"{pc} The offending module has been removed.{bcolors.ENDC}")
-                    validMEs[i] = False
-                    isPC[i] = False
-                    isHub[i] = False
-                    validColors[restrict1] = grey
+                    check = False
+        if not check:
+            if not trapErrors:
+                sys.exit("Error!")
+            if verbose > 0:
+                print(" ..ME calculation of module", modulename, "failed with the following error:", flush=True)
+                print("     ", pc, " ..the offending module has been removed.", flush=True)
+            print(
+                f"{bcolors.WARNING}Eigengene calculation of module {modulename} failed with the following error \n"
+                f"{pc} The offending module has been removed.{bcolors.ENDC}")
+            validMEs[i] = False
+            isPC[i] = False
+            isHub[i] = False
+            validColors[restrict1] = grey
+        else:
+            PrinComps.iloc[:, i] = pc
+            try:
+                if isPC[i]:
+                    scaledExpr = scale(datModule.T)
+                averExpr.iloc[:, i] = scaledExpr.mean(axis=1)
+                if align == "along average":
+                    if verbose > 4:
+                        print(" .. aligning module eigengene with average expression.", flush=True)
+                    corAve = np.corrcoef(averExpr.iloc[:, i], PrinComps.iloc[:, i])[0, 1]
+                    if not np.isfinite(corAve):
+                        corAve = 0
+                    if corAve < 0:
+                        PrinComps.iloc[:, i] = -1 * PrinComps.iloc[:, i]
+                validAEs[i] = True
+            except:
+                if not trapErrors:
+                    sys.exit("Error!")
+                if verbose > 0:
+                    print(" ..Average expression calculation of module", modulename,
+                          "failed with the following error:", flush=True)
+                    print(" ..the returned average expression vector will be invalid.", flush=True)
 
+                print(f"{bcolors.WARNING}Average expression calculation of module {modulename} "
+                      f"failed with the following error.\nThe returned average expression vector will "
+                      f"be invalid.\n{bcolors.ENDC}")
 
-#   else {
-#     PrinComps[, i] = pc
-#     ae = try({
-#       if (isPC[i])
-#         scaledExpr = scale(t(datModule))
-#       averExpr[, i] = rowMeans(scaledExpr, na.rm = TRUE)
-#       if (align == "along average") {
-#         if (verbose > 4)
-#           printFlush(paste(spaces, " .. aligning module eigengene with average expression."))
-#         corAve = cor(averExpr[, i], PrinComps[, i],
-#           use = "p")
-#         if (!is.finite(corAve))
-#           corAve = 0
-#         if (corAve < 0)
-#           PrinComps[, i] = -PrinComps[, i]
-#       }
-#       0
-#     }, silent = TRUE)
-#     if (inherits(ae, "try-error")) {
-#       if (!trapErrors)
-#         stop(ae)
-#       if (verbose > 0) {
-#         printFlush(paste(spaces, " ..Average expression calculation of module",
-#           modulename, "failed with the following error:"))
-#         printFlush(paste(spaces, "     ", ae, spaces,
-#           " ..the returned average expression vector will be invalid."))
-#       }
-#       warning(paste("Average expression calculation of module",
-#         modulename, "failed with the following error \n     ",
-#         ae, "The returned average expression vector will be invalid.\n"))
-#     }
-#     validAEs[i] = !inherits(ae, "try-error")
-#   }
-# }
-# allOK = (sum(!validMEs) == 0)
-# if (returnValidOnly && sum(!validMEs) > 0) {
-#   PrinComps = PrinComps[, validMEs, drop = FALSE]
-#   averExpr = averExpr[, validMEs, drop = FALSE]
-#   varExpl = varExpl[, validMEs, drop = FALSE]
-#   validMEs = rep(TRUE, times = ncol(PrinComps))
-#   isPC = isPC[validMEs]
-#   isHub = isHub[validMEs]
-#   validAEs = validAEs[validMEs]
-# }
-# allPC = (sum(!isPC) == 0)
-# allAEOK = (sum(!validAEs) == 0)
-# list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl,
-#   nPC = nPC, validMEs = validMEs, validColors = validColors,
-#   allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub,
-#   validAEs = validAEs, allAEOK = allAEOK)
+    allOK = (sum(np.logical_not(validMEs)) == 0)
+    if returnValidOnly and sum(np.logical_not(validMEs)) > 0:
+        PrinComps = PrinComps[:, validMEs]
+        averExpr = averExpr[:, validMEs]
+        varExpl = varExpl[:, validMEs]
+        validMEs = np.repeat(True, PrinComps.shape[1])
+        isPC = isPC[validMEs]
+        isHub = isHub[validMEs]
+        validAEs = validAEs[validMEs]
+
+    allPC = (sum(np.logical_not(isPC)) == 0)
+    allAEOK = (sum(np.logical_not(validAEs)) == 0)
+
+    return PrinComps, averExpr, varExpl, nPC, validMEs, validColors, allOK, allPC, isPC, isHub, validAEs, allAEOK
 
 
 # Take in pearsons r and n (number of experiments) to calculate the t-stat and p value (student's t distribution)

@@ -118,35 +118,22 @@ def run_WGCNA():
     dynamicMods = WGCNA.cutreeHybrid(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
                                      minClusterSize=minModuleSize)
 
-    print("dynamicMods")
-
     # Convert numeric lables into colors
-    dynamicColors = WGCNA.labels2colors(dynamicMods)
-
-    print(dynamicColors)
+    dynamicColors = WGCNA.labels2colors(labels=dynamicMods)
 
 
 def run_WGCNA1():
-    TOM = pd.read_csv('test/output/data/TOM', header=0, index_col=0)
-    # TOM = pd.concat(TOM)
-    dissTOM = 1 - TOM
-    dissTOM = dissTOM.round(decimals=8)
+    datExpr = pd.read_csv('test/output/data/data_input', header=0, index_col=0)
+    #print(datExpr)
 
-    # Call the hierarchical clustering function
-    geneTree = WGCNA.hclust(squareform(dissTOM.values), method="average")
+    dynamicColors = pd.read_csv('test/input/dynamicColors', header=0).T.values[0]
+    #print(dynamicColors)
+    #print(len(dynamicColors))
 
-    # We like large modules, so we set the minimum module size relatively high:
-    minModuleSize = 50
-    # Module identification using dynamic tree cut:
-    dynamicMods = WGCNA.cutreeHybrid(dendro=geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
-                                     minClusterSize=minModuleSize)
+    MEList = WGCNA.moduleEigengenes(expr=datExpr, colors=dynamicColors)
 
-    print(dynamicMods)
-
-    # Convert numeric lables into colors
-    dynamicColors = WGCNA.labels2colors(dynamicMods)
-
-    print(dynamicColors)
+    print(MEList)
+    print(len(MEList))
 
     # Plot the dendrogram and colors underneath
     # pdf(file="../DynamicTreeCut.pdf", width=18, height=6);
