@@ -121,27 +121,50 @@ def run_WGCNA():
     # Convert numeric lables into colors
     dynamicColors = WGCNA.labels2colors(labels=dynamicMods)
 
+    # Calculate eigengenes
+    MEs, averageExpr, varExplained, nPC, validMEs, validColors, allOK, allPC, isPC, \
+    isHub, validAEs, allAEOK = WGCNA.moduleEigengenes(expr=datExpr, colors=dynamicColors)
+
+    MEs.drop(['MEgrey'], axis=1, inplace=True)
+    # Calculate dissimilarity of module eigengenes
+    MEDiss = pd.DataFrame(1 - np.corrcoef(MEs), index=MEs.columns, columns=MEs.columns)
+    # Cluster module eigengenes
+    METree = WGCNA.hclust(pdist(MEDiss), method="average")
+    # Plot the result
+    MEDissThres = 0.2
+    dendrogram(METree, color_threshold=MEDissThres, labels=MEDiss.index, leaf_rotation=90, leaf_font_size=8)
+    plt.axhline(y=MEDissThres, c='grey', lw=1, linestyle='dashed')
+    plt.title('Clustering of module eigengenes')
+    plt.xlabel('')
+    plt.ylabel('')
+    plt.tight_layout()
+    plt.savefig('test/output/plots/eigenesgenes.png')
+
+    # Call an automatic merging function
+    merge = WGCNA.mergeCloseModules(datExpr, dynamicColors, cutHeight=MEDissThres, verbose=3)
+    # The merged module colors
+    mergedColors = merge['colors']
+
 
 def run_WGCNA1():
     datExpr = pd.read_csv('test/output/data/data_input', header=0, index_col=0)
-    #print(datExpr)
-
     dynamicColors = pd.read_csv('test/input/dynamicColors', header=0).T.values[0]
-    #print(dynamicColors)
-    #print(len(dynamicColors))
 
     MEList = WGCNA.moduleEigengenes(expr=datExpr, colors=dynamicColors)
+    MEs = MEList['eigengenes']
+    MEs.drop(['MEgrey'], axis=1, inplace=True)
+    # Calculate dissimilarity of module eigengenes
+    MEDiss = pd.DataFrame(1 - np.corrcoef(MEs), index=MEs.columns, columns=MEs.columns)
+    # Cluster module eigengenes
+    METree = WGCNA.hclust(pdist(MEDiss), method="average")
+    # Plot the result
+    MEDissThres = 0.2
+    dendrogram(METree, color_threshold=MEDissThres, labels=MEDiss.index, leaf_rotation=90, leaf_font_size=8)
 
-    print(MEList)
-    print(len(MEList))
-
-    # Plot the dendrogram and colors underneath
-    # pdf(file="../DynamicTreeCut.pdf", width=18, height=6);
-    # plotDendroAndColors(geneTree, dynamicColors, "Dynamic Tree Cut",
-    #                     dendroLabels=FALSE, hang=0.03,
-    #                     addGuide=TRUE, guideHang=0.05,
-    #                     main="Gene dendrogram and module colors")
-    # dev.off();
+    # Call an automatic merging function
+    merge = WGCNA.mergeCloseModules(datExpr, dynamicColors, cutHeight=MEDissThres, verbose=3)
+    # The merged module colors
+    mergedColors = merge['colors']
 
 
 if __name__ == '__main__':

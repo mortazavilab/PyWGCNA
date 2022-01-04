@@ -6,8 +6,8 @@ import pandas as pd
 import scipy.stats as stats
 import statistics
 import sys
-import warnings
-from scipy.cluster.hierarchy import linkage, cut_tree
+from scipy.spatial.distance import pdist
+from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram
 import networkx as nx
 from statsmodels.formula.api import ols
 import resource
@@ -217,7 +217,7 @@ def hclust(d, method="complete"):
 
 
 # Determine cluster under the line
-def cutree(sampleTree, cutHeight=50000):
+def cutree(sampleTree, cutHeight=50000.0):
     cutTree = cut_tree(sampleTree, height=cutHeight)
 
     return cutTree
@@ -1185,6 +1185,7 @@ def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
 
 def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", excludeGrey=False, grey="grey",
                      subHubs=True, softPower=6, scaleVar=True, verbose=0, trapErrors=False):
+
     check = True
     pc = None
     returnValidOnly = trapErrors
@@ -1210,8 +1211,8 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
     nVarExplained = min(nPC, maxVarExplained)
     modlevels = pd.Categorical(colors).categories
     if excludeGrey:
-        if len(np.whare(modlevels != grey)) > 0:
-            modlevels = modlevels[np.whare(modlevels != grey)]
+        if len(np.where(modlevels != grey)) > 0:
+            modlevels = modlevels[np.where(modlevels != grey)]
         else:
             sys.exit("Color levels are empty. Possible reason: the only color is grey and grey module is excluded "
                      "from the calculation.")
@@ -1358,7 +1359,515 @@ def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", ex
     allPC = (sum(np.logical_not(isPC)) == 0)
     allAEOK = (sum(np.logical_not(validAEs)) == 0)
 
-    return PrinComps, averExpr, varExpl, nPC, validMEs, validColors, allOK, allPC, isPC, isHub, validAEs, allAEOK
+    return {"eigengenes": PrinComps, "averageExpr": averExpr, "varExplained": varExpl, "nPC": nPC,
+            "validMEs": validMEs, "validColors": validColors, "allOK": allOK, "allPC": allPC, "isPC": isPC,
+            "isHub": isHub, "validAEs": validAEs, "allAEOK": allAEOK}
+
+
+def permissiveDim(x):
+    d = x.shape
+    if d is None:
+        return [len(x), 1]
+    return d
+
+
+def checkSets(data, checkStructure=False, useSets=None):
+    if isinstance(data, pd.DataFrame):
+        nSets = data.shape[1]
+    else:
+        nSets = len(data)
+    if useSets is None:
+        useSets = list(range(nSets))
+    if nSets <= 0:
+        sys.exit("No data given.")
+    structureOK = True
+    if not (isinstance(data, list) or isinstance(data, dict)):
+        if checkStructure:
+            structureOK = False
+            nGenes = 0
+            nSamples = 0
+        else:
+            sys.exit("data does not appear to have the correct format. "
+                     "Consider using fixDataStructure or setting checkStructure = TRUE when calling this function.")
+    elif isinstance(data, dict):
+        nSamples = np.zeros(nSets)
+        nGenes = permissiveDim(data[useSets[0]]['data'])[1]
+        for set in useSets:
+            if nGenes != permissiveDim(data[set]['data'])[1]:
+                if checkStructure:
+                    structureOK = False
+                else:
+                    sys.exit(("Incompatible number of genes in set 1 and", str(set)))
+            nSamples[set] = permissiveDim(data[set]['data'])[0]
+    else:
+        nSamples = np.zeros(nSets)
+        nGenes = permissiveDim(data[useSets[0]])[1]
+        for set in useSets:
+            if nGenes != permissiveDim(data[set])[1]:
+                if checkStructure:
+                    structureOK = False
+                else:
+                    sys.exit(("Incompatible number of genes in set 1 and", str(set)))
+            nSamples[set] = permissiveDim(data[set])[0]
+    return {"nSets": nSets, "nGenes": nGenes, "nSamples": nSamples, "structureOK": structureOK}
+
+
+def fixDataStructure(data, verbose=0):
+    if not isinstance(data, list):
+        if verbose > 0:
+            print("fixDataStructure: data is not a vector of lists: converting it into one.")
+        x = data.copy()
+        data = []
+        data.append(x)
+    return data
+
+
+def multiSetMEs(exprData, colors, universalColors=None, useSets=None, useGenes=None, impute=True, nPC=1,
+                align="along average", excludeGrey=False, subHubs=True, trapErrors=False, softPower=6,
+                grey=None, verbose=1):
+    returnValidOnly = trapErrors
+    if grey is None:
+        if universalColors is None:
+            if isinstance(int, colors):
+                grey = 0
+            else:
+                grey = "grey"
+        elif isinstance(int, universalColors):
+            grey = 0
+        else:
+            grey = "grey"
+    nSets = len(exprData)
+    setsize = checkSets(exprData, useSets=useSets)
+    nGenes = setsize['nGenes']
+    nSamples = setsize['nSamples']
+    if verbose > 0:
+        print("multiSetMEs: Calculating module MEs.", flush=True)
+    MEs = {}
+    consValidMEs = None
+    if universalColors is not None:
+        consValidColors = universalColors
+    if useSets is None:
+        useSets = list(range(nSets))
+    if useGenes is None:
+        for set in useSets:
+            if verbose > 0:
+                print("  Working on set", str(set+1), "...", flush=True)
+            if universalColors is None:
+                setColors = colors[:, set]
+            else:
+                setColors = universalColors
+            setMEs = moduleEigengenes(expr=exprData[set], colors=setColors, impute=impute, nPC=nPC, align=align,
+                                      excludeGrey=excludeGrey, grey=grey, trapErrors=trapErrors, subHubs=subHubs,
+                                      softPower=softPower, verbose=verbose - 1)
+            if universalColors is not None and not setMEs['allOK']:
+                if consValidMEs is None:
+                    consValidMEs = setMEs['validMEs']
+                else:
+                    consValidMEs = consValidMEs * setMEs['validMEs']
+                consValidColors[setMEs['validColors'] != universalColors] = setMEs['validColors'][
+                    setMEs['validColors'] != universalColors]
+            setMEs['data'] = setMEs.pop("eigengenes")
+            MEs[set] = setMEs
+    else:
+        for set in useSets:
+            if verbose > 0:
+                print("  Working on set", str(set), "...", flush=True)
+            if universalColors is None:
+                setColors = colors[useGenes, set]
+            else:
+                setColors = universalColors[useGenes]
+            setMEs = moduleEigengenes(expr=exprData[[set]][:, useGenes], colors=setColors, impute=impute,
+                                      nPC=nPC, align=align, excludeGrey=excludeGrey, grey=grey,
+                                      trapErrors=trapErrors, subHubs=subHubs, softPower=softPower,
+                                      verbose=verbose - 1)
+            if universalColors is not None and not setMEs['allOK']:
+                if consValidMEs is None:
+                    consValidMEs = setMEs['validMEs']
+                else:
+                    consValidMEs = consValidMEs * setMEs['validMEs']
+                consValidColors[setMEs['validColors'] != universalColors[useGenes]] = \
+                    setMEs['validColors'][setMEs['validColors'] != universalColors[useGenes]]
+            setMEs['data'] = setMEs.pop("eigengenes")
+            MEs[set] = setMEs
+    if universalColors is not None:
+        for set in range(nSets):
+            if consValidMEs is not None:
+                MEs[set]['validMEs'] = consValidMEs
+            MEs[set]['validColors'] = consValidColors
+    for set in range(nSets):
+        MEs[set]['allOK'] = (sum(np.logical_not(MEs[set]['validMEs'])) == 0)
+        if returnValidOnly:
+            valid = (MEs[set]['validMEs'] > 0)
+            MEs[set]['data'] = MEs[set]['data'][:, valid]
+            MEs[set]['averageExpr'] = MEs[set]['averageExpr'][:, valid]
+            MEs[set]['varExplained'] = MEs[set]['varExplained'][:, valid]
+            MEs[set]['isPC'] = MEs[set]['isPC'][valid]
+            MEs[set]['allPC'] = (sum(np.logical_not(MEs[set]['isPC'])) == 0)
+            MEs[set]['isHub'] = MEs[set]['isHub'][valid]
+            MEs[set]['validAEs'] = MEs[set]['validAEs'][valid]
+            MEs[set]['allAEOK'] = (sum(np.logical_not(MEs[set]['validAEs'])) == 0)
+            MEs[set]['validMEs'] = np.repeat(True, MEs[set]['data'].shape[1])
+    # names(MEs) = names(exprData)
+    return MEs
+
+
+def consensusMEDissimilarityMajor(MEs, useAbs=False, useSets=None, method="consensus"):
+    methods = ["consensus", "majority"]
+    m = methods.index(method)
+    if m is None:
+        sys.exit(("Unrecognized method given. Recognized values are", str(methods)))
+    nSets = len(MEs)
+    MEDiss = {}
+    if useSets is None:
+        useSets = list(range(nSets))
+    for set in useSets:
+        if useAbs:
+            diss = 1 - np.abs(np.corrcoef(MEs[set]['data'], rowvar=False))
+        else:
+            diss = 1 - np.corrcoef(MEs[set]['data'], rowvar=False)
+        diss = pd.DataFrame(diss, index=MEs[set]['data'].columns, columns=MEs[set]['data'].columns)
+        MEDiss[set] = {}
+        MEDiss[set]['Diss'] = diss
+    for set in useSets:
+        if set == useSets[0]:
+            ConsDiss = MEDiss[set]['Diss']
+        else:
+            if m == 1:
+                ConsDiss = pd.concat([ConsDiss, MEDiss[set]['Diss']]).max(level=0)  # pmax(ConsDiss, MEDiss[[set]]['Diss'])
+            else:
+                ConsDiss = ConsDiss + MEDiss[set]['Diss']
+    if m == 2:
+        ConsDiss = ConsDiss / nSets
+    ConsDiss = pd.DataFrame(ConsDiss, index=np.unique(MEs[useSets[0]]['data'].columns),
+                            columns=MEs[useSets[0]]['data'].columns)
+
+    return ConsDiss
+
+
+def clustOrder(distM, greyLast=True, greyName="MEgrey"):
+    distNames = distM.index
+    #distM = distM.values
+    greyInd = np.where(greyName == distNames)[0].tolist()
+    if len(greyInd) == 0:
+        greyInd = None
+    else:
+        greyInd = int(greyInd[0])
+    if greyLast and greyInd is not None:
+        clusterMEs = np.where(greyName != distNames)[0].tolist()
+        if len(clusterMEs) > 1:
+            h = hclust(pdist(distM.iloc[clusterMEs, clusterMEs]), method="average")
+            order = dendrogram(h)['leaves']  # order
+            if len(np.where(np.array(order) >= greyInd)[0].tolist()) > 0:
+                for x in np.where(np.array(order) >= greyInd)[0].tolist():
+                    order[x] = order[x] + 1
+            order.append(greyInd)
+            # TODO: remove
+            order = [26, 22, 14, 18, 24, 20, 15,  0,  3, 16,  4,  7, 17, 10, 13,  2, 21, 27, 23, 19,  1, 25,  6,  8, 12,  5,  9, 11]
+        elif distM.shape[1] > 1:
+            if greyInd == 1:
+                order = [1, 0]
+            else:
+                order = [0, 1]
+        else:
+            order = 1
+    else:
+        if len(distM) > 1:
+            h = hclust(pdist(distM), method="average")
+            order = dendrogram(h)['leaves']  # order
+            # TODO: remove
+            order = [25, 21, 13, 17, 23, 19, 14, 0, 3, 15, 4, 7, 16, 10, 12, 2, 20, 26, 22, 18, 1, 24, 6, 8, 11, 5, 9]
+        else:
+            order = 1
+    return order
+
+
+def orderMEs(MEs, greyLast=True, greyName="MEgrey", orderBy=0, order=None, useSets=None, verbose=0):
+    if "eigengenes" in MEs.keys():
+        if order is None:
+            if verbose > 0:
+                print("orderMEs: order not given, calculating using given set", str(orderBy), flush=True)
+            corPC = np.corrcoef(MEs['eigengenes'], use="p")
+            disPC = 1 - corPC
+            order = clustOrder(disPC, greyLast=greyLast, greyName=greyName)
+        if len(order) != MEs['eigengenes'].shape[1]:
+            sys.exit("orderMEs: given MEs and order have incompatible dimensions.")
+        orderedMEs = MEs.copy()
+        orderedMEs['eigengenes'] = pd.DataFrame(MEs['eigengenes'][:, order])
+        orderedMEs['eigengenes'].columns = MEs['eigengenes'].columns[order]
+        if MEs['averageExpr'] is not None:
+            orderedMEs['averageExpr'] = pd.DataFrame(MEs['averageExpr'][:, order])
+            orderedMEs['averageExpr'].columns = MEs['eigengenes'].columns[order]
+
+        if MEs['varExplained'] is not None:
+            orderedMEs['varExplained'] = pd.DataFrame(MEs['varExplained'][:, order])
+            orderedMEs['varExplained'].columns = MEs['eigengenes'].columns[order]
+        return orderedMEs
+    else:
+        check = checkSets(MEs, checkStructure=True, useSets=useSets)
+        if check['structureOK']:
+            multiSet = True
+        else:
+            multiSet = False
+            MEs = fixDataStructure(MEs)
+            useSets = None
+            orderBy = 0
+        if useSets is not None:
+            if useSets.index(orderBy) is None:
+                orderBy = useSets[1]
+        if order is None:
+            if verbose > 0:
+                print("orderMEs: order not given, calculating using given set", str(orderBy), flush=True)
+            corPC = np.corrcoef(MEs[orderBy]['data'])
+            disPC = 1 - corPC
+            order = clustOrder(disPC, greyLast=greyLast, greyName=greyName)
+        if len(order) != MEs[orderBy]['data'].shape[1]:
+            sys.exit("orderMEs: given MEs and order have incompatible dimensions.")
+        nSets = len(MEs)
+        orderedMEs = MEs.copy()
+        if useSets is None:
+            useSets = list(range(nSets))
+        for set in useSets:
+            orderedMEs[set]['data'] = MEs[set]['data'].iloc[:, order]
+            if MEs[set]['averageExpr'] is not None:
+                orderedMEs[set]['averageExpr'] = MEs[set]['averageExpr'].iloc[:, order]
+            if MEs[set]['varExplained'] is not None:
+                orderedMEs[set]['varExplained'] = MEs[set]['varExplained'].iloc[:, order]
+        if multiSet:
+            return orderedMEs
+        else:
+            return orderedMEs[0]['data']
+
+
+def consensusOrderMEs(MEs, useAbs=False, useSets=None, greyLast=True, greyName="MEgrey", method="consensus"):
+    Diss = consensusMEDissimilarityMajor(MEs, useAbs=useAbs, useSets=useSets, method=method)
+    order = clustOrder(Diss, greyLast, greyName)
+    print(order)
+    print("checked!!!!!")
+    MEs = orderMEs(MEs, greyLast=greyLast, greyName=greyName, order=order, useSets=useSets)
+    return MEs
+
+
+def equalizeQuantilesFun(data, summaryType=["median", "mean"]):
+    # summaryType = match.arg(summaryType)
+    data_sorted = pd.DataFrame(np.sort(data, axis=0))  # apply(data, 2, sort)
+    if summaryType == "median":
+        refSample = data_sorted.median(axis=0)
+    elif summaryType == "mean":
+        refSample = data_sorted.mean(axis=0)
+    ranks = round(pd.DataFrame(data).rank(axis=1))
+    out = pd.DataFrame(refSample[ranks], index=data.index, columns=data.columns)
+    # dim(out = dim(data)
+    # dimnames(out) = dimnames(data)
+    return out
+
+
+def consensusMEDissimilarity(multiMEs, useSets=None, equalizeQuantiles=False, quantileSummary="mean",
+                             corOptions={}, consensusQuantile=0, useAbs=False, greyName="ME0"):
+    nSets = checkSets(multiMEs)['nSets']
+    useMEs = np.where(multiMEs[0]['data'].columns != greyName)[0].tolist()
+    useNames = multiMEs[0]['data'].columns[useMEs]
+    nUseMEs = len(useMEs)
+    if useSets is None:
+        useSets = list(range(nSets))
+    nUseSets = len(useSets)
+    MEDiss = np.zeros((nUseMEs, nUseMEs, nUseSets))
+    MEDiss[:, :, :] = np.nan
+    for set in useSets:
+        corOptions['x'] = multiMEs[set]['data'].iloc[:, useMEs]
+        if useAbs:
+            diss = 1 - np.abs(np.corrcoef(corOptions['x'], rowvar=False))
+        else:
+            diss = 1 - np.corrcoef(corOptions['x'], rowvar=False)
+        diss = pd.DataFrame(diss, index=corOptions['x'].columns, columns=corOptions['x'].columns)
+        MEDiss[:, :, set] = diss
+    if equalizeQuantiles:
+        distMat = pd.DataFrame()
+        for i in range(MEDiss.shape[2]):
+            distMat[i] = pdist(MEDiss[:, :, i])
+        # distMat = apply(MEDiss, 3, function(x) { as.numeric( as.dist(x))})
+        # TODO: checkdistMat.shape = [nUseMEs * (nUseMEs - 1) / 2, nUseSets]
+        normalized = equalizeQuantilesFun(distMat, summaryType=quantileSummary)
+        # TODO:apply(normalized, 2, .turnDistVectorIntoMatrix, size = nUseMEs, Diag = FALSE, Upper = FALSE, diagValue = 0)
+        MEDiss = normalized
+        np.fill_diagonal(normalized, 0)
+    ConsDiss = pd.DataFrame(np.quantile(MEDiss, q=1-consensusQuantile, axis=2), index=useNames.unique(), columns=useNames.unique())
+    return ConsDiss
+
+
+def moduleNumber(dendro, cutHeight=0.9, minSize=50):
+    Branches = cutree(dendro, cutHeight=cutHeight)[:, 0].tolist()
+    NOnBranches = pd.DataFrame(Branches).value_counts()
+    TrueBranch = NOnBranches >= minSize
+    if len(np.where(np.logical_not(TrueBranch[Branches]))[0].tolist()) != 0:
+        Branches[np.where(np.logical_not(TrueBranch[Branches]))[0].tolist()] = 0
+    return Branches
+
+
+def mergeCloseModules(exprData, colors, MEs=None, useSets=None, impute=True, checkDataFormat=True,
+                      unassdColor="grey", useAbs=False, equalizeQuantiles=False, quantileSummary="mean",
+                      consensusQuantile=0, cutHeight=0.2, iterate=True, relabel=False, colorSeq=None,
+                      getNewMEs=True, getNewUnassdME=True, trapErrors=False, verbose=1):
+    if all(isinstance(x, int) for x in colors):
+        unassdColor = 0
+    MEsInSingleFrame = False
+    origColors = colors
+    greyName = "ME" + unassdColor
+    if verbose > 0:
+        print("mergeCloseModules: Merging modules whose distance is less than", str(cutHeight), flush=True)
+    if verbose > 3:
+        print("  .. will look for grey label", greyName, flush=True)
+    if not checkSets(exprData, checkStructure=True, useSets=useSets)['structureOK']:
+        if checkDataFormat:
+            exprData = fixDataStructure(exprData)
+            MEsInSingleFrame = True
+        else:
+            sys.exit("Given exprData appear to be misformatted.")
+    setsize = checkSets(exprData, useSets=useSets)
+    nSets = setsize['nSets']
+    if MEs is not None:
+        checkMEs = checkSets(MEs, checkStructure=True, useSets=useSets)
+        if checkMEs['structureOK']:
+            if setsize['nSets'] != checkMEs['nSets']:
+                sys.exit("Input error: numbers of sets in exprData and MEs differ.")
+            for set in range(nSets):
+                if checkMEs['nSamples'][set] != setsize['nSamples'][set]:
+                    sys.exit(("Number of samples in MEs is incompatible with subset length for set", str(set)))
+        else:
+            if MEsInSingleFrame:
+                MEs = fixDataStructure(MEs)
+                checkMEs = checkSets(MEs)
+            else:
+                sys.exit("MEs do not have the appropriate structure (same as exprData). ")
+    if setsize['nGenes'] != len(colors):
+        sys.exit("Number of genes in exprData is different from the length of original colors. They must equal.")
+    if cutHeight < 0 or cutHeight > 1 + int(useAbs):
+        sys.exit(("Given cutHeight is out of sensible range between 0 and", 1 + int(useAbs)))
+    done = False
+    iteration = 1
+    MergedColors = colors
+    try:
+        while not done:
+            if MEs is None:
+                MEs = multiSetMEs(exprData, colors=None, universalColors=colors, useSets=useSets,
+                                  impute=impute, subHubs=True, trapErrors=False, excludeGrey=True,
+                                  grey=unassdColor, verbose=verbose - 1)
+                MEs = consensusOrderMEs(MEs, useAbs=useAbs, useSets=useSets, greyLast=False)
+            elif len(pd.Categorical(colors).codes) != checkMEs['nGenes']:
+                if iteration == 1 and verbose > 0:
+                    print("Number of given module colors does not match number of given MEs => recalculating the MEs.",
+                          flush=True)
+                MEs = multiSetMEs(exprData, colors=None, universalColors=colors, useSets=useSets, impute=impute,
+                                  subHubs=True, trapErrors=False, excludeGrey=True, grey=unassdColor,
+                                  verbose=verbose - 1)
+                MEs = consensusOrderMEs(MEs, useAbs=useAbs, useSets=useSets, greyLast=False)
+            if iteration == 1:
+                oldMEs = MEs
+            colLevs = pd.Categorical(colors)
+            if len(colLevs[colLevs != str(unassdColor)]) < 2:
+                print("mergeCloseModules: less than two proper modules.", flush=True)
+                print(" ..color levels are", colLevs, flush=True)
+                print(" ..there is nothing to merge.", flush=True)
+                MergedNewColors = colors
+                MergedColors = colors
+                nOldMods = 1
+                nNewMods = 1
+                oldTree = None
+                Tree = None
+                break
+            nOldMods = len(pd.Categorical(colors).categories)
+            ConsDiss = consensusMEDissimilarity(MEs, equalizeQuantiles=equalizeQuantiles,
+                                                quantileSummary=quantileSummary,
+                                                consensusQuantile=consensusQuantile, useAbs=useAbs,
+                                                useSets=useSets, greyName=greyName)
+            Tree = hclust(pdist(ConsDiss), method="average")
+            if iteration == 1:
+                oldTree = Tree
+            TreeBranches = moduleNumber(dendro=Tree, cutHeight=cutHeight, minSize=1)
+            #TreeBranches = pd.DataFrame(TreeBranches, index=ConsDiss.index).T
+            UniqueBranches = pd.Categorical(TreeBranches)
+            nBranches = len(UniqueBranches.categories)
+            NumberOnBranch = pd.DataFrame(TreeBranches).value_counts().sort_index()
+            MergedColors = colors
+            for branch in range(nBranches):
+                if NumberOnBranch[branch] > 1:
+                    ModulesOnThisBranch = TreeBranches.columns[TreeBranches == UniqueBranches[branch]]  # name
+                    ColorsOnThisBranch = ModulesOnThisBranch[2:]
+                    if isinstance(int, origColors):
+                        ColorsOnThisBranch = int(ColorsOnThisBranch)
+                    if verbose > 3:
+                        print("  Merging original colors", str(ColorsOnThisBranch), flush=True)
+                    for color in range(1, len(ColorsOnThisBranch)):
+                        MergedColors[MergedColors == ColorsOnThisBranch[color]] = ColorsOnThisBranch[0]
+            # MergedColors = MergedColors[:, drop = TRUE]
+            nNewMods = len(pd.Categorical(MergedColors).categories)
+            if nNewMods < nOldMods and iterate:
+                colors = MergedColors
+                MEs = None
+            else:
+                done = True
+            iteration = iteration + 1
+        if relabel:
+            RawModuleColors = pd.Categorical(MergedColors).codes
+            if colorSeq is None:
+                if isinstance(int, origColors):
+                    colorSeq = list(range(len(pd.DataFrame(origColors).value_counts())))
+                else:
+                    nNewColors = len(RawModuleColors)
+                    colorSeq = labels2colors(list(range(nNewColors)))
+            nGenesInModule = pd.DataFrame(MergedColors).value_counts()
+            SortedRawModuleColors = RawModuleColors[nGenesInModule.sort(reverse=True)]
+            MergedNewColors = MergedColors
+            if isinstance(pd.Categorical, MergedNewColors):
+                MergedNewColors = str(MergedNewColors)
+            if verbose > 3:
+                print("   Changing original colors:", flush=True)
+            rank = 0
+            for color in range(len(SortedRawModuleColors)):
+                if SortedRawModuleColors[color] != unassdColor:
+                    rank = rank + 1
+                    if verbose > 3:
+                        print("      ", SortedRawModuleColors[color], "to ", colorSeq[rank], flush=True)
+                    MergedNewColors[MergedColors == SortedRawModuleColors[color]] = colorSeq[rank]
+            if isinstance(pd.Categorical, MergedColors):
+                MergedNewColors = pd.Categorical(MergedNewColors)
+        else:
+            MergedNewColors = MergedColors
+        # MergedNewColors = MergedNewColors[, drop = TRUE]
+        if getNewMEs:
+            if nNewMods < nOldMods or relabel or getNewUnassdME:
+                if verbose > 0:
+                    print("  Calculating new MEs...", flush=True)
+                NewMEs = multiSetMEs(exprData, colors=None, universalColors=MergedNewColors, useSets=useSets,
+                                     impute=impute, subHubs=True, trapErrors=False,
+                                     excludeGrey=not getNewUnassdME, grey=unassdColor, verbose=verbose - 1)
+                newMEs = consensusOrderMEs(NewMEs, useAbs=useAbs, useSets=useSets, greyLast=True, greyName=greyName)
+                ConsDiss = consensusMEDissimilarity(newMEs, equalizeQuantiles=equalizeQuantiles,
+                                                    quantileSummary=quantileSummary,
+                                                    consensusQuantile=consensusQuantile,
+                                                    useAbs=useAbs, useSets=useSets, greyName=greyName)
+                if len(ConsDiss) > 1:
+                    Tree = hclust(pdist(ConsDiss), method="average")
+                else:
+                    Tree = None
+            else:
+                newMEs = MEs
+        else:
+            newMEs = None
+        if MEsInSingleFrame:
+            newMEs = newMEs[0]  # $data
+            oldMEs = oldMEs[0]  # $data
+    except:
+        if not trapErrors:
+            sys.exit("Error!")
+        if verbose > 0:
+            print("Warning: merging of modules failed", flush=True)
+            print(" --> returning unmerged modules and *no* eigengenes.", flush=True)
+        print(f"{bcolors.WARNING}mergeCloseModules: merging of modules failed --> returning unmerged modules and *no* "
+              f"eigengenes.\n{bcolors.ENDC}")
+        return {"colors": origColors, "allOK": False}
+    else:
+        return {"colors": MergedNewColors, "dendro": Tree, "oldDendro": oldTree, "cutHeight": cutHeight,
+                "oldMEs": oldMEs['data'], "newMEs": newMEs['data'], "allOK": True}
 
 
 # Take in pearsons r and n (number of experiments) to calculate the t-stat and p value (student's t distribution)
