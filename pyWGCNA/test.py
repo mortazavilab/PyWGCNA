@@ -144,32 +144,17 @@ def run_WGCNA():
     merge = WGCNA.mergeCloseModules(datExpr, dynamicColors, cutHeight=MEDissThres, verbose=3)
     # The merged module colors
     mergedColors = merge['colors']
-
-
-def run_WGCNA1():
-    datExpr = pd.read_csv('test/output/data/data_input', header=0, index_col=0)
-    dynamicColors = pd.read_csv('test/input/dynamicColors', header=0).T.values[0]
-
-    MEList = WGCNA.moduleEigengenes(expr=datExpr, colors=dynamicColors)
-    MEs = MEList['eigengenes']
-    MEs.drop(['MEgrey'], axis=1, inplace=True)
-    # Calculate dissimilarity of module eigengenes
-    MEDiss = pd.DataFrame(1 - np.corrcoef(MEs), index=MEs.columns, columns=MEs.columns)
-    # Cluster module eigengenes
-    METree = WGCNA.hclust(pdist(MEDiss), method="average")
-    # Plot the result
-    MEDissThres = 0.2
-    dendrogram(METree, color_threshold=MEDissThres, labels=MEDiss.index, leaf_rotation=90, leaf_font_size=8)
-
-    # Call an automatic merging function
-    merge = WGCNA.mergeCloseModules(datExpr, dynamicColors, cutHeight=MEDissThres, verbose=3)
-    # The merged module colors
-    mergedColors = merge['colors']
+    # Eigengenes of the new merged modules:
+    mergedMEs = merge['newMEs']
+    # Rename to moduleColors
+    moduleColors = mergedColors
+    # Construct numerical labels corresponding to the colors
+    colorOrder = np.unique(moduleColors).tolist()
+    moduleLabels = [colorOrder.index(x) if x in colorOrder else None for x in moduleColors]
+    MEs = mergedMEs
 
 
 if __name__ == '__main__':
-    # preprocess()
+    preprocess()
 
-    # run_WGCNA()
-
-    run_WGCNA1()
+    run_WGCNA()
