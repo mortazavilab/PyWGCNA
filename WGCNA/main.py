@@ -1,6 +1,4 @@
 import math
-from _curses import flushinp
-
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
