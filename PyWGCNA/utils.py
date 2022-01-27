@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from comparison import *
+from PyWGCNA.comparison import *
 
 # bcolors
 HEADER = '\033[95m'

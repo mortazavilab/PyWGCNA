@@ -21,8 +21,6 @@ import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 
 from PyWGCNA.geneExp import *
-from PyWGCNA.utils import *
-from comparison import *
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
@@ -170,6 +168,7 @@ class WGCNA(GeneExp):
             plt.xlabel('Samples')
             plt.ylabel('Distances')
             plt.tight_layout()
+            plt.close()
             plt.savefig(self.outputPath + '/figures/sampleClusteringCleaning.png')
 
         # Determine cluster under the line
@@ -212,6 +211,7 @@ class WGCNA(GeneExp):
             ax[1].title.set_text('Mean connectivity')
 
             fig.tight_layout()
+            plt.close(fig)
             fig.savefig(self.outputPath + '/figures/summarypower.png')
 
         # Set Power
@@ -255,6 +255,7 @@ class WGCNA(GeneExp):
             plt.xlabel('')
             plt.ylabel('')
             plt.tight_layout()
+            plt.close()
             plt.savefig(self.outputPath + '/figures/eigenesgenes.png')
 
         # Call an automatic merging function
@@ -1509,6 +1510,8 @@ class WGCNA(GeneExp):
             sys.exit("moduleEigengenes: Error: expr is NULL.")
         if colors is None:
             sys.exit("moduleEigengenes: Error: colors is NULL.")
+        if isinstance(expr, dict):
+            expr = expr['data']
         if expr.shape is None or len(expr.shape) != 2:
             sys.exit("moduleEigengenes: Error: expr must be two-dimensional.")
         if expr.shape[1] != len(colors):
