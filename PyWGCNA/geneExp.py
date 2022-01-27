@@ -50,9 +50,9 @@ class GeneExp:
 
         self.expressionList = pd.read_csv(geneExpPath, sep=sep)
 
-        self.geneInfo = pd.DataFrame(self.expressionList.iloc[:, 0], columns=['gene_id'], index=self.expressionList.iloc[:, 0])
+        self.geneInfo = pd.DataFrame(self.expressionList.iloc[:, 0], columns=['gene_id'])
 
-        self.sampleInfo = pd.DataFrame(self.expressionList.iloc[0, :], columns=['sample_id'], index=self.expressionList.iloc[0, :])
+        self.sampleInfo = pd.DataFrame(range(len(self.expressionList.columns[1:])), columns=['sample_id'], index=self.expressionList.columns[1:])
 
         self.expressionList.index = self.expressionList.iloc[:, 0]  # gene_id
         # drop gene id columns
@@ -73,6 +73,7 @@ class GeneExp:
             raise ValueError("file does not exist!")
 
         samples = pd.read_csv(path, sep=sep)
+        samples.index = self.sampleInfo.index
         self.sampleInfo = pd.concat([self.sampleInfo, samples], axis=1)
 
     def getGeneInfo(self):

@@ -14,20 +14,21 @@ from matplotlib import colors as mcolors
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import scale
 import random
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import pickle
+import seaborn as sns
+import matplotlib.patches as mpatches
+import matplotlib.gridspec as gridspec
 
 from PyWGCNA.geneExp import *
 from PyWGCNA.utils import *
-
-
-# adding pyWGCNA to the system path
-sys.path.insert(0, '/Users/nargesrezaie/Documents/MortazaviLab/PyWGCNA/PyWGCNA')
-from geneExp import GeneExp
-
+from comparison import *
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
+
+plt.rcParams["axes.edgecolor"] = "black"
+plt.rcParams["axes.linewidth"] = 1
 
 # public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
@@ -84,18 +85,14 @@ class WGCNA(GeneExp):
                 WGCNA (PyWGCNA): WGCNA object
         """
 
-    def __init__(self, name='WGCNA',
-                 powers=None,
-                 networkType="signed hybrid", adjacencyType="signed hybrid", TOMType="signed",
-                 minModuleSize=50, naColor="grey", cut=float('inf'), MEDissThres=0.2, verbose=3,
+    def __init__(self, name='WGCNA', powers=None, networkType="signed hybrid", adjacencyType="signed hybrid",
+                 TOMType="signed", minModuleSize=50, naColor="grey", cut=float('inf'), MEDissThres=0.2, verbose=3,
                  geneExpPath='', sep=' ', save=False, outputPath=None):
-
+        super().__init__(geneExpPath, sep)
         if powers is None:
             powers = list(range(1, 11)) + list(range(11, 21, 2))
 
         self.name = name
-
-        self.geneExpression = GeneExp(geneExpPath=geneExpPath, sep=sep)
 
         self.save = save
         if outputPath is None:
@@ -103,6 +100,8 @@ class WGCNA(GeneExp):
 
         self.cut = cut
         self.datExpr = None
+        self.metadata = None
+        self.metadata_colors = {}
         self.datTraits = None
 
         self.networkType = networkType
@@ -141,7 +140,7 @@ class WGCNA(GeneExp):
                 os.makedirs(self.outputPath + '/figures/')
 
     def preprocess(self):
-        self.datExpr = self.geneExpression.getGeneExp()
+        self.datExpr = self.getGeneExp()
         # Prepare and clean data
         # Remove rows with less than 1 TPM
         self.datExpr = self.datExpr.loc[(self.datExpr > 1).any(axis=1), :]
@@ -272,6 +271,11 @@ class WGCNA(GeneExp):
         self.moduleLabels = [colorOrder.index(x) if x in colorOrder else None for x in self.moduleColors]
         self.MEs = mergedMEs
 
+        # Recalculate MEs with color labels
+        self.datME = WGCNA.moduleEigengenes(self.datExpr, self.moduleColors)['eigengenes']
+        self.datME.drop(['MEgrey'], axis=1)
+        self.MEs = WGCNA.orderMEs(self.datME)
+
     def runWGCNA(self):
         print(f"{BOLD}{OKBLUE}Pre processing...{ENDC}")
         WGCNA.preprocess(self)
@@ -282,49 +286,58 @@ class WGCNA(GeneExp):
         return self
 
     def analyseWGCNA(self):
+        print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
+
         self.updateDatTraits()
+
+        print(f"{OKCYAN}calculating module trait relationship ...{ENDC}")
         # Define numbers of genes and samples
         nGenes = self.datExpr.shape[1]
         nSamples = self.datExpr.shape[0]
-        # Recalculate MEs with color labels
-        self.datME = WGCNA.moduleEigengenes(self.datExpr, self.moduleColors)['eigengenes']
-        self.datME.drop(['MEgrey'], axis=1)
-        self.MEs = WGCNA.orderMEs(self.datME)
-        self.moduleTraitCor = np.corrcoef(self.MEs, self.datTraits)
+        names = np.concatenate((self.MEs.columns, self.datTraits.columns))
+        self.moduleTraitCor = pd.DataFrame(np.corrcoef(self.MEs.T, self.datTraits.T),
+                                           index=names, columns=names)
+        self.moduleTraitCor = self.moduleTraitCor.iloc[0:self.MEs.shape[1], self.MEs.shape[1]:]
         self.moduleTraitPvalue = WGCNA.corPvalue(self.moduleTraitCor, nSamples)
 
         # Plot the result
         if self.save:
-            fig, ax = plt.subplots()
-            im = ax.imshow(self.moduleTraitCor)
-
+            fig, ax = plt.subplots(figsize=(self.moduleTraitPvalue.shape[0] * 1.5,
+                                            self.moduleTraitPvalue.shape[1] * 1.5))
             # names
-            xlabels = self.datTraits.columns[1:]
-            ylabels = []
+            xlabels = []
             for label in self.MEs.columns:
-                ylabels.append(label[2:].capitalize())
-
-            # Show all ticks and label them with the respective list entries
-            ax.set_xticks(np.arange(len(xlabels)), labels=xlabels)
-            ax.set_yticks(np.arange(len(ylabels)), labels=ylabels)
-
-            # Rotate the tick labels and set their alignment.
-            plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-                     rotation_mode="anchor")
+                xlabels.append(label[2:].capitalize())
+            ylabels = self.datTraits.columns
 
             # Loop over data dimensions and create text annotations.
-            for i in range(len(ylabels)):
-                for j in range(len(xlabels)):
-                    # Will display correlations and their p-values
-                    text = str(self.moduleTraitCor.round(decimals=2).iloc[i, j]) + "\n(" + \
-                          str(self.moduleTraitPvalue.round(decimals=1).iloc[i, j]) + ")"
-                    ax.text(j, i, text, ha="center", va="center", color="w")
+            tmp_cor = self.moduleTraitCor.T.round(decimals=2)
+            tmp_pvalue = self.moduleTraitPvalue.T.round(decimals=3)
+            labels = (np.asarray(["{0}\n({1})".format(cor, pvalue)
+                                  for cor, pvalue in zip(tmp_cor.values.flatten(),
+                                                         tmp_pvalue.values.flatten())]))\
+                .reshape(self.moduleTraitCor.T.shape)
 
+            sns.set(font_scale=1.5)
+            sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu',
+                        ax=ax, annot_kws={'size': 20, "weight": "bold"},
+                        xticklabels=xlabels, yticklabels=ylabels)
+            plt.yticks(rotation=0)
             ax.set_title(f"Module-trait Relationships heatmap for {self.name}")
             fig.tight_layout()
+            plt.close(fig)
             fig.savefig(self.outputPath + '/figures/Module-traitRelationships.png')
+        print("\tDone..\n")
 
         self.addGeneList()
+
+        if self.save:
+            # Select module probes
+            modules = np.unique(self.moduleColors).tolist()
+            metadata = self.sampleInfo.columns.tolist()
+            metadata.remove('sample_id')
+            for module in modules:
+                self.plotModuleEigenGene(module, metadata)
 
         return self
 
@@ -1718,8 +1731,7 @@ class WGCNA(GeneExp):
             if verbose > 0:
                 print("fixDataStructure: data is not a vector of lists: converting it into one.")
             x = data.copy()
-            data = []
-            data.append(x)
+            data = {0: {'data': x}}
         return data
 
     @staticmethod
@@ -1860,7 +1872,7 @@ class WGCNA(GeneExp):
             clusterMEs = np.where(greyName != distNames)[0].tolist()
             if len(clusterMEs) > 1:
                 h = WGCNA.hclust(pdist(distM.iloc[clusterMEs, clusterMEs]), method="average")
-                order = dendrogram(h)['leaves']  # order
+                order = dendrogram(h, no_plot=True)['leaves']  # order
                 if len(np.where(np.array(order) >= greyInd)[0].tolist()) > 0:
                     for x in np.where(np.array(order) >= greyInd)[0].tolist():
                         order[x] = order[x] + 1
@@ -1875,7 +1887,7 @@ class WGCNA(GeneExp):
         else:
             if len(distM) > 1:
                 h = WGCNA.hclust(pdist(distM), method="average")
-                order = dendrogram(h)['leaves']  # order
+                order = dendrogram(h, no_plot=True)['leaves']  # order
             else:
                 order = 1
         return order
@@ -1886,8 +1898,8 @@ class WGCNA(GeneExp):
             if order is None:
                 if verbose > 0:
                     print("orderMEs: order not given, calculating using given set", str(orderBy), flush=True)
-                corPC = np.corrcoef(MEs['eigengenes'], use="p")
-                disPC = 1 - corPC
+                disPC = 1 - np.corrcoef(MEs['eigengenes'], rowvar=False)
+                disPC = pd.DataFrame(disPC, index=MEs['eigengenes'].index, columns=MEs['eigengenes'].index)
                 order = WGCNA.clustOrder(disPC, greyLast=greyLast, greyName=greyName)
             if len(order) != MEs['eigengenes'].shape[1]:
                 sys.exit("orderMEs: given MEs and order have incompatible dimensions.")
@@ -1917,8 +1929,8 @@ class WGCNA(GeneExp):
             if order is None:
                 if verbose > 0:
                     print("orderMEs: order not given, calculating using given set", str(orderBy), flush=True)
-                corPC = np.corrcoef(MEs[orderBy]['data'])
-                disPC = 1 - corPC
+                disPC = 1 - np.corrcoef(MEs[orderBy]['data'], rowvar=False)
+                disPC = pd.DataFrame(disPC, index=MEs[orderBy]['data'].columns, columns=MEs[orderBy]['data'].columns)
                 order = WGCNA.clustOrder(disPC, greyLast=greyLast, greyName=greyName)
             if len(order) != MEs[orderBy]['data'].shape[1]:
                 sys.exit("orderMEs: given MEs and order have incompatible dimensions.")
@@ -1928,10 +1940,12 @@ class WGCNA(GeneExp):
                 useSets = list(range(nSets))
             for set in useSets:
                 orderedMEs[set]['data'] = MEs[set]['data'].iloc[:, order]
-                if MEs[set]['averageExpr'] is not None:
-                    orderedMEs[set]['averageExpr'] = MEs[set]['averageExpr'].iloc[:, order]
-                if MEs[set]['varExplained'] is not None:
-                    orderedMEs[set]['varExplained'] = MEs[set]['varExplained'].iloc[:, order]
+                if "averageExpr" in MEs[set].keys():
+                    if MEs[set]['averageExpr'] is not None:
+                        orderedMEs[set]['averageExpr'] = MEs[set]['averageExpr'].iloc[:, order]
+                if "varExplained" in MEs[set].keys():
+                    if MEs[set]['varExplained'] is not None:
+                        orderedMEs[set]['varExplained'] = MEs[set]['varExplained'].iloc[:, order]
             if multiSet:
                 return orderedMEs
             else:
@@ -2175,10 +2189,12 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def corPvalue(cor, nSamples):
-        T = np.sqrt(nSamples - 2) * cor / np.sqrt(1 - cor ** 2)
-        return 2 * t.cdf(np.abs(T), nSamples - 2)
+        T = np.sqrt(nSamples - 2) * (cor / np.sqrt(1 - (cor ** 2)))
+        pt = 1 - pd.DataFrame(t.cdf(np.abs(T), nSamples - 2), index=T.index, columns=T.columns)
+        return 2 * pt
 
     def addGeneList(self):
+        print(f"{OKCYAN}Adding genes for each modules ...{ENDC}")
         # Select module probes
         modules = np.unique(self.moduleColors).tolist()
         for module in modules:
@@ -2186,7 +2202,9 @@ class WGCNA(GeneExp):
             probes = self.datExpr.columns
             inModule = np.where(self.moduleColors == module)
 
-            self.geneModules[module] = self.TOM.index[inModule]
+            self.geneModules[module] = pd.DataFrame(probes[inModule], columns=['gene_id'])
+
+        print("\tDone..\n")
 
     def getDatExpr(self):
         return self.datExpr
@@ -2214,8 +2232,25 @@ class WGCNA(GeneExp):
         picklefile.close()
 
     def updateDatTraits(self):
-        index = self.geneExpression.sampleInfo.sample_id.isin(self.datExpr.index)
-        self.datTraits = self.sampleInfo[index]
+        index = self.sampleInfo.index.isin(self.datExpr.index)
+        tmp = self.sampleInfo[index]
+        self.datTraits = pd.DataFrame(tmp.sample_id)
+        for i in range(1, tmp.shape[1]):
+            if len(np.unique(tmp.iloc[:, i])) == 2:
+                self.datTraits[tmp.columns[i]] = tmp.iloc[:, i]
+                org = np.unique(tmp.iloc[:, i]).tolist()
+                rep = list(range(len(org)))
+                self.datTraits.replace(to_replace=org, value=rep,
+                                       inplace=True)
+            elif len(np.unique(tmp.iloc[:, i])) > 2:
+                for name in np.unique(tmp.iloc[:, i]):
+                    self.datTraits[name] = tmp.iloc[:, i]
+                    org = np.unique(tmp.iloc[:, i])
+                    rep = np.repeat(0, len(org))
+                    rep[np.where(org == name)] = 1
+                    org = org.tolist()
+                    rep = rep.tolist()
+                    self.datTraits.replace(to_replace=org, value=rep, inplace=True)
 
     def getModuleName(self):
         return np.unique(self.moduleColors).tolist()
@@ -2247,89 +2282,67 @@ class WGCNA(GeneExp):
 
         return modules
 
-    def compareWGCNA(self, WGCNA):
-        if self.name == WGCNA.name:
-            name1 = self.name + "1"
-            name2 = WGCNA.name + "2"
+    def setMetadataColor(self, col, cmap):
+        # check if obs_col is even there
+        if col not in self.sampleInfo.columns.tolist():
+            print(f"{WARNING}Metadata column {col} not found!{ENDC}")
+            return None
+        self.metadata_colors[col] = cmap
+
+    def plotModuleEigenGene(self, moduleName, metadata):
+        modules = np.unique(self.moduleColors).tolist()
+        if np.all(moduleName not in modules):
+            print(f"{WARNING}Module name does not exist in {ENDC}")
+            return None
         else:
-            name1 = self.name
-            name2 = WGCNA.name
-        num = len(self.geneModules.keys()) * len(WGCNA.geneModules.keys())
-        df = pd.DataFrame(columns=[name1, name2, name1 + "_size", name2 + "_size", "number", "fraction(%)", "P_value"], index=range(num))
+            metadata.reverse()
+            heatmap = scale(self.datExpr.iloc[:, self.moduleColors == moduleName]).T
+            ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
+            ME['sample_name'] = self.datME.index
 
-        genes = []
-        count = 0
-        for i in range(len(self.geneModules.keys())):
-            node1 = self.geneModules[self.geneModules.keys()[i]]
-            genes = genes + node1
-            for j in range(len(WGCNA.geneModules.keys())):
-                node2 = WGCNA.geneModules[WGCNA.geneModules.keys()[j]]
+            fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(26, len(metadata) * 5),
+                                    sharex='col', gridspec_kw={
+                    'height_ratios': [len(metadata) * 0.4, len(metadata) * 0.5, len(metadata) * 1.5],
+                    'width_ratios': [20, 2]})
+            gs = axs[0, 1].get_gridspec()
+            # remove the underlying axes
+            for ax in axs[:, 1]:
+                ax.remove()
+            ax_legend = fig.add_subplot(gs[:, 1])
+            ax_legend.axis('off')
+            axs_legend = gridspec.GridSpecFromSubplotSpec(max(8, len(metadata)), 1, subplot_spec=ax_legend)
 
-                df[name1][count] = self.geneModules.keys()[i]
-                df[name2][count] = WGCNA.geneModules.keys()[j]
-                df[name1 + '_size'][count] = len(node1)
-                df[name2 + '_size'][count] = len(node2)
-                num = np.intersect1d(node1, node2)
-                df['number'][count] = len(num)
-                df['fraction(%)'][count] = len(num) / len(node2) * 100
-                count = count + 1
+            ind = [i + 0.5 for i in range(ME.shape[0])]
+            for m in metadata:
+                handles = []
+                x = ind
+                y = np.repeat(3000 * metadata.index(m), len(ind))
+                color = self.sampleInfo[m].values
+                for n in list(self.metadata_colors[m].keys()):
+                    color = np.where(color == n, self.metadata_colors[m][n], color)
+                    patch = mpatches.Patch(color=self.metadata_colors[m][n], label=n)
+                    handles.append(patch)
+                axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
+                ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                ax_legend.legend(title=m, handles=handles)
+                ax_legend.axis('off')
+                fig.add_subplot(ax_legend)
 
-                genes = genes + node2
+            axs[0, 0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
+            axs[0, 0].set_ylim(-2000, np.max(y) + 2000)
+            axs[0, 0].grid(False)
+            axs[0, 0].axis('off')
 
-        genes = list(set(genes))
-        nGenes = len(genes)
+            axs[1, 0].bar(ind, ME.eigengeneExp, align='center', color='black')
+            axs[1, 0].set_ylabel('eigengeneExp')
+            axs[1, 0].set_facecolor('white')
 
-        count = 0
-        for i in range(len(self.geneModules.keys())):
-            for j in range(len(WGCNA.geneModules.keys())):
-                table = np.array([[nGenes - df[name1][count] - df[name2][count] + df['number'][count],
-                                   df[name1][count] - df['number'][count]],
-                                  [df[name2][count] - df['number'][count],
-                                   df['number'][count]]])
-                oddsr, p = fisher_exact(table, alternative='two-sided')
-                df['P_value'][count] = p
-                count = count + 1
+            sns.heatmap(heatmap, cmap="RdBu",
+                        cbar=False,  # cbar_ax=axs[2,1],
+                        yticklabels=False, xticklabels=False,
+                        ax=axs[2, 0])
+            plt.close(fig)
+            fig.savefig(self.outputPath + '/figures/ModuleHeatmapEigengene' + moduleName + '.png')
 
-        return df
-
-    def compareSingleCell(self, sc):
-        list_sn = np.unique(sc['cluster'])
-        num = len(self.geneModules.keys()) * len(list_sn)
-        df = pd.DataFrame(columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"], index=range(num))
-
-        genes = []
-        count = 0
-        for i in range(len(self.geneModules.keys())):
-            node1 = self.geneModules[self.geneModules.keys()[i]]
-            genes = genes + node1
-            for j in range(len(list_sn)):
-                node2 = sc[sc['cluster'] == list_sn[j], :]
-
-                df['WGCNA'][count] = self.geneModules.keys()[i]
-                df['sc'][count] = "N" + str(list_sn[j])
-                df['WGCNA_size'][count] = len(node1)
-                df['sc_size'][count] = len(node2)
-                num = np.intersect1d(node1, node2)
-                df['number'][count] = len(num)
-                df['fraction(%)'][count] = len(num) / len(node2) * 100
-                df['cellType'][count] = sc['cellType'][np.where(sc['cluster'] == list_sn[j]).tolist()[0]]
-                count = count + 1
-
-                genes = genes + node2
-
-        genes = list(set(genes))
-        nGenes = len(genes)
-
-        count = 0
-        for i in range(len(self.geneModules.keys())):
-            for j in range(len(list_sn)):
-                table = np.array([[nGenes - df['WGCNA'][count] - df['sc'][count] + df['number'][count],
-                                   df['WGCNA'][count] - df['number'][count]],
-                                  [df['sc'][count] - df['number'][count],
-                                   df['number'][count]]])
-                oddsr, p = fisher_exact(table, alternative='two-sided')
-                df['P_value'][count] = p
-                count = count + 1
-
-        return df
+        return None
 

@@ -1,5 +1,9 @@
 import os
 import pickle
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from comparison import *
 
 # bcolors
 HEADER = '\033[95m'
@@ -13,6 +17,7 @@ BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
 
+# read WGCNA obj
 def read_WGCNA(file):
     if not os.path.isfile(file):
         raise ValueError('WGCNA object not found at given path!')
@@ -22,3 +27,21 @@ def read_WGCNA(file):
 
     print(f"{BOLD}{OKBLUE}Reading WGCNA done!{ENDC}")
     return wgcna
+
+
+# compare two WGCNA
+def compareWGCNA(WGCNA1, WGCNA2):
+    compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
+                         geneModule1=WGCNA1.geneModules, geneModule2=WGCNA2.geneModules)
+    compare.compareWGCNA()
+
+    return compare
+
+
+# compare WGCNA to single cell
+def compareSingleCell(WGCNA, sc):
+    compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.geneModules,
+                         geneMarker=sc, sc=True)
+    compare.compareSingleCell()
+
+    return compare
