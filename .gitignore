@@ -1,0 +1,19 @@
+# compliation
+.idea/
+__pycache__/
+*/__pycache__/
+*ipynb_checkpoint*
+
+
+# tutorials data
+tutorials/5xFAD_ABI3/
+tutorials/figures/
+tutorials/.ipynb_checkpoints/
+tutorials/ABI3.p
+
+# other
+.DS_Store
+
+# pip stuff
+dist/
+PyWGCNA.egg-info/

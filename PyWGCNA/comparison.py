@@ -1,6 +1,6 @@
-from PyWGCNA.geneExp import *
-from PyWGCNA.wgcna import *
-from PyWGCNA.utils import *
+import pandas as pd
+import numpy as np
+from scipy.stats import fisher_exact
 
 
 class Comparison:

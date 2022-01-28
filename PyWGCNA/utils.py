@@ -1,8 +1,5 @@
-import os
 import pickle
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
+
 from PyWGCNA.comparison import *
 
 # bcolors

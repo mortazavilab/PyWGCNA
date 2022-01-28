@@ -7,7 +7,7 @@ import statistics
 import sys
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram
-from scipy.stats import t, fisher_exact
+from scipy.stats import t
 from statsmodels.formula.api import ols
 import resource
 from matplotlib import colors as mcolors
