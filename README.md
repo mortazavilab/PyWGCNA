@@ -12,4 +12,4 @@ will add later
 
 ## Tutorials
 
-for now look at jupyter notebook in the test directory
+- [Run WGCNA](https://github.com/mortazavilab/PyWGCNA/tree/main/tutorials): How to load data into PyWGCNA and find modules and analyse them
