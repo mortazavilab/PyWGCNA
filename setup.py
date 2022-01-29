@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='PyWGCNA',  # the name of your package
     packages=['PyWGCNA'],  # same as above
-    version='0.0.1',  # version number
+    version='0.0.3',  # version number
     license='MIT',  # license type
     description='PyWGCNA is a Python package designed to do Weighted correlation network analysis (WGCNA)',
     # short description
