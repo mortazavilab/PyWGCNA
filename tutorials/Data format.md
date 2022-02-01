@@ -15,6 +15,7 @@ samples with excessive numbers of missing entries.
 * [Data cleaning and pre-processing](Data%20format.md#data-input-cleaning-and-pre-processing)
 
 ## Data Input
+
 ###Gene Expression
 The expression data is a table which the rows are 
 genes and columns are samples, the first column is 
@@ -153,7 +154,7 @@ with too many missing values.
 1. Remove genes without any expression more 
 than one (or you can define the number by 
 changing `TPMcutoff` value) across all samples.
-2. `goodSamplesGenes()` function to check 
+2. `goodSamplesGenes()` function to find 
 genes and samples with too many missing values.
 3. Cluster the samples (use [Hierarchical clustering](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy)
 from [scipy](https://scipy.org/)) to see if 
