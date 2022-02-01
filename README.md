@@ -8,8 +8,20 @@ module membership measures. Users can also compare WGCNA from different datasets
 including single cell gene markers.
 
 ## Installation
-will add later
+
+To install PyWGCNA, python version 3.7 or greater is required.
+
+### Install from PyPi
+Install the most recent release, run
+
+`pip install PyWGCNA`
+
+### Install with the most recent commits
+git cloning the [PyWGCNA repository](https://github.com/mortazavilab/PyWGCNA), going to the PyWGCNA directory, run
+
+`pip install .`
 
 ## Tutorials
 
-- [Run WGCNA](https://github.com/mortazavilab/PyWGCNA/tree/main/tutorials): How to load data into PyWGCNA and find modules and analyse them
+- [Quick Start](https://github.com/mortazavilab/PyWGCNA/tree/main/tutorials): How to load data into PyWGCNA and find modules and analyse them
+- [Data input format]()

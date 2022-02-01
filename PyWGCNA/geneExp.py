@@ -54,6 +54,7 @@ class GeneExp:
             raise ValueError("file does not exist!")
 
         genes = pd.read_csv(path, sep=sep)
+        genes.index = self.geneInfo.index
         self.geneInfo = pd.concat([self.geneInfo, genes], axis=1)
 
     def addSampleInfo(self, path, sep=' '):

@@ -52,8 +52,13 @@ class WGCNA(GeneExp):
 
         Attributes
         ----------
+        name: str
+            name of the WGCNA we used to visualize data (default: 'WGCNA')
+
         geneExpression : class GeneExp
             gene expression class
+                geneExpPath: str
+                sep: str
 
         datExpr: dataframe
             clean gene expression matrix
@@ -61,30 +66,105 @@ class WGCNA(GeneExp):
         power : int
             power used to have scale free network (default: 6)
 
+        networkType : str
+            Type of network we can create (default: "signed hybrid")
+            possible Type: "unsigned", "signed" and "signed hybrid"
+
+        adjacencyType: str
+            Type of adjacency matrix (default: "signed hybrid")
+            possible Type: "unsigned", "signed" and "signed hybrid"
+
+        TOMType: str
+            Type of topological overlap matrix(TOM) (default: "signed")
+            possible Type: "NA", "unsigned", "signed"
+
         minModuleSize : int
             We like large modules, so we set the minimum module size relatively high (default: 50)
 
-        verbose : int
-            (default: 3)
+        naColor: str
+            color we used to identify genes we don't find any cluster for them (default: "grey")
+
+        cut: float
+            number to remove outlier sample (default: 'inf')
+            By default we don't remove any sample by hierarchical clustering
+
+        MEDissThres: int
+            (default: 0.2)
+
+        save: bool
+            define wether you want to save result of important steps or not (default: False)
+
+        outputPath: str
+            if save is TRUE, define where you want to save your data (default: '')
 
         Methods
         -------
-        goodSamplesGenes()
-            remove outlier genes and samples
+        main iner function to run PyWGCNA:
+            checkAndScaleWeights()
+                check and scale weights of gene expression
 
-        save_WGCNA(self)
+            goodSamplesGenes()
+                remove outlier genes and samples
+
+            goodGenesFun()
+                define good genes
+
+            hclust()
+                hierarchical clustering
+
+            cutree()
+                remove samples/genes/modules base on hierarchical clustering
+
+            pickSoftThreshold()
+                Analysis of scale free topology for multiple soft thresholding powers
+
+            adjacency()
+                Calculates (correlation or distance) network adjacency from given expression data or from a similarity
+
+            TOMsimilarity()
+                Calculation of the topological overlap matrix, and the corresponding dissimilarity, from a given adjacency matrix
+
+            cutreeHybrid()
+                Detect clusters in a dendorgram produced by the function hclust.
+
+            labels2colors()
+                Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.
+
+            moduleEigengenes()
+                Calculates module eigengenes (1st principal component) of modules in a given single dataset.
+
+            orderMEs()
+                Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.
+
+            multiSetMEs()
+                Calculates module eigengenes for several sets.
+
+            consensusMEDissimilarity()
+                Calculates consensus dissimilarity (1-cor) of given module eigengenes realized in several sets.
+
+            mergeCloseModules()
+                Merges modules in gene expression networks that are too close as measured by the correlation of their eigengenes.
+
+        getGeneModule()
+            return list of module corresponding to gene
+
+        addGeneList()
+            create gene list for each module
+
+        updateDatTraits()
+            update data trait module base on samples
+
+        plotModuleEigenGene()
+            plot module eigen gene figure in given module
+
+        saveWGCNA()
             Saves the current WGCNA in pickle format with the .p extension
 
-        read(file)
-        Read a WGCNA from a saved pickle file.
-            Parameters:
-                file (str): Name / path of WGCNA object
-            Returns:
-                WGCNA (PyWGCNA): WGCNA object
+
         """
 
     def __init__(self, name='WGCNA', powers=None, networkType="signed hybrid", adjacencyType="signed hybrid",
-                 TOMType="signed", minModuleSize=50, naColor="grey", cut=float('inf'), MEDissThres=0.2, verbose=3,
+                 TOMType="signed", minModuleSize=50, naColor="grey", cut=float('inf'), MEDissThres=0.2,
                  geneExpPath='', sep=' ', save=False, outputPath=None):
         super().__init__(geneExpPath, sep)
         if powers is None:
@@ -115,7 +195,6 @@ class WGCNA(GeneExp):
         self.TOMType = TOMType
         self.TOM = None
         self.minModuleSize = minModuleSize
-        self.verbose = verbose
         self.dynamicMods = None
         self.naColor = naColor
         self.MEs = None
@@ -2227,7 +2306,7 @@ class WGCNA(GeneExp):
     def saveTOM(self):
         self.TOM.to_csv(self.outputPath + '/TOM')
 
-    def save_WGCNA(self):
+    def saveWGCNA(self):
         print(f"{BOLD}{OKBLUE}Saving WGCNA as {self.name}.p{ENDC}")
 
         picklefile = open(self.outputPath + '/' + self.name + '.p', 'wb')

@@ -47,6 +47,12 @@ class Comparison:
         self.confusion = None
 
     def compareWGCNA(self):
+        """
+        Compare two list of modules from two bulk gene expression data set
+        Returns
+        -------
+        compare class
+        """""
         if self.name1 == self.name2:
             name1 = self.name1 + "1"
             name2 = self.name2 + "2"
@@ -92,6 +98,12 @@ class Comparison:
         self.confusion = df
 
     def compareSingleCell(self):
+        """
+        Compare bulk and single cell gene expression data
+        Returns
+        -------
+        compare class
+        """""
         list_sn = np.unique(self.geneMarker['cluster'])
         num = len(self.geneModule1.keys()) * len(list_sn)
         df = pd.DataFrame(columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"], index=range(num))
@@ -133,4 +145,10 @@ class Comparison:
         self.confusion = df
 
     def getConfusionMatrix(self):
+        """
+        get confusion matrix as a dataframe
+        Returns
+        -------
+        confusion matrix
+        """""
         return self.confusion
