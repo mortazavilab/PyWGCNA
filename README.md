@@ -23,5 +23,5 @@ git cloning the [PyWGCNA repository](https://github.com/mortazavilab/PyWGCNA), g
 
 ## Tutorials
 
-- [Quick Start](https://github.com/mortazavilab/PyWGCNA/tree/main/tutorials): How to load data into PyWGCNA and find modules and analyse them
-- [Data input format]()
+- [Quick Start](tutorials/Quick%20Start.ipynb): How to load data into PyWGCNA and find modules and analyse them
+- [Data input format](tutorials/Data%20format.md)

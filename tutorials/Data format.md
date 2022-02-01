@@ -7,7 +7,7 @@ network analysis, and clean the data by removing
 obvious outlier samples as well as genes and 
 samples with excessive numbers of missing entries.
 
-*(Data Input)[]
+*[Data Input](Data%20format.md/#Data_Input)
 
 ## Data Input
 ###Gene Expression
