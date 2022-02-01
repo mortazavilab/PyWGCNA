@@ -16,10 +16,7 @@ samples with excessive numbers of missing entries.
 
 ## Data Input
 
-Here we explain important data we used as an 
-input.
-
-###Gene Expression
+### Gene Expression
 The expression data is a table which the rows are 
 genes and columns are samples, the first column is 
 gonna be gene_id or gene name and
