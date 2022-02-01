@@ -32,7 +32,7 @@ class GeneExp:
             returns gene expression matrix
         """
 
-    def __init__(self, geneExpPath, sep=' '):
+    def __init__(self, geneExpPath=None, sep=' '):
         if not os.path.isfile(geneExpPath):
             raise ValueError("file does not exist!")
 

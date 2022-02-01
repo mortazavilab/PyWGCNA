@@ -7,7 +7,12 @@ network analysis, and clean the data by removing
 obvious outlier samples as well as genes and 
 samples with excessive numbers of missing entries.
 
-*[Data Input](Data%20format.md/#Data_Input)
+* [Data Input](Data%20format.md#data-input)
+    - [Gene Expression](Data%20format.md#gene-expression)
+    - [Gene Information](Data%20format.md#gene-information)
+    - [Sample Information](Data%20format.md#sample-information)
+    - [Other parameters](Data%20format.md#other-parameters)
+* [Data cleaning and pre-processing](Data%20format.md#data-input-cleaning-and-pre-processing)
 
 ## Data Input
 ###Gene Expression
@@ -120,7 +125,7 @@ have a same order as gene expression matrix.
 </table>
 </div>
 
-### Other parameter you should set
+### Other parameters
 * **name**: name of the WGCNA we used to visualize
 data (default: 'WGCNA')
 * **save**: define whether you want to save result 
@@ -139,3 +144,17 @@ code.
 * **TOMType**: Type of topological overlap matrix
 (TOM) (Options: "NA", "unsigned", "signed")
 
+
+
+## Data cleaning and pre-processing
+
+PyWGCNA checks data for genes and samples 
+with too many missing values.
+1. Remove genes without any expression more 
+than one (or you can define the number by 
+changing `TPMcutoff` value) across all samples.
+2. `goodSamplesGenes()` function to check 
+genes and samples with too many missing values.
+3. Cluster the samples (use [Hierarchical clustering](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy)
+from [scipy](https://scipy.org/)) to see if 
+there are any obvious outliers.

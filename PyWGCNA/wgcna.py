@@ -63,6 +63,9 @@ class WGCNA(GeneExp):
         datExpr: dataframe
             clean gene expression matrix
 
+        TPMcutoff: int
+            cut off for removing genes with out any specific expression
+
         power : int
             power used to have scale free network (default: 6)
 
@@ -163,7 +166,7 @@ class WGCNA(GeneExp):
 
         """
 
-    def __init__(self, name='WGCNA', powers=None, networkType="signed hybrid", adjacencyType="signed hybrid",
+    def __init__(self, name='WGCNA', TPMcutoff=1, powers=None, networkType="signed hybrid", adjacencyType="signed hybrid",
                  TOMType="signed", minModuleSize=50, naColor="grey", cut=float('inf'), MEDissThres=0.2,
                  geneExpPath='', sep=' ', save=False, outputPath=None):
         super().__init__(geneExpPath, sep)
@@ -175,6 +178,8 @@ class WGCNA(GeneExp):
         self.save = save
         if outputPath is None:
             self.outputPath = os.getcwd()
+
+        self.TPMcutoff = TPMcutoff
 
         self.cut = cut
         self.datExpr = None
@@ -220,7 +225,7 @@ class WGCNA(GeneExp):
         self.datExpr = self.getGeneExp()
         # Prepare and clean data
         # Remove rows with less than 1 TPM
-        self.datExpr = self.datExpr.loc[(self.datExpr > 1).any(axis=1), :]
+        self.datExpr = self.datExpr.loc[(self.datExpr > self.TPMcutoff).any(axis=1), :]
 
         # Check that all genes and samples have sufficiently low numbers of missing values.
         goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr, verbose=self.verbose)
