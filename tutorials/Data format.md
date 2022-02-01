@@ -12,7 +12,7 @@ samples with excessive numbers of missing entries.
     - [Gene Information](Data%20format.md#gene-information)
     - [Sample Information](Data%20format.md#sample-information)
     - [Other parameters](Data%20format.md#other-parameters)
-* [Data cleaning and pre-processing](Data%20format.md#data-input-cleaning-and-pre-processing)
+* [Data cleaning and pre-processing](Data%20format.md#data-cleaning-and-pre-processing)
 
 ## Data Input
 
