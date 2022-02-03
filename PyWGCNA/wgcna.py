@@ -242,6 +242,7 @@ class WGCNA(GeneExp):
         # Clustering
         sampleTree = WGCNA.hclust(pdist(self.datExpr.T), method="average")
 
+        plt.figure(figsize=(max(25, round(self.datExpr.shape[1]/20)), 10))
         dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.T.index, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
@@ -275,28 +276,27 @@ class WGCNA(GeneExp):
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr, powerVector=self.powers,
                                                        networkType=self.networkType)
 
+        fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
+        ax[0].plot(self.sft['Power'], -1 * np.sign(self.sft['slope']) * self.sft['SFT.R.sq'], 'o')
+        for i in range(len(self.powers)):
+            ax[0].text(self.sft.loc[i, 'Power'],
+                       -1 * np.sign(self.sft.loc[i, 'slope']) * self.sft.loc[i, 'SFT.R.sq'],
+                       str(self.sft.loc[i, 'Power']), ha="center", va="center", color='black', weight='bold')
+        ax[0].axhline(0.9, color='r')
+        ax[0].set_xlabel("Soft Threshold (power)")
+        ax[0].set_ylabel("Scale Free Topology Model Fit,signed R^2")
+        ax[0].title.set_text('Scale independence')
+
+        ax[1].plot(self.sft['Power'], self.sft['mean(k)'], 'o')
+        for i in range(len(self.powers)):
+            ax[1].text(self.sft.loc[i, 'Power'], self.sft.loc[i, 'mean(k)'],
+                       str(self.sft.loc[i, 'Power']), ha="center", va="center", color='r', weight='bold')
+        ax[1].set_xlabel("Soft Threshold (power)")
+        ax[1].set_ylabel("Mean Connectivity")
+        ax[1].title.set_text('Mean connectivity')
+
+        fig.tight_layout()
         if self.save:
-            fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
-            ax[0].plot(self.sft['Power'], -1 * np.sign(self.sft['slope']) * self.sft['SFT.R.sq'], 'o')
-            for i in range(len(self.powers)):
-                ax[0].text(self.sft.loc[i, 'Power'],
-                           -1 * np.sign(self.sft.loc[i, 'slope']) * self.sft.loc[i, 'SFT.R.sq'],
-                           str(self.sft.loc[i, 'Power']), ha="center", va="center", color='black', weight='bold')
-            ax[0].axhline(0.9, color='r')
-            ax[0].set_xlabel("Soft Threshold (power)")
-            ax[0].set_ylabel("Scale Free Topology Model Fit,signed R^2")
-            ax[0].title.set_text('Scale independence')
-
-            ax[1].plot(self.sft['Power'], self.sft['mean(k)'], 'o')
-            for i in range(len(self.powers)):
-                ax[1].text(self.sft.loc[i, 'Power'], self.sft.loc[i, 'mean(k)'],
-                           str(self.sft.loc[i, 'Power']), ha="center", va="center", color='r', weight='bold')
-            ax[1].set_xlabel("Soft Threshold (power)")
-            ax[1].set_ylabel("Mean Connectivity")
-            ax[1].title.set_text('Mean connectivity')
-
-            fig.tight_layout()
-            plt.close(fig)
             fig.savefig(self.outputPath + '/figures/summarypower.png')
 
         # Set Power
@@ -330,17 +330,15 @@ class WGCNA(GeneExp):
         a = squareform(MEDiss, checks=False)
         METree = WGCNA.hclust(a, method="average")
 
-        # Plot the result
+        plt.figure(figsize=(max(20, round(MEDiss.shape[1] / 20)), 10))
+        dendrogram(METree, color_threshold=self.MEDissThres, labels=MEDiss.columns, leaf_rotation=90,
+                   leaf_font_size=8)
+        plt.axhline(y=self.MEDissThres, c='grey', lw=1, linestyle='dashed')
+        plt.title('Clustering of module eigengenes')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.tight_layout()
         if self.save:
-            plt.figure(figsize=(15, 5))
-            dendrogram(METree, color_threshold=self.MEDissThres, labels=MEDiss.columns, leaf_rotation=90,
-                       leaf_font_size=8)
-            plt.axhline(y=self.MEDissThres, c='grey', lw=1, linestyle='dashed')
-            plt.title('Clustering of module eigengenes')
-            plt.xlabel('')
-            plt.ylabel('')
-            plt.tight_layout()
-            plt.close()
             plt.savefig(self.outputPath + '/figures/eigenesgenes.png')
 
         # Call an automatic merging function
@@ -385,32 +383,31 @@ class WGCNA(GeneExp):
         self.moduleTraitCor = self.moduleTraitCor.iloc[0:self.MEs.shape[1], self.MEs.shape[1]:]
         self.moduleTraitPvalue = WGCNA.corPvalue(self.moduleTraitCor, nSamples)
 
-        # Plot the result
+        fig, ax = plt.subplots(figsize=(self.moduleTraitPvalue.shape[0] * 1.5,
+                                        self.moduleTraitPvalue.shape[1] * 1.5))
+        # names
+        xlabels = []
+        for label in self.MEs.columns:
+            xlabels.append(label[2:].capitalize())
+        ylabels = self.datTraits.columns
+
+        # Loop over data dimensions and create text annotations.
+        tmp_cor = self.moduleTraitCor.T.round(decimals=2)
+        tmp_pvalue = self.moduleTraitPvalue.T.round(decimals=3)
+        labels = (np.asarray(["{0}\n({1})".format(cor, pvalue)
+                              for cor, pvalue in zip(tmp_cor.values.flatten(),
+                                                     tmp_pvalue.values.flatten())])) \
+            .reshape(self.moduleTraitCor.T.shape)
+
+        sns.set(font_scale=1.5)
+        sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu',
+                    ax=ax, annot_kws={'size': 20, "weight": "bold"},
+                    xticklabels=xlabels, yticklabels=ylabels)
+        plt.yticks(rotation=0)
+        ax.set_title(f"Module-trait Relationships heatmap for {self.name}")
+        fig.tight_layout()
+        plt.close(fig)
         if self.save:
-            fig, ax = plt.subplots(figsize=(self.moduleTraitPvalue.shape[0] * 1.5,
-                                            self.moduleTraitPvalue.shape[1] * 1.5))
-            # names
-            xlabels = []
-            for label in self.MEs.columns:
-                xlabels.append(label[2:].capitalize())
-            ylabels = self.datTraits.columns
-
-            # Loop over data dimensions and create text annotations.
-            tmp_cor = self.moduleTraitCor.T.round(decimals=2)
-            tmp_pvalue = self.moduleTraitPvalue.T.round(decimals=3)
-            labels = (np.asarray(["{0}\n({1})".format(cor, pvalue)
-                                  for cor, pvalue in zip(tmp_cor.values.flatten(),
-                                                         tmp_pvalue.values.flatten())]))\
-                .reshape(self.moduleTraitCor.T.shape)
-
-            sns.set(font_scale=1.5)
-            sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu',
-                        ax=ax, annot_kws={'size': 20, "weight": "bold"},
-                        xticklabels=xlabels, yticklabels=ylabels)
-            plt.yticks(rotation=0)
-            ax.set_title(f"Module-trait Relationships heatmap for {self.name}")
-            fig.tight_layout()
-            plt.close(fig)
             fig.savefig(self.outputPath + '/figures/Module-traitRelationships.png')
         print("\tDone..\n")
 
