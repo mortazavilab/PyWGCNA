@@ -6,10 +6,8 @@ __pycache__/
 
 
 # tutorials data
-tutorials/5xFAD_ABI3/
-tutorials/figures/
 tutorials/.ipynb_checkpoints/
-tutorials/ABI3.p
+tutorials/test.py
 
 # other
 .DS_Store

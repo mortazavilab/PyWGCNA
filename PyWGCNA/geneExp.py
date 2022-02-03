@@ -32,11 +32,19 @@ class GeneExp:
             returns gene expression matrix
         """
 
-    def __init__(self, geneExpPath=None, sep=' '):
-        if not os.path.isfile(geneExpPath):
-            raise ValueError("file does not exist!")
-
-        self.expressionList = pd.read_csv(geneExpPath, sep=sep)
+    def __init__(self, geneExp=None, geneExpPath=None, sep=' '):
+        if geneExpPath is not None:
+            if not os.path.isfile(geneExpPath):
+                raise ValueError("file does not exist!")
+            else:
+                self.expressionList = pd.read_csv(geneExpPath, sep=sep)
+        elif geneExp is None:
+            raise ValueError("geneExp and geneExpPath can not be empty at the same time!")
+        else:
+            if isinstance(geneExp, pd.DataFrame):
+                self.expressionList = geneExp
+            else:
+                raise ValueError("geneExp is not data frame!")
 
         self.geneInfo = pd.DataFrame(self.expressionList.iloc[:, 0], columns=['gene_id'])
 
@@ -45,9 +53,6 @@ class GeneExp:
         self.expressionList.index = self.expressionList.iloc[:, 0]  # gene_id
         # drop gene id columns
         self.expressionList = self.expressionList.drop([self.expressionList.columns[0]], axis=1)
-
-    def getGeneExp(self):
-        return self.expressionList
 
     def addGeneInfo(self, path, sep=' '):
         if not os.path.isfile(path):
@@ -64,9 +69,3 @@ class GeneExp:
         samples = pd.read_csv(path, sep=sep)
         samples.index = self.sampleInfo.index
         self.sampleInfo = pd.concat([self.sampleInfo, samples], axis=1)
-
-    def getGeneInfo(self):
-        return self.geneInfo
-
-    def getSampleInfo(self):
-        return self.sampleInfo

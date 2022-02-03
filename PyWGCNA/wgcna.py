@@ -1,7 +1,4 @@
 import math
-import os
-import numpy as np
-import pandas as pd
 import scipy.stats as stats
 import statistics
 import sys
@@ -13,7 +10,6 @@ import resource
 from matplotlib import colors as mcolors
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import scale
-import random
 import matplotlib.pyplot as plt
 import pickle
 import seaborn as sns
@@ -222,7 +218,9 @@ class WGCNA(GeneExp):
                 os.makedirs(self.outputPath + '/figures/')
 
     def preprocess(self):
-        self.datExpr = self.getGeneExp()
+        print(f"{BOLD}{OKBLUE}Pre-processing...{ENDC}")
+
+        self.datExpr = self.expressionList
         # Prepare and clean data
         # Remove rows with less than 1 TPM
         self.datExpr = self.datExpr.loc[(self.datExpr > self.TPMcutoff).any(axis=1), :]
@@ -244,15 +242,14 @@ class WGCNA(GeneExp):
         # Clustering
         sampleTree = WGCNA.hclust(pdist(self.datExpr.T), method="average")
 
+        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.T.index, leaf_rotation=90,
+                   leaf_font_size=8)
+        plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
+        plt.title('Sample clustering to detect outliers')
+        plt.xlabel('Samples')
+        plt.ylabel('Distances')
+        plt.tight_layout()
         if self.save:
-            dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.T.index, leaf_rotation=90,
-                       leaf_font_size=8)
-            plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
-            plt.title('Sample clustering to detect outliers')
-            plt.xlabel('Samples')
-            plt.ylabel('Distances')
-            plt.tight_layout()
-            plt.close()
             plt.savefig(self.outputPath + '/figures/sampleClusteringCleaning.png')
 
         # Determine cluster under the line
@@ -269,7 +266,11 @@ class WGCNA(GeneExp):
 
         self.datExpr = self.datExpr.T
 
+        print("\tDone pre-processing..\n")
+
     def findModules(self):
+        print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
+
         # Call the network topology analysis function
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr, powerVector=self.powers,
                                                        networkType=self.networkType)
@@ -361,11 +362,11 @@ class WGCNA(GeneExp):
         self.datME.drop(['MEgrey'], axis=1)
         self.MEs = WGCNA.orderMEs(self.datME)
 
+        print("\tDone running WGCNA..\n")
+
     def runWGCNA(self):
-        print(f"{BOLD}{OKBLUE}Pre processing...{ENDC}")
         WGCNA.preprocess(self)
 
-        print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
         WGCNA.findModules(self)
 
         return self
@@ -2292,24 +2293,6 @@ class WGCNA(GeneExp):
             self.geneModules[module] = pd.DataFrame(probes[inModule], columns=['gene_id'])
 
         print("\tDone..\n")
-
-    def getDatExpr(self):
-        return self.datExpr
-
-    def saveDatExpr(self):
-        self.datExpr.to_csv(self.outputPath + '/dataExpr')
-
-    def getAdjacency(self):
-        return self.adjacency
-
-    def saveAdjacency(self):
-        self.adjacency.to_csv(self.outputPath + '/adjacency')
-
-    def getTOM(self):
-        return self.TOM
-
-    def saveTOM(self):
-        self.TOM.to_csv(self.outputPath + '/TOM')
 
     def saveWGCNA(self):
         print(f"{BOLD}{OKBLUE}Saving WGCNA as {self.name}.p{ENDC}")
