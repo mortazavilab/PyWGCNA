@@ -1,7 +1,7 @@
 import math
 import scipy.stats as stats
 import statistics
-import sys
+import sys, warnings
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram
 from scipy.stats import t
@@ -20,6 +20,7 @@ from PyWGCNA.geneExp import *
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 plt.rcParams["axes.edgecolor"] = "black"
 plt.rcParams["axes.linewidth"] = 1
@@ -369,7 +370,7 @@ class WGCNA(GeneExp):
 
         return self
 
-    def analyseWGCNA(self):
+    def analyseWGCNA(self, order=None):
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
         self.updateDatTraits()
@@ -418,7 +419,13 @@ class WGCNA(GeneExp):
             # Select module probes
             modules = np.unique(self.moduleColors).tolist()
             metadata = self.sampleInfo.columns.tolist()
-            metadata.remove('sample_id')
+            if order is None:
+                metadata.remove('sample_id')
+            else:
+                if all(item in order for item in metadata):
+                    metadata = order
+                else:
+                    sys.exit("Given order is not valid!")
             for module in modules:
                 self.plotModuleEigenGene(module, metadata)
 
@@ -2303,7 +2310,6 @@ class WGCNA(GeneExp):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            metadata.reverse()
             heatmap = scale(self.datExpr.iloc[:, self.moduleColors == moduleName]).T
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
             ME['sample_name'] = self.datME.index

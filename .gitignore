@@ -8,6 +8,8 @@ __pycache__/
 # tutorials data
 tutorials/.ipynb_checkpoints/
 tutorials/test.py
+tutorials/5xFAD.p
+tutorials/5xFAD_paper/
 
 # other
 .DS_Store
