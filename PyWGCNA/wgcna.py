@@ -1444,7 +1444,7 @@ class WGCNA(GeneExp):
                                 MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
                                 MeanMeanDist = MeanDist.groupby(
                                     'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
-                                nearest = MeanMeanDist[['MeanDist']].idxmin().astype(int)
+                                nearest = MeanMeanDist[['MeanDist']].idxmin().astype(int) - 1
                                 NearestDist = MeanMeanDist[['MeanDist']].min()
                                 if np.logical_or(np.all(NearestDist < ClusterDiam[nearest]),
                                                  NearestDist < maxPamDist).tolist()[0]:
