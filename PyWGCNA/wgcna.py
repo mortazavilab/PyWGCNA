@@ -340,6 +340,7 @@ class WGCNA(GeneExp):
         plt.tight_layout()
         if self.save:
             plt.savefig(self.outputPath + '/figures/eigenesgenes.png')
+            plt.close()
 
         # Call an automatic merging function
         merge = WGCNA.mergeCloseModules(self.datExpr, self.dynamicColors, cutHeight=self.MEDissThres)
@@ -1611,7 +1612,6 @@ class WGCNA(GeneExp):
             PrinComps.index = np.unique(expr.index)
             averExpr.index = np.unique(expr.index)
         for i in range(len(modlevels)):
-            print("moduleEigengenes : Working on ME for module", modlevels[i], flush=True)
             modulename = modlevels[i]
             restrict1 = (colors == modulename)
             datModule = expr.loc[:, restrict1].T
@@ -1776,7 +1776,7 @@ class WGCNA(GeneExp):
     @staticmethod
     def fixDataStructure(data):
         if not isinstance(data, list):
-            print("fixDataStructure: data is not a vector of lists: converting it into one.")
+            print("fixDataStructure: data is not a Dictionary: converting it into one.")
             x = data.copy()
             data = {0: {'data': x}}
         return data
