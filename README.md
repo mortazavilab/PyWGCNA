@@ -11,7 +11,7 @@ including single cell gene markers.
 
 To install PyWGCNA, python version 3.7 or greater is required.
 
-### Install from PyPi
+### Install from PyPi (recomended)
 Install the most recent release, run
 
 `pip install PyWGCNA`
@@ -23,6 +23,6 @@ git cloning the [PyWGCNA repository](https://github.com/mortazavilab/PyWGCNA), g
 
 ## Tutorials
 
-- [Data input, cleaning and pre-processing](tutorials/Data%20format.md)
+- [Data input, cleaning and pre-processing](tutorials/Data%20format.md):
 - [Quick Start](tutorials/Quick%20Start.ipynb): How to load data into PyWGCNA and find modules and analyse them
 
