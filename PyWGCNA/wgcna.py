@@ -1196,6 +1196,7 @@ class WGCNA(GeneExp):
                                 sys.exit("Internal error: merging two composite clusters. Sorry!")
                             tmp = branch_singletons[[small]].astype(int).values
                             tmp = tmp[tmp != 0]
+                            tmp = tmp - 1
                             onBranch[tmp] = large + 1
 
                         nm = branch_nMerge[large]
