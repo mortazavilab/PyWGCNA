@@ -2310,6 +2310,9 @@ class WGCNA(GeneExp):
         self.metadata_colors[col] = cmap
 
     def plotModuleEigenGene(self, moduleName, metadata):
+        index = self.sampleInfo.index.isin(self.datExpr.index)
+        sampleInfo = self.sampleInfo[index]
+
         modules = np.unique(self.moduleColors).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
@@ -2336,7 +2339,7 @@ class WGCNA(GeneExp):
                 handles = []
                 x = ind
                 y = np.repeat(3000 * metadata.index(m), len(ind))
-                color = self.sampleInfo[m].values
+                color = sampleInfo[m].values
                 for n in list(self.metadata_colors[m].keys()):
                     color = np.where(color == n, self.metadata_colors[m][n], color)
                     patch = mpatches.Patch(color=self.metadata_colors[m][n], label=n)
