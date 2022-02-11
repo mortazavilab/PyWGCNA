@@ -17,3 +17,6 @@ tutorials/5xFAD_paper/
 # pip stuff
 dist/
 PyWGCNA.egg-info/
+
+#debug
+PyWGCNA/debug.ipynb

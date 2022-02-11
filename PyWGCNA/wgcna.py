@@ -1,4 +1,7 @@
 import math
+
+import numpy as np
+import pandas as pd
 import scipy.stats as stats
 import statistics
 import sys, warnings
@@ -2058,8 +2061,8 @@ class WGCNA(GeneExp):
         Branches = WGCNA.cutree(dendro, cutHeight=cutHeight)[:, 0].tolist()
         NOnBranches = pd.DataFrame(Branches).value_counts()
         TrueBranch = NOnBranches >= minSize
-        if len(np.where(np.logical_not(TrueBranch[Branches]))[0].tolist()) != 0:
-            Branches[np.where(np.logical_not(TrueBranch[Branches]))[0].tolist()] = 0
+        if len(np.where(np.logical_not(TrueBranch.iloc[Branches]))[0].tolist()) != 0:
+            Branches[np.where(np.logical_not(TrueBranch.iloc[Branches]))[0].tolist()] = 0
         return Branches
 
     @staticmethod
@@ -2137,21 +2140,22 @@ class WGCNA(GeneExp):
                                                           quantileSummary=quantileSummary,
                                                           consensusQuantile=consensusQuantile, useAbs=useAbs,
                                                           useSets=useSets, greyName=greyName)
-                Tree = WGCNA.hclust(pdist(ConsDiss), method="average")
+                a = squareform(ConsDiss, checks=False)
+                Tree = WGCNA.hclust(a, method="average")
                 if iteration == 1:
                     oldTree = Tree
-                TreeBranches = WGCNA.moduleNumber(dendro=Tree, cutHeight=cutHeight, minSize=1)
-                # TreeBranches = pd.DataFrame(TreeBranches, index=ConsDiss.index).T
+                TreeBranches = WGCNA.cutree(Tree, cutHeight=cutHeight)[:, 0]
                 UniqueBranches = pd.Categorical(TreeBranches)
                 nBranches = len(UniqueBranches.categories)
                 NumberOnBranch = pd.DataFrame(TreeBranches).value_counts().sort_index()
                 MergedColors = colors
+                TreeBranches = pd.DataFrame(TreeBranches, index=ConsDiss.index).T
                 for branch in range(nBranches):
                     if NumberOnBranch[branch] > 1:
-                        ModulesOnThisBranch = TreeBranches.columns[TreeBranches == UniqueBranches[branch]]  # name
-                        ColorsOnThisBranch = ModulesOnThisBranch[2:]
-                        if isinstance(int, origColors):
-                            ColorsOnThisBranch = int(ColorsOnThisBranch)
+                        ModulesOnThisBranch = TreeBranches.columns[np.where(TreeBranches == UniqueBranches[branch])[1].tolist()]
+                        ColorsOnThisBranch = [x[2:] for x in ModulesOnThisBranch]
+                        if all(isinstance(x, int) for x in origColors):
+                            ColorsOnThisBranch = [int(x) for x in ColorsOnThisBranch]
                         for color in range(1, len(ColorsOnThisBranch)):
                             MergedColors[MergedColors == ColorsOnThisBranch[color]] = ColorsOnThisBranch[0]
                 # MergedColors = MergedColors[:, drop = TRUE]
