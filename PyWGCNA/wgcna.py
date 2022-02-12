@@ -741,16 +741,10 @@ class WGCNA(GeneExp):
         print(datout)
 
         # detect threshold more than 0.9 by default
-        ind = datout['SFT.R.sq'] > RsquaredCut
+        ind = np.logical_and(datout['SFT.R.sq'] > RsquaredCut, datout['mean(k)'] <= MeanCut)
         if np.sum(ind) > 0:
-            ind1 = datout.loc[ind, 'mean(k)'] > MeanCut
-            if np.sum(ind1) > 0:
-                powerEstimate = np.min(powerVector[ind1])
-                print(f"{OKGREEN}Selected power to have scale free network is {str(powerEstimate)}.{ENDC}")
-            else:
-                ind1 = np.argmin(datout.loc[ind, 'mean(k)'])
-                powerEstimate = powerVector[ind1]
-                print(f"{OKGREEN}Selected power to have scale free network is {str(powerEstimate)}.{ENDC}")
+            powerEstimate = np.min(powerVector[ind])
+            print(f"{OKGREEN}Selected power to have scale free network is {str(powerEstimate)}.{ENDC}")
         else:
             ind = np.argsort(datout['SFT.R.sq']).tolist()
             powerEstimate = powerVector[ind[-1]]
