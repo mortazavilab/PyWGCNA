@@ -615,7 +615,7 @@ class WGCNA(GeneExp):
 
     # Call the network topology analysis function
     @staticmethod
-    def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, powerVector=None, nBreaks=10,
+    def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, MeanCut=100, powerVector=None, nBreaks=10,
                           blockSize=None, corOptions=None, networkType="unsigned", moreNetworkConcepts=False,
                           gcInterval=None):
         if powerVector is None:
@@ -743,8 +743,14 @@ class WGCNA(GeneExp):
         # detect threshold more than 0.9 by default
         ind = datout['SFT.R.sq'] > RsquaredCut
         if np.sum(ind) > 0:
-            powerEstimate = np.min(powerVector[ind])
-            print(f"{OKGREEN}Selected power to have scale free network is {str(powerEstimate)}.{ENDC}")
+            ind1 = datout.loc[ind, 'mean(k)'] > MeanCut
+            if np.sum(ind1) > 0:
+                powerEstimate = np.min(powerVector[ind1])
+                print(f"{OKGREEN}Selected power to have scale free network is {str(powerEstimate)}.{ENDC}")
+            else:
+                ind1 = np.argmin(datout.loc[ind, 'mean(k)'])
+                powerEstimate = powerVector[ind1]
+                print(f"{OKGREEN}Selected power to have scale free network is {str(powerEstimate)}.{ENDC}")
         else:
             ind = np.argsort(datout['SFT.R.sq']).tolist()
             powerEstimate = powerVector[ind[-1]]
