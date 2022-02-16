@@ -405,8 +405,8 @@ class WGCNA(GeneExp):
             .reshape(self.moduleTraitCor.T.shape)
 
         sns.set(font_scale=1.5)
-        sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu',
-                    ax=ax, annot_kws={'size': 20, "weight": "bold"},
+        sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
+                    vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
                     xticklabels=xlabels, yticklabels=ylabels)
         plt.yticks(rotation=0)
         ax.set_title(f"Module-trait Relationships heatmap for {self.name}")
