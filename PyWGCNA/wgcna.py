@@ -2234,11 +2234,11 @@ class WGCNA(GeneExp):
     def addGeneList(self):
         print(f"{OKCYAN}Adding genes for each modules ...{ENDC}")
         # Select module probes
-        modules = np.unique(self.moduleColors).tolist()
+        modules = np.unique(self.moduleColors)
         for module in modules:
             # Select module probes
-            probes = self.datExpr.columns
-            inModule = np.where(self.moduleColors == module)
+            probes = self.datExpr.columns.values
+            inModule = np.where(self.moduleColors == str(module))
 
             self.geneModules[module] = pd.DataFrame(probes[inModule], columns=['gene_id'])
 
