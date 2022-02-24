@@ -18,6 +18,8 @@ import pickle
 import seaborn as sns
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
+import gseapy as gp
+from gseapy.plot import barplot, dotplot
 
 from PyWGCNA.geneExp import *
 
@@ -166,14 +168,17 @@ class WGCNA(GeneExp):
 
         """
 
-    def __init__(self, name='WGCNA', TPMcutoff=1, powers=None, networkType="signed hybrid", adjacencyType="signed hybrid",
-                 TOMType="signed", minModuleSize=50, naColor="grey", cut=float('inf'), MEDissThres=0.2,
+    def __init__(self, name='WGCNA', TPMcutoff=1, powers=None,
+                 networkType="signed hybrid", adjacencyType="signed hybrid",
+                 TOMType="signed", minModuleSize=50, naColor="grey",
+                 cut=float('inf'), MEDissThres=0.2, species = None,
                  geneExp=None, geneExpPath=None, sep=' ', save=False, outputPath=None):
         super().__init__(geneExp=geneExp, geneExpPath=geneExpPath, sep=sep)
         if powers is None:
             powers = list(range(1, 11)) + list(range(11, 21, 2))
 
         self.name = name
+        self.species = species
 
         self.save = save
         if outputPath is None:
@@ -373,7 +378,7 @@ class WGCNA(GeneExp):
 
         return self
 
-    def analyseWGCNA(self, order=None):
+    def analyseWGCNA(self, order=None, geneList=None):
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
         self.updateDatTraits()
@@ -418,7 +423,12 @@ class WGCNA(GeneExp):
 
         self.addGeneList()
 
+        modules = np.unique(self.moduleColors).tolist()
+        for module in modules:
+            self.addGeneModulesInfo(module, geneList)
+
         if self.save:
+            print(f"{OKCYAN}plotting module heatmap eigengene...{ENDC}")
             # Select module probes
             modules = np.unique(self.moduleColors).tolist()
             metadata = self.sampleInfo.columns.tolist()
@@ -431,6 +441,16 @@ class WGCNA(GeneExp):
                     sys.exit("Given order is not valid!")
             for module in modules:
                 self.plotModuleEigenGene(module, metadata)
+            print("\tDone..\n")
+            
+        if self.save:
+            print(f"{OKCYAN}plotting Go term for each module...{ENDC}")
+            # Select module probes
+            modules = np.unique(self.moduleColors).tolist()
+            
+            for module in modules:
+                self.findGoTerm(module)
+            print("\tDone..\n")
 
         return self
 
@@ -2325,7 +2345,7 @@ class WGCNA(GeneExp):
             fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(26, len(metadata) * 5),
                                     sharex='col', gridspec_kw={
                     'height_ratios': [len(metadata) * 0.4, len(metadata) * 0.5, len(metadata) * 1.5],
-                    'width_ratios': [20, 2]})
+                    'width_ratios': [20, 3]})
             gs = axs[0, 1].get_gridspec()
             # remove the underlying axes
             for ax in axs[:, 1]:
@@ -2367,4 +2387,41 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/ModuleHeatmapEigengene' + moduleName + '.png')
 
         return None
+
+    def addGeneModulesInfo(self, moduleName, geneList):
+        modules = np.unique(self.moduleColors).tolist()
+        if np.all(moduleName not in modules):
+            print(f"{WARNING}Module name does not exist in {ENDC}")
+            return None
+        else:
+            self.geneModules[moduleName]['gene_name'] = ""
+            for i in range(self.geneModules[moduleName].shape[0]):
+                if self.geneModules[moduleName]['gene_id'][i] in list(geneList.keys()):
+                    self.geneModules[moduleName]['gene_name'][i] = list(geneList.values())[
+                        list(geneList.keys()).index(self.geneModules[moduleName]['gene_id'][i])]
+                else:
+                    self.geneModules[moduleName]['gene_name'][i] = self.geneModules[moduleName]['gene_id'][i]
+
+    def findGoTerm(self, moduleName):
+        print(f"{OKGREEN}Xhecking requirements for saving Go Term{ENDC}")
+        if not os.path.exists(self.outputPath + '/Go_term/'):
+            print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
+            os.makedirs(self.outputPath + '/Go_term/')
+
+        modules = np.unique(self.moduleColors).tolist()
+        if np.all(moduleName not in modules):
+            print(f"{WARNING}Module name does not exist in {ENDC}")
+            return None
+        else:
+            enr = gp.enrichr(gene_list=self.geneModules[moduleName]['gene_name'],
+                             gene_sets=['GO_Biological_Process_2021'],
+                             organism='Mouse',
+                             description='',
+                             outdir=self.outputPath + '/Go_term/' + moduleName,
+                             cutoff=0.5)
+            dotplot(enr.res2d,
+                    title="Gene ontology in " + moduleName + " module with " + str(
+                        self.geneModules[moduleName].shape[0]) + " genes",
+                    cmap='viridis_r', cutoff=0.5,
+                    ofname=self.outputPath + '/Go_term/' + moduleName + '.pdf')
 
