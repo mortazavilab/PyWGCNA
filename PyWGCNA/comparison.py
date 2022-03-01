@@ -238,3 +238,4 @@ class Comparison:
         if save:
             plt.savefig('comparison_' + name1 + '_' + name2 + '.png')
         plt.show()
+
