@@ -28,6 +28,9 @@ class Comparison:
             sc : bool
                 indicate if object is WGCNA or single cell
 
+            confusion: data frame
+                Summary of comparison results
+
             Methods
             -------
             compareWGCNA()
@@ -36,10 +39,8 @@ class Comparison:
             compareSingleCell()
                 compare WGCNA to single cell data
 
-            plotCompareWGCNA()
-                plot confusion matrix of compareWGCNA() result
-
             """
+
     def __init__(self, name1="name1", name2="name2", geneModule1=None, geneModule2=None, geneMarker=None, sc=False):
         self.name1 = name1
         self.name2 = name2
@@ -64,18 +65,19 @@ class Comparison:
             name1 = self.name1
             name2 = self.name2
         num = len(self.geneModule1.keys()) * len(self.geneModule2.keys())
-        df = pd.DataFrame(columns=[name1, name2, name1 + "_size", name2 + "_size", "number", "fraction(%)", "P_value"], index=range(num))
+        df = pd.DataFrame(columns=[name1, name2, name1 + "_size", name2 + "_size", "number", "fraction(%)", "P_value"],
+                          index=range(num))
 
         genes = []
         count = 0
         for i in range(len(self.geneModule1.keys())):
-            node1 = self.geneModule1[self.geneModule1.keys()[i]]
+            node1 = self.geneModule1[list(self.geneModule1.keys())[i]].gene_id.tolist()
             genes = genes + node1
             for j in range(len(self.geneModule2.keys())):
-                node2 = self.geneModule2[self.geneModule2.keys()[j]]
+                node2 = self.geneModule2[list(self.geneModule2.keys())[j]].gene_id.tolist()
 
-                df[name1][count] = self.geneModule1.keys()[i]
-                df[name2][count] = self.geneModule2.keys()[j]
+                df[name1][count] = list(self.geneModule1.keys())[i]
+                df[name2][count] = list(self.geneModule2.keys())[j]
                 df[name1 + '_size'][count] = len(node1)
                 df[name2 + '_size'][count] = len(node2)
                 num = np.intersect1d(node1, node2)
@@ -91,10 +93,11 @@ class Comparison:
         count = 0
         for i in range(len(self.geneModule1.keys())):
             for j in range(len(self.geneModule2.keys())):
-                table = np.array([[nGenes - df[name1][count] - df[name2][count] + df['number'][count],
-                                   df[name1][count] - df['number'][count]],
-                                  [df[name2][count] - df['number'][count],
-                                   df['number'][count]]])
+                table = np.array(
+                    [[nGenes - df[name1 + '_size'][count] - df[name2 + '_size'][count] + df['number'][count],
+                      df[name1 + '_size'][count] - df['number'][count]],
+                     [df[name2 + '_size'][count] - df['number'][count],
+                      df['number'][count]]])
                 oddsr, p = fisher_exact(table, alternative='two-sided')
                 df['P_value'][count] = p
                 count = count + 1
@@ -110,7 +113,9 @@ class Comparison:
         """""
         list_sn = np.unique(self.geneMarker['cluster'])
         num = len(self.geneModule1.keys()) * len(list_sn)
-        df = pd.DataFrame(columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"], index=range(num))
+        df = pd.DataFrame(
+            columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"],
+            index=range(num))
 
         genes = []
         count = 0
@@ -127,7 +132,8 @@ class Comparison:
                 num = np.intersect1d(node1, node2)
                 df['number'][count] = len(num)
                 df['fraction(%)'][count] = len(num) / len(node2) * 100
-                df['cellType'][count] = self.geneMarker['cellType'][np.where(self.geneMarker['cluster'] == list_sn[j]).tolist()[0]]
+                df['cellType'][count] = self.geneMarker['cellType'][
+                    np.where(self.geneMarker['cluster'] == list_sn[j]).tolist()[0]]
                 count = count + 1
 
                 genes = genes + node2
@@ -148,11 +154,7 @@ class Comparison:
 
         self.confusion = df
 
-    def plotCompareWGCNA(self, order1=None, order2=None, save=False, path=None):
-        """
-        plot result of comparing two list of modules from two bulk gene expression data set
-        """""
-
+    def plotCompareWGCA(self, order1, order2, save=False):
         result = self.confusion.copy(deep=True)
         result['-log10(P_value)'] = -1 * np.log10(result['P_value'].astype(np.float64))
 
@@ -202,8 +204,8 @@ class Comparison:
             grey[name2] = pd.Categorical(grey[name2], order2)
             grey.sort_values(by=[name2], inplace=True)
 
-        fig, ax = plt.subplots(figsize=(max(10, np.unique(result[name1]).shape[0] / 3),
-                                        max(15, np.unique(result[name2]).shape[0] / 3)))
+        fig, ax = plt.subplots(figsize=(max(10, len(np.unique(result[name1])) / 3),
+                                        max(15, len(np.unique(result[name2])) / 3)))
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
                              s=result['fraction(%)'].astype(float),
@@ -234,4 +236,5 @@ class Comparison:
         plt.tight_layout()
 
         if save:
-            plt.savefig(path + '/comparison' + name1.capitalize() + name2.capitalize() + '.png')
+            plt.savefig('comparison_' + name1 + '_' + name2 + '.png')
+        plt.show()
