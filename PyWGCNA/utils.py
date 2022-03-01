@@ -84,26 +84,28 @@ def compareSingleCell(WGCNA, sc):
     return compare
 
 
-def getGeneList(dataset):
+def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     """
     get dictionary that map gene ensembl id to gene name from biomart
     Parameters
     ----------
     dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
     you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
-
+    
+    attributes: List the types of data we want
+    
     Returns
     -------
     dictionary contain gene id as a key and gene name as a value
     """""
     # Set up connection to server
-    server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
-    # find possible datasets here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
-    mart = server.datasets[dataset]
+    if dataset == 'mmusculus_gene_ensembl':
+        attributes = ['ensembl_transcript_id', 'mgi_symbol', 'ensembl_gene_id', 'ensembl_peptide_id']
+    if dataset == 'hsapiens_gene_ensembl':
+        attributes = ['ensembl_transcript_id', 'hgnc_symbol', 'ensembl_gene_id', 'ensembl_peptide_id']
 
-    # List the types of data we want
-    attributes = ['ensembl_transcript_id', 'mgi_symbol',
-                  'ensembl_gene_id', 'ensembl_peptide_id']
+    server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
+    mart = server.datasets[dataset]
 
     # Get the mapping between the attributes
     response = mart.search({'attributes': attributes})

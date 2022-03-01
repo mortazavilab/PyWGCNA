@@ -19,7 +19,7 @@ import seaborn as sns
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 import gseapy as gp
-from gseapy.plot import barplot, dotplot
+from gseapy.plot import dotplot
 
 from PyWGCNA.geneExp import *
 
@@ -383,7 +383,7 @@ class WGCNA(GeneExp):
 
         self.updateDatTraits()
 
-        print(f"{OKCYAN}calculating module trait relationship ...{ENDC}")
+        print(f"{OKCYAN}Calculating module trait relationship ...{ENDC}")
         # Define numbers of genes and samples
         nGenes = self.datExpr.shape[1]
         nSamples = self.datExpr.shape[0]
@@ -423,9 +423,12 @@ class WGCNA(GeneExp):
 
         self.addGeneList()
 
-        modules = np.unique(self.moduleColors).tolist()
-        for module in modules:
-            self.addGeneModulesInfo(module, geneList)
+        if geneList is not None:
+            print(f"{OKCYAN}Adding gene name to gene module lists...{ENDC}")
+            modules = np.unique(self.moduleColors).tolist()
+            for module in modules:
+                self.addGeneModulesInfo(module, geneList)
+        print("\tDone..\n")
 
         if self.save:
             print(f"{OKCYAN}plotting module heatmap eigengene...{ENDC}")
@@ -2403,7 +2406,6 @@ class WGCNA(GeneExp):
                     self.geneModules[moduleName]['gene_name'][i] = self.geneModules[moduleName]['gene_id'][i]
 
     def findGoTerm(self, moduleName):
-        print(f"{OKGREEN}Xhecking requirements for saving Go Term{ENDC}")
         if not os.path.exists(self.outputPath + '/Go_term/'):
             print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
             os.makedirs(self.outputPath + '/Go_term/')

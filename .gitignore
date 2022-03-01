@@ -10,6 +10,7 @@ tutorials/.ipynb_checkpoints/
 tutorials/test.py
 tutorials/5xFAD.p
 tutorials/5xFAD_paper/
+tutorials/3xTgAD_paper/
 
 # other
 .DS_Store
