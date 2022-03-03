@@ -62,10 +62,11 @@ class GeneExp:
         genes.index = self.geneInfo.index
         self.geneInfo = pd.concat([self.geneInfo, genes], axis=1)
 
-    def addSampleInfo(self, path, sep=' '):
+    def updateMetadata(self, path, sep=' '):
         if not os.path.isfile(path):
             raise ValueError("file does not exist!")
 
         samples = pd.read_csv(path, sep=sep)
-        self.sampleInfo = pd.concat([self.sampleInfo, samples],
+        self.sampleInfo = pd.concat([samples, self.sampleInfo],
                                     axis=1, ignore_index=True)
+        self.sampleInfo = self.sampleInfo.loc[:, ~self.sampleInfo.columns.duplicated()]

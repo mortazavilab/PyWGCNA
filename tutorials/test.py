@@ -1,13 +1,14 @@
 
 import PyWGCNA
 geneExp = '5xFAD_paper/expressionList_sorted'
-pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', geneExpPath=geneExp, sep='\t', save=True)
+pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', species='mouse',
+                              geneExpPath=geneExp, sep='\t', save=True)
 pyWGCNA_5xFAD.preprocess()
 
 pyWGCNA_5xFAD.findModules()
 
 
-pyWGCNA_5xFAD.addSampleInfo(path='5xFAD_paper/metaData', sep='\t')
+pyWGCNA_5xFAD.updateMetadata(path='5xFAD_paper/metaData', sep='\t')
 # add color for metadata
 pyWGCNA_5xFAD.setMetadataColor('Sex', {'Female': 'green',
                                        'Male': 'yellow'})

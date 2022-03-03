@@ -2,7 +2,19 @@ import pandas as pd
 import numpy as np
 from scipy.stats import fisher_exact
 import matplotlib.pyplot as plt
+import pickle
 
+
+# bcolors
+HEADER = '\033[95m'
+OKBLUE = '\033[94m'
+OKCYAN = '\033[96m'
+OKGREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+BOLD = '\033[1m'
+UNDERLINE = '\033[4m'
 
 class Comparison:
     """
@@ -28,7 +40,7 @@ class Comparison:
             sc : bool
                 indicate if object is WGCNA or single cell
 
-            confusion: data frame
+            comparison: data frame
                 Summary of comparison results
 
             Methods
@@ -38,6 +50,12 @@ class Comparison:
 
             compareSingleCell()
                 compare WGCNA to single cell data
+
+            plotCompareWGCA()
+                plot comparison result as a confusion matrix
+
+            saveComparison()
+                save comparison object
 
             """
 
@@ -49,7 +67,7 @@ class Comparison:
         self.geneMarker = geneMarker
         self.sc = sc
 
-        self.confusion = None
+        self.comparison = None
 
     def compareWGCNA(self):
         """
@@ -102,7 +120,7 @@ class Comparison:
                 df['P_value'][count] = p
                 count = count + 1
 
-        self.confusion = df
+        self.comparison = df
 
     def compareSingleCell(self):
         """
@@ -152,10 +170,22 @@ class Comparison:
                 df['P_value'][count] = p
                 count = count + 1
 
-        self.confusion = df
+        self.comparison = df
 
-    def plotCompareWGCA(self, order1, order2, save=False):
-        result = self.confusion.copy(deep=True)
+    def plotCompareWGCA(self, order1=None, order2=None, save=False):
+        """
+        plot comparison
+        Parameters
+        ----------
+        order1: order of WGCNA1 you want to show in plot
+        order2: order of WGCNA2 you want to show in plot
+        save: if you want to save plot as png
+
+        Returns
+        -------
+
+        """""
+        result = self.comparison.copy(deep=True)
         result['-log10(P_value)'] = -1 * np.log10(result['P_value'].astype(np.float64))
 
         if self.name1 == self.name2:
@@ -238,4 +268,17 @@ class Comparison:
         if save:
             plt.savefig('comparison_' + name1 + '_' + name2 + '.png')
         plt.show()
+
+    def saveComparison(self):
+        """
+        save comaprison object as comparison.p near to the script
+        Returns
+        -------
+        
+        """""
+        print(f"{BOLD}{OKBLUE}Saving comparison as comparison.p{ENDC}")
+
+        picklefile = open('comparison.p', 'wb')
+        pickle.dump(self, picklefile)
+        picklefile.close()
 

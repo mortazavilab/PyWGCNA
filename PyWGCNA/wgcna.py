@@ -171,7 +171,7 @@ class WGCNA(GeneExp):
     def __init__(self, name='WGCNA', TPMcutoff=1, powers=None,
                  networkType="signed hybrid", adjacencyType="signed hybrid",
                  TOMType="signed", minModuleSize=50, naColor="grey",
-                 cut=float('inf'), MEDissThres=0.2, species = None,
+                 cut=float('inf'), MEDissThres=0.2, species=None,
                  geneExp=None, geneExpPath=None, sep=' ', save=False, outputPath=None):
         super().__init__(geneExp=geneExp, geneExpPath=geneExpPath, sep=sep)
         if powers is None:

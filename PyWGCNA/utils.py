@@ -130,3 +130,27 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
         ensembl_to_genesymbol[ensembl_peptide] = gene_symbol
 
     return ensembl_to_genesymbol
+
+
+# read comparison obj
+def readComparison(file):
+    """
+    Read a comparison from a saved pickle file.
+
+    Parameters
+    ----------
+    file (str): Name / path of comparison object
+
+    Returns
+    -------
+    comparison: comparison object
+
+    """""
+    if not os.path.isfile(file):
+        raise ValueError('Comparison object not found at given path!')
+
+    picklefile = open(file, 'rb')
+    comparison = pickle.load(picklefile)
+
+    print(f"{BOLD}{OKBLUE}Reading comparison done!{ENDC}")
+    return comparison
