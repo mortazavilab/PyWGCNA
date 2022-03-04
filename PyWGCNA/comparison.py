@@ -238,20 +238,13 @@ class Comparison:
                                         max(15, len(np.unique(result[name2])) / 3)))
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
-                             s=result['fraction(%)'].astype(float) * 100,
+                             s=result['fraction(%)'].astype(float) * 10,
                              c=result['-log10(P_value)'],
                              cmap='viridis_r',
                              vmin=np.min(result['fraction(%)']),
                              vmax=np.max(result['fraction(%)']))
         # Add a colorbar
         fig.colorbar(scatter, shrink=0.25, label='-log10(P_value)')
-
-        ax.scatter(x=grey[name1],
-                   y=grey[name2],
-                   s=grey['fraction(%)'].astype(float),
-                   c='grey',
-                   vmin=np.min(grey['fraction(%)']),
-                   vmax=np.max(grey['fraction(%)']))
 
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=5, color='black', fmt="{x:.1f} %")
