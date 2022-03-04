@@ -258,7 +258,7 @@ class Comparison:
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=5, color='black', fmt="{x:.1f} %")
         legend2 = ax.legend(*scatter.legend_elements(**kw),
-                            bbox_to_anchor=(1.05, 0.75), loc="upper left",
+                            bbox_to_anchor=(1.05, 0.8), loc="upper left",
                             title="fraction(%)")
 
         plt.xticks(rotation=90)
