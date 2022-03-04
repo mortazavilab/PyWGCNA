@@ -235,7 +235,7 @@ class Comparison:
             grey.sort_values(by=[name2], inplace=True)
 
         fig, ax = plt.subplots(figsize=(max(7, len(np.unique(result[name1])) / 3),
-                                        max(10, len(np.unique(result[name2])) / 3)))
+                                        max(5, len(np.unique(result[name2])) / 3)))
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
                              s=result['fraction(%)'].astype(float),
@@ -258,7 +258,7 @@ class Comparison:
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=5, color='black', fmt="{x:.1f} %")
         legend2 = ax.legend(*scatter.legend_elements(**kw),
-                            bbox_to_anchor=(1.05, 0.7), loc="upper left",
+                            bbox_to_anchor=(1.05, 0.9), loc="upper left",
                             title="fraction(%)")
 
         plt.xticks(rotation=90)
