@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 import statistics
-import sys, warnings
+import sys
+import warnings
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram
 from scipy.stats import t
@@ -75,13 +76,9 @@ class WGCNA(GeneExp):
             Type of network we can create (default: "signed hybrid")
             possible Type: "unsigned", "signed" and "signed hybrid"
 
-        adjacencyType: str
-            Type of adjacency matrix (default: "signed hybrid")
-            possible Type: "unsigned", "signed" and "signed hybrid"
-
         TOMType: str
             Type of topological overlap matrix(TOM) (default: "signed")
-            possible Type: "NA", "unsigned", "signed"
+            possible Type: "unsigned", "signed"
 
         minModuleSize : int
             We like large modules, so we set the minimum module size relatively high (default: 50)
@@ -169,10 +166,10 @@ class WGCNA(GeneExp):
         """
 
     def __init__(self, name='WGCNA', TPMcutoff=1, powers=None,
-                 networkType="signed hybrid", adjacencyType="signed hybrid",
-                 TOMType="signed", minModuleSize=50, naColor="grey",
-                 cut=float('inf'), MEDissThres=0.2, species=None,
-                 geneExp=None, geneExpPath=None, sep=' ', save=False, outputPath=None):
+                 networkType="signed hybrid", TOMType="signed",
+                 minModuleSize=50, naColor="grey", cut=float('inf'),
+                 MEDissThres=0.2, species=None, geneExp=None,
+                 geneExpPath=None, sep=' ', save=False, outputPath=None):
         super().__init__(geneExp=geneExp, geneExpPath=geneExpPath, sep=sep)
         if powers is None:
             powers = list(range(1, 11)) + list(range(11, 21, 2))
@@ -200,7 +197,6 @@ class WGCNA(GeneExp):
         self.sft = None
 
         self.geneTree = None
-        self.adjacencyType = adjacencyType
         self.adjacency = None
         self.TOMType = TOMType
         self.TOM = None
@@ -309,7 +305,7 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/summarypower.png')
 
         # Set Power
-        self.adjacency = WGCNA.adjacency(self.datExpr, power=self.power, adjacencyType=self.adjacencyType)
+        self.adjacency = WGCNA.adjacency(self.datExpr, power=self.power, adjacencyType=self.networkType)
 
         # Turn adjacency into topological overlap
         self.TOM = WGCNA.TOMsimilarity(self.adjacency, TOMType=self.TOMType)
@@ -410,11 +406,14 @@ class WGCNA(GeneExp):
             .reshape(self.moduleTraitCor.T.shape)
 
         sns.set(font_scale=1.5)
-        sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
-                    vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
-                    xticklabels=xlabels, yticklabels=ylabels)
+        res = sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
+                          vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
+                          xticklabels=xlabels, yticklabels=ylabels)
+        res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=45)
+        res.set_yticklabels(res.get_ymajorticklabels(), fontsize=20, fontweight="bold")
         plt.yticks(rotation=0)
-        ax.set_title(f"Module-trait Relationships heatmap for {self.name}")
+        ax.set_title(f"Module-trait Relationships heatmap for {self.name}",
+                     fontsize=30, fontweight="bold")
         fig.tight_layout()
         plt.close(fig)
         if self.save:
@@ -448,9 +447,7 @@ class WGCNA(GeneExp):
             
         if self.save:
             print(f"{OKCYAN}plotting Go term for each module...{ENDC}")
-            # Select module probes
             modules = np.unique(self.moduleColors).tolist()
-            
             for module in modules:
                 self.findGoTerm(module)
             print("\tDone..\n")
@@ -1551,7 +1548,7 @@ class WGCNA(GeneExp):
     @staticmethod
     def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
         if colorSeq is None:
-            colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+            colors = dict(**mcolors.CSS4_COLORS)
             # Sort colors by hue, saturation, value and name.
             by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
                             for name, color in colors.items())
@@ -1582,7 +1579,7 @@ class WGCNA(GeneExp):
             nRepeats = 1
             extColorSeq = colorSeq
 
-        colors = np.repeat("grey", nLabels.shape[0])
+        colors = np.empty(nLabels.shape[0], dtype=object)
         fin = [v is not None for v in nLabels.Value]
         colors[np.where(not fin)[0].tolist()] = naColor
         finLabels = nLabels.loc[fin, :]
@@ -2406,9 +2403,9 @@ class WGCNA(GeneExp):
                     self.geneModules[moduleName]['gene_name'][i] = self.geneModules[moduleName]['gene_id'][i]
 
     def findGoTerm(self, moduleName):
-        if not os.path.exists(self.outputPath + '/Go_term/'):
+        if not os.path.exists(self.outputPath + '/figures/Go_term/'):
             print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
-            os.makedirs(self.outputPath + '/Go_term/')
+            os.makedirs(self.outputPath + '/figures/Go_term/')
 
         modules = np.unique(self.moduleColors).tolist()
         if np.all(moduleName not in modules):

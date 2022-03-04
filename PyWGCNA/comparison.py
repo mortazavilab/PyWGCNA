@@ -238,7 +238,7 @@ class Comparison:
                                         max(15, len(np.unique(result[name2])) / 3)))
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
-                             s=result['fraction(%)'].astype(float),
+                             s=result['fraction(%)'].astype(float) * 100,
                              c=result['-log10(P_value)'],
                              cmap='viridis_r',
                              vmin=np.min(result['fraction(%)']),
