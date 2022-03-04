@@ -235,16 +235,25 @@ class Comparison:
             grey.sort_values(by=[name2], inplace=True)
 
         fig, ax = plt.subplots(figsize=(max(10, len(np.unique(result[name1])) / 3),
-                                        max(15, len(np.unique(result[name2])) / 3)))
+                                        max(10, len(np.unique(result[name2])) / 3)))
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
-                             s=result['fraction(%)'].astype(float) * 10,
+                             s=result['fraction(%)'].astype(float),
                              c=result['-log10(P_value)'],
+                             alpha=0.6,
                              cmap='viridis_r',
                              vmin=np.min(result['fraction(%)']),
                              vmax=np.max(result['fraction(%)']))
         # Add a colorbar
         fig.colorbar(scatter, shrink=0.25, label='-log10(P_value)')
+
+        ax.scatter(x=grey[name1],
+                   y=grey[name2],
+                   s=grey['fraction(%)'].astype(float),
+                   c='grey',
+                   alpha=0.6,
+                   vmin=np.min(grey['fraction(%)']),
+                   vmax=np.max(grey['fraction(%)']))
 
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=5, color='black', fmt="{x:.1f} %")
