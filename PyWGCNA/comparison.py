@@ -238,9 +238,9 @@ class Comparison:
                                         max(5, len(np.unique(result[name2])) / 3)))
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
-                             s=result['fraction(%)'].astype(float)*5,
+                             s=result['fraction(%)'].astype(float)*4,
                              c=result['-log10(P_value)'],
-                             alpha=0.6,
+                             alpha=0.8,
                              cmap='viridis_r',
                              vmin=np.min(result['fraction(%)']),
                              vmax=np.max(result['fraction(%)']))
@@ -249,15 +249,15 @@ class Comparison:
 
         ax.scatter(x=grey[name1],
                    y=grey[name2],
-                   s=grey['fraction(%)'].astype(float)*5,
+                   s=grey['fraction(%)'].astype(float)*4,
                    c='grey',
-                   alpha=0.6,
+                   alpha=0.8,
                    vmin=np.min(grey['fraction(%)']),
                    vmax=np.max(grey['fraction(%)']))
 
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=4, color='black', fmt="{x:.1f} %",
-                  func=lambda s: s/5)
+                  func=lambda s: s/4)
         legend2 = ax.legend(*scatter.legend_elements(**kw),
                             bbox_to_anchor=(1.05, 0.98), loc="upper left",
                             title="fraction(%)")

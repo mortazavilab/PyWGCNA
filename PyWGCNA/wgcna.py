@@ -328,7 +328,8 @@ class WGCNA(GeneExp):
         MEList = WGCNA.moduleEigengenes(expr=self.datExpr, colors=self.dynamicColors)
 
         self.MEs = MEList['eigengenes']
-        self.MEs.drop(['MEgrey'], axis=1, inplace=True)
+        if 'MEgrey' in self.MEs.columns:
+            self.MEs.drop(['MEgrey'], axis=1, inplace=True)
         # Calculate dissimilarity of module eigengenes
         MEDiss = pd.DataFrame(1 - np.corrcoef(self.MEs, rowvar=False), index=self.MEs.columns, columns=self.MEs.columns)
         # Cluster module eigengenes
