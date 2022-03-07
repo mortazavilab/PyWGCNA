@@ -350,16 +350,13 @@ class WGCNA(GeneExp):
 
         # Call an automatic merging function
         merge = WGCNA.mergeCloseModules(self.datExpr, self.dynamicColors, cutHeight=self.MEDissThres)
-        # The merged module colors
-        mergedColors = merge['colors']
-        # Eigengenes of the new merged modules:
-        mergedMEs = merge['newMEs']
-        # Rename to moduleColors
-        self.moduleColors = mergedColors
+        # The merged module colors; Rename to moduleColors
+        self.moduleColors = merge['colors']
         # Construct numerical labels corresponding to the colors
         colorOrder = np.unique(self.moduleColors).tolist()
         self.moduleLabels = [colorOrder.index(x) if x in colorOrder else None for x in self.moduleColors]
-        self.MEs = mergedMEs
+        # Eigengenes of the new merged modules:
+        self.MEs = merge['newMEs']
 
         # Recalculate MEs with color labels
         self.datME = WGCNA.moduleEigengenes(self.datExpr, self.moduleColors)['eigengenes']
@@ -1561,11 +1558,11 @@ class WGCNA(GeneExp):
                 minLabel = 0
             else:
                 minLabel = 1
-            if np.any(labels < 0):
-                minLabel = np.min(labels)
+            if np.any(labels.Value < 0):
+                minLabel = np.min(labels.Value)
             nLabels = labels
         else:
-            factors = pd.Categorical(labels)
+            factors = pd.Categorical(labels.Value)
             nLabels = factors.codes
 
         if np.max(nLabels.Value) > len(colorSeq):
@@ -1584,9 +1581,7 @@ class WGCNA(GeneExp):
         fin = [v is not None for v in nLabels.Value]
         colors[np.where(not fin)[0].tolist()] = naColor
         finLabels = nLabels.loc[fin, :]
-        if len(finLabels.Value[finLabels.Value != 0]) != 0:
-            colors[fin and finLabels.Value != 0] = [extColorSeq[x] for x in
-                                                    finLabels.Value[finLabels.Value != 0].tolist()]
+        colors[fin] = [extColorSeq[x] for x in finLabels.Value]
 
         return colors
 
