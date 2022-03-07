@@ -360,7 +360,8 @@ class WGCNA(GeneExp):
 
         # Recalculate MEs with color labels
         self.datME = WGCNA.moduleEigengenes(self.datExpr, self.moduleColors)['eigengenes']
-        self.datME.drop(['MEgrey'], axis=1)
+        if 'MEgrey' in self.datME.columns:
+            self.datME.drop(['MEgrey'], axis=1, inplace=True)
         self.MEs = WGCNA.orderMEs(self.datME)
 
         print("\tDone running WGCNA..\n")
@@ -1560,7 +1561,7 @@ class WGCNA(GeneExp):
                 minLabel = 1
             if np.any(labels.Value < 0):
                 minLabel = np.min(labels.Value)
-            nLabels = labels
+            nLabels = labels.copy()
         else:
             factors = pd.Categorical(labels.Value)
             nLabels = factors.codes
