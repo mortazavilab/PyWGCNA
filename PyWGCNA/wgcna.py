@@ -2414,11 +2414,11 @@ class WGCNA(GeneExp):
                              gene_sets=['GO_Biological_Process_2021'],
                              organism='Mouse',
                              description='',
-                             outdir=self.outputPath + '/Go_term/' + moduleName,
+                             outdir=self.outputPath + '/figures/Go_term/' + moduleName,
                              cutoff=0.5)
             dotplot(enr.res2d,
                     title="Gene ontology in " + moduleName + " module with " + str(
                         self.geneModules[moduleName].shape[0]) + " genes",
                     cmap='viridis_r', cutoff=0.5,
-                    ofname=self.outputPath + '/Go_term/' + moduleName + '.pdf')
+                    ofname=self.outputPath + '/figures/Go_term/' + moduleName + '.pdf')
 
