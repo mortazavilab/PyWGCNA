@@ -1,0 +1,3 @@
+Gene_set	Term	Overlap	P-value	Adjusted P-value	Old P-value	Old Adjusted P-value	Odds Ratio	Combined Score	Genes
+GO_Biological_Process_2021	oxygen transport (GO:0015671)	1/7	0.0208148818369865	0.0354212791446134	0	0	56.31073446327684	218.040067108672	MB
+GO_Biological_Process_2021	gas transport (GO:0015669)	1/12	0.0354212791446134	0.0354212791446134	0	0	30.70724191063174	102.57577696947943	MB
