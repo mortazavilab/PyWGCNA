@@ -100,9 +100,9 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     """""
     # Set up connection to server
     if dataset == 'mmusculus_gene_ensembl':
-        attributes = ['ensembl_transcript_id', 'mgi_symbol', 'ensembl_gene_id', 'ensembl_peptide_id']
+        attributes = ['ensembl_transcript_id', 'mgi_symbol', 'ensembl_gene_id']
     if dataset == 'hsapiens_gene_ensembl':
-        attributes = ['ensembl_transcript_id', 'hgnc_symbol', 'ensembl_gene_id', 'ensembl_peptide_id']
+        attributes = ['ensembl_transcript_id', 'hgnc_symbol', 'ensembl_gene_id']
 
     server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
     mart = server.datasets[dataset]
@@ -111,25 +111,16 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     response = mart.search({'attributes': attributes})
     data = response.raw.data.decode('ascii')
 
-    ensembl_to_genesymbol = {}
+    geneInfo = pd.DataFrame(columns=attributes)
     # Store the data in a dict
     for line in data.splitlines():
         line = line.split('\t')
-        # The entries are in the same order as in the `attributes` variable
-        transcript_id = line[0]
-        gene_symbol = line[1]
-        ensembl_gene = line[2]
-        ensembl_peptide = line[3]
+        dict = {attributes[0]: line[0],
+                attributes[1]: line[1],
+                attributes[2]: line[2]}
+        geneInfo = geneInfo.append(dict, ignore_index=True)
 
-        # Some of these keys may be an empty string. If you want, you can
-        # avoid having a '' key in your dict by ensuring the
-        # transcript/gene/peptide ids have a nonzero length before
-        # adding them to the dict
-        ensembl_to_genesymbol[transcript_id] = gene_symbol
-        ensembl_to_genesymbol[ensembl_gene] = gene_symbol
-        ensembl_to_genesymbol[ensembl_peptide] = gene_symbol
-
-    return ensembl_to_genesymbol
+    return geneInfo
 
 
 # read comparison obj
