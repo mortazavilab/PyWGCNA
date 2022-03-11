@@ -71,7 +71,7 @@ def compareSingleCell(WGCNA, sc):
     :return: compare object
     :rtype: Compare class
 
-    """""
+    """
     compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.geneModules,
                          geneMarker=sc, sc=True)
     compare.compareSingleCell()
