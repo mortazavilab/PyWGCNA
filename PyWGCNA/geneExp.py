@@ -50,9 +50,11 @@ class GeneExp:
         else:
             raise ValueError("all type of input can not be empty at the same time!")
 
-        geneInfo = pd.DataFrame(expressionList.iloc[:, 0], columns=['gene_id'])
+        geneInfo = pd.DataFrame(expressionList.values[:, 0], columns=['gene_id'],
+                                index=expressionList.iloc[:, 0])
 
-        sampleInfo = pd.DataFrame(range(len(expressionList.columns[1:])), columns=['sample_id'], index=expressionList.columns[1:])
+        sampleInfo = pd.DataFrame(range(len(expressionList.columns[1:])), columns=['sample_id'],
+                                  index=expressionList.columns[1:])
 
         expressionList.index = expressionList.iloc[:, 0]  # gene_id
         # drop gene id columns

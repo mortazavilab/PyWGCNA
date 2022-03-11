@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comparing two PyWGCNAs &mdash; PyWGCNA  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> PyWGCNA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html#tutorials">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">API documentations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyWGCNA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Comparing two PyWGCNAs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/Comparison.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="comparing-two-pywgcnas">
+<h1>Comparing two PyWGCNAs<a class="headerlink" href="#comparing-two-pywgcnas" title="Permalink to this headline"></a></h1>
+<p>you can also compare to pyWGCNA object to find out how each group of cluster is correlation with each others.
+For achieving that, first you need to read your PyWGCNa object by <code class="docutils literal notranslate"><span class="pre">readWGCNA()</span></code> function.</p>
+<section id="read-two-pywgcna-objects">
+<h2>Read two PyWGCNA objects<a class="headerlink" href="#read-two-pywgcna-objects" title="Permalink to this headline"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">PyWGCNA</span>
+<span class="n">pyWGCNA_5xFAD</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">readWGCNA</span><span class="p">(</span><span class="s2">&quot;5xFAD.p&quot;</span><span class="p">)</span>
+<span class="n">pyWGCNA_3xTgAD</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">readWGCNA</span><span class="p">(</span><span class="s2">&quot;3xTgAD_paper/3xTgAD.p&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[1m[94mReading WGCNA done![0m
+[1m[94mReading WGCNA done![0m
+</pre></div>
+</div>
+</section>
+<section id="comparing-two-pywgcna-objects">
+<h2>Comparing two PyWGCNA objects<a class="headerlink" href="#comparing-two-pywgcna-objects" title="Permalink to this headline"></a></h2>
+<p>After reading the object you only need to call <code class="docutils literal notranslate"><span class="pre">compareWGCNA()</span></code> function on your two PyWGCNA, you can find the comparison results as a table in <code class="docutils literal notranslate"><span class="pre">comparison</span></code> variable.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">modelAD_5xFAD_3xTgAD</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">compareWGCNA</span><span class="p">(</span><span class="n">pyWGCNA_5xFAD</span><span class="p">,</span> 
+                                           <span class="n">pyWGCNA_3xTgAD</span><span class="p">)</span>
+<span class="n">modelAD_5xFAD_3xTgAD</span><span class="o">.</span><span class="n">comparison</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>5xFAD</th>
+      <th>3xTgAD</th>
+      <th>5xFAD_size</th>
+      <th>3xTgAD_size</th>
+      <th>number</th>
+      <th>fraction(%)</th>
+      <th>P_value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>black</td>
+      <td>black</td>
+      <td>6746</td>
+      <td>8157</td>
+      <td>2497</td>
+      <td>30.611745</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>black</td>
+      <td>brown</td>
+      <td>6746</td>
+      <td>113</td>
+      <td>24</td>
+      <td>21.238938</td>
+      <td>0.168742</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>black</td>
+      <td>darkgray</td>
+      <td>6746</td>
+      <td>507</td>
+      <td>40</td>
+      <td>7.889546</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>black</td>
+      <td>darkgrey</td>
+      <td>6746</td>
+      <td>479</td>
+      <td>44</td>
+      <td>9.185804</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>black</td>
+      <td>darkred</td>
+      <td>6746</td>
+      <td>76</td>
+      <td>54</td>
+      <td>71.052632</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>685</th>
+      <td>whitesmoke</td>
+      <td>salmon</td>
+      <td>613</td>
+      <td>63</td>
+      <td>2</td>
+      <td>3.174603</td>
+      <td>0.670583</td>
+    </tr>
+    <tr>
+      <th>686</th>
+      <td>whitesmoke</td>
+      <td>silver</td>
+      <td>613</td>
+      <td>431</td>
+      <td>4</td>
+      <td>0.928074</td>
+      <td>0.039735</td>
+    </tr>
+    <tr>
+      <th>687</th>
+      <td>whitesmoke</td>
+      <td>snow</td>
+      <td>613</td>
+      <td>156</td>
+      <td>1</td>
+      <td>0.641026</td>
+      <td>0.192283</td>
+    </tr>
+    <tr>
+      <th>688</th>
+      <td>whitesmoke</td>
+      <td>white</td>
+      <td>613</td>
+      <td>162</td>
+      <td>1</td>
+      <td>0.617284</td>
+      <td>0.19613</td>
+    </tr>
+    <tr>
+      <th>689</th>
+      <td>whitesmoke</td>
+      <td>whitesmoke</td>
+      <td>613</td>
+      <td>166</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.038305</td>
+    </tr>
+  </tbody>
+</table>
+<p>690 rows × 7 columns</p>
+</div>
+</section>
+<section id="ploting-comparison">
+<h2>Ploting comparison<a class="headerlink" href="#ploting-comparison" title="Permalink to this headline"></a></h2>
+<p>You can also plot the comparison result as a confusion matrix by using <code class="docutils literal notranslate"><span class="pre">plotCompareWGCA()</span></code> function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">modelAD_5xFAD_3xTgAD</span><span class="o">.</span><span class="n">plotCompareWGCA</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">order2</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="png" src="../_images/Comparison_5_0.png" /></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">modelAD_5xFAD_3xTgAD</span><span class="o">.</span><span class="n">saveComparison</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[1m[94mSaving comparison as comparison.p[0m
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">PyWGCNA</span>
+<span class="n">modelAD_5xFAD_3xTgAD</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">readComparison</span><span class="p">(</span><span class="s1">&#39;comparison.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[1m[94mReading comparison done![0m
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Narges Rezaie.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

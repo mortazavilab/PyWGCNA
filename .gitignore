@@ -10,8 +10,20 @@ tutorials/.ipynb_checkpoints/
 tutorials/test.py
 tutorials/test.ipynb
 tutorials/5xFAD.p
+tutorials/comparison.p
 tutorials/5xFAD_paper/
 tutorials/3xTgAD_paper/
+
+# sphinx data
+docs/tutorials
+docs/_static
+docs/_templates
+docs/conf.py
+docs/index.rst
+docs/make.bat
+docs/Makefile
+docs/PyWGCNA.rst
+docs/modules.rst
 
 # other
 .DS_Store

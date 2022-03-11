@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyWGCNA.utils &mdash; PyWGCNA  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> PyWGCNA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html#tutorials">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API documentations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyWGCNA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>PyWGCNA.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for PyWGCNA.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">biomart</span>
+
+<span class="kn">from</span> <span class="nn">PyWGCNA.comparison</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># bcolors</span>
+<span class="n">HEADER</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[95m&#39;</span>
+<span class="n">OKBLUE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[94m&#39;</span>
+<span class="n">OKCYAN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[96m&#39;</span>
+<span class="n">OKGREEN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[92m&#39;</span>
+<span class="n">WARNING</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[93m&#39;</span>
+<span class="n">FAIL</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[91m&#39;</span>
+<span class="n">ENDC</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[0m&#39;</span>
+<span class="n">BOLD</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[1m&#39;</span>
+<span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[4m&#39;</span>
+
+
+<span class="c1"># read WGCNA obj</span>
+<div class="viewcode-block" id="readWGCNA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.readWGCNA">[docs]</a><span class="k">def</span> <span class="nf">readWGCNA</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a WGCNA from a saved pickle file.</span>
+<span class="sd">                </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file (str): Name / path of WGCNA object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    WGCNA (PyWGCNA): WGCNA object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;WGCNA object not found at given path!&#39;</span><span class="p">)</span>
+
+    <span class="n">picklefile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">wgcna</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">picklefile</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Reading WGCNA done!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wgcna</span></div>
+
+
+<span class="c1"># compare two WGCNA</span>
+<div class="viewcode-block" id="compareWGCNA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.compareWGCNA">[docs]</a><span class="k">def</span> <span class="nf">compareWGCNA</span><span class="p">(</span><span class="n">WGCNA1</span><span class="p">,</span> <span class="n">WGCNA2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare two WGCNAs</span>
+<span class="sd">                </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    WGCNA1 (WGCNA class): first WGCNA object</span>
+<span class="sd">    WGCNA2 (WGCNA class): second WGCNA object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    compare (Compare class)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+    <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                         <span class="n">geneModule1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">geneModules</span><span class="p">,</span> <span class="n">geneModule2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">geneModules</span><span class="p">)</span>
+    <span class="n">compare</span><span class="o">.</span><span class="n">compareWGCNA</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">compare</span></div>
+
+
+<span class="c1"># compare WGCNA to single cell</span>
+<div class="viewcode-block" id="compareSingleCell"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.compareSingleCell">[docs]</a><span class="k">def</span> <span class="nf">compareSingleCell</span><span class="p">(</span><span class="n">WGCNA</span><span class="p">,</span> <span class="n">sc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compare WGCNA and gene marker from single cell experiment</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        WGCNA (WGCNA class): WGCNA object</span>
+<span class="sd">        sc (dataframe): gene marker table which has ....</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        compare (Compare class)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+    <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">geneModule1</span><span class="o">=</span><span class="n">WGCNA</span><span class="o">.</span><span class="n">geneModules</span><span class="p">,</span>
+                         <span class="n">geneMarker</span><span class="o">=</span><span class="n">sc</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">compare</span><span class="o">.</span><span class="n">compareSingleCell</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">compare</span></div>
+
+
+<div class="viewcode-block" id="getGeneList"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.getGeneList">[docs]</a><span class="k">def</span> <span class="nf">getGeneList</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get dictionary that map gene ensembl id to gene name from biomart</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl</span>
+<span class="sd">    you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</span>
+<span class="sd">    </span>
+<span class="sd">    attributes: List the types of data we want</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dictionary contain gene id as a key and gene name as a value</span>
+<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+    <span class="c1"># Set up connection to server</span>
+    <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">:</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ensembl_transcript_id&#39;</span><span class="p">,</span> <span class="s1">&#39;mgi_symbol&#39;</span><span class="p">,</span> <span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;hsapiens_gene_ensembl&#39;</span><span class="p">:</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ensembl_transcript_id&#39;</span><span class="p">,</span> <span class="s1">&#39;hgnc_symbol&#39;</span><span class="p">,</span> <span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">]</span>
+
+    <span class="n">server</span> <span class="o">=</span> <span class="n">biomart</span><span class="o">.</span><span class="n">BiomartServer</span><span class="p">(</span><span class="s1">&#39;http://uswest.ensembl.org/biomart&#39;</span><span class="p">)</span>
+    <span class="n">mart</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="n">dataset</span><span class="p">]</span>
+
+    <span class="c1"># Get the mapping between the attributes</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">mart</span><span class="o">.</span><span class="n">search</span><span class="p">({</span><span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="n">attributes</span><span class="p">})</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+    <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
+    <span class="c1"># Store the data in a dict</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">attributes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+        <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">geneInfo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">geneInfo</span></div>
+
+
+<span class="c1"># read comparison obj</span>
+<div class="viewcode-block" id="readComparison"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.readComparison">[docs]</a><span class="k">def</span> <span class="nf">readComparison</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a comparison from a saved pickle file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file (str): Name / path of comparison object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    comparison: comparison object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Comparison object not found at given path!&#39;</span><span class="p">)</span>
+
+    <span class="n">picklefile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">comparison</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">picklefile</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Reading comparison done!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">comparison</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Narges Rezaie.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

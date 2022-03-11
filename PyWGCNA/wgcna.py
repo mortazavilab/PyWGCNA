@@ -191,7 +191,7 @@ class WGCNA(GeneExp):
         self.TPMcutoff = TPMcutoff
         self.cut = cut
 
-        self.datExpr = None
+        self.datExpr = self.geneExpr.copy()
 
         self.metadata = None
         self.metadata_colors = {}
@@ -232,30 +232,29 @@ class WGCNA(GeneExp):
     def preprocess(self):
         print(f"{BOLD}{OKBLUE}Pre-processing...{ENDC}")
 
-        self.datExpr = self.geneExpr
         # Prepare and clean data
         # Remove rows with less than 1 TPM
-        self.datExpr.X = self.datExpr.X.loc[(self.datExpr.X > self.TPMcutoff).any(axis=1), :]
+        self.datExpr = self.datExpr[(self.datExpr.X > self.TPMcutoff).any(axis=1)]
 
         # Check that all genes and samples have sufficiently low numbers of missing values.
-        goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.X)
+        goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.to_df())
         # if not okay
         if not allOK:
             # Optionally, print the gene and sample names that were removed:
             if np.count_nonzero(goodGenes) > 0:
                 print(f"{OKGREEN} {np.size(goodGenes) - np.count_nonzero(goodGenes)} gene(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing genes: {self.datExpr.X.index[not goodGenes].values}{ENDC}")
+                print(f"{OKGREEN}Removing genes: {self.datExpr.obs.index[not goodGenes].values}{ENDC}")
             if np.count_nonzero(goodSamples) > 0:
                 print(f"{OKGREEN} {np.size(goodSamples) - np.count_nonzero(goodSamples)} sample(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing samples: {self.datExpr.X.columns[not goodSamples].values}{ENDC}")
+                print(f"{OKGREEN}Removing samples: {self.datExpr.obs.columns[not goodSamples].values}{ENDC}")
             # Remove the offending genes and samples from the data:
             self.datExpr.X = self.datExpr.X.loc[goodGenes, goodSamples]
 
         # Clustering
-        sampleTree = WGCNA.hclust(pdist(self.datExpr.X.T), method="average")
+        sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df().T), method="average")
 
         plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1]/20)), 10))
-        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.X.T.index, leaf_rotation=90,
+        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().T.index, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
         plt.title('Sample clustering to detect outliers')
@@ -271,13 +270,9 @@ class WGCNA(GeneExp):
         clust = clust.T.tolist()[0]
         index = [index for index, element in enumerate(clust) if element == 0]
 
-        self.datExpr.X = self.datExpr.X.iloc[:, index]
+        self.datExpr = self.datExpr[:, index]
 
-        # convert trancript ID to gene ID
-        for i in range(self.datExpr.X.shape[0]):
-            self.datExpr.X.index.values[i] = self.datExpr.X.index[i].split(".")[0]
-
-        self.datExpr.X = self.datExpr.X.T
+        self.datExpr = self.datExpr.copy().transpose()
 
         print("\tDone pre-processing..\n")
 
@@ -285,7 +280,7 @@ class WGCNA(GeneExp):
         print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
 
         # Call the network topology analysis function
-        self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.X, RsquaredCut=self.RsquaredCut,
+        self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.to_df(), RsquaredCut=self.RsquaredCut,
                                                        MeanCut=self.MeanCut, powerVector=self.powers,
                                                        networkType=self.networkType)
 
@@ -313,7 +308,7 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/summarypower.png')
 
         # Set Power
-        self.adjacency = WGCNA.adjacency(self.datExpr.X, power=self.power, adjacencyType=self.networkType)
+        self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType)
 
         # Turn adjacency into topological overlap
         self.TOM = WGCNA.TOMsimilarity(self.adjacency, TOMType=self.TOMType)
@@ -328,11 +323,11 @@ class WGCNA(GeneExp):
         dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
                                          minClusterSize=self.minModuleSize)
 
-        # Convert numeric lables into colors
-        self.geneExpr.obs['dynamicColors'] = WGCNA.labels2colors(labels=dynamicMods)
+        # Convert numeric labels into colors
+        self.datExpr.var['dynamicColors'] = WGCNA.labels2colors(labels=dynamicMods)
 
         # Calculate eigengenes
-        MEList = WGCNA.moduleEigengenes(expr=self.datExpr.X, colors=self.geneExpr.obs['dynamicColors'])
+        MEList = WGCNA.moduleEigengenes(expr=self.datExpr.to_df(), colors=self.datExpr.var['dynamicColors'])
 
         self.MEs = MEList['eigengenes']
         if 'MEgrey' in self.MEs.columns:
@@ -356,17 +351,18 @@ class WGCNA(GeneExp):
             plt.close()
 
         # Call an automatic merging function
-        merge = WGCNA.mergeCloseModules(self.datExpr.X, self.geneExpr.obs['dynamicColors'], cutHeight=self.MEDissThres)
+        merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
+                                        cutHeight=self.MEDissThres)
         # The merged module colors; Rename to moduleColors
-        self.geneExpr.obs['moduleColors'] = merge['colors']
+        self.datExpr.var['moduleColors'] = merge['colors']
         # Construct numerical labels corresponding to the colors
-        colorOrder = np.unique(self.geneExpr.obs['moduleColors']).tolist()
-        self.geneExpr.obs['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in self.geneExpr.obs['moduleColors']]
+        colorOrder = np.unique(self.datExpr.var['moduleColors']).tolist()
+        self.datExpr.var['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in self.datExpr.obs['moduleColors']]
         # Eigengenes of the new merged modules:
         self.MEs = merge['newMEs']
 
         # Recalculate MEs with color labels
-        self.datME = WGCNA.moduleEigengenes(self.datExpr.X, self.geneExpr.obs['moduleColors'])['eigengenes']
+        self.datME = WGCNA.moduleEigengenes(self.datExpr.to_df(), self.datExpr.var['moduleColors'])['eigengenes']
         if 'MEgrey' in self.datME.columns:
             self.datME.drop(['MEgrey'], axis=1, inplace=True)
         self.MEs = WGCNA.orderMEs(self.datME)
@@ -387,8 +383,8 @@ class WGCNA(GeneExp):
 
         print(f"{OKCYAN}Calculating module trait relationship ...{ENDC}")
         # Define numbers of genes and samples
-        nGenes = self.datExpr.X.shape[1]
-        nSamples = self.datExpr.X.shape[0]
+        nGenes = self.datExpr.to_df().shape[1]
+        nSamples = self.datExpr.to_df().shape[0]
         names = np.concatenate((self.MEs.columns, self.datTraits.columns))
         self.moduleTraitCor = pd.DataFrame(np.corrcoef(self.MEs.T, self.datTraits.T),
                                            index=names, columns=names)
@@ -434,8 +430,8 @@ class WGCNA(GeneExp):
         if self.save:
             print(f"{OKCYAN}plotting module heatmap eigengene...{ENDC}")
             # Select module probes
-            modules = np.unique(self.geneExpr.obs['moduleColors']).tolist()
-            metadata = self.geneExpr.var.columns.tolist()
+            modules = np.unique(self.datExpr.var['moduleColors']).tolist()
+            metadata = self.datExpr.obs.columns.tolist()
             if order is None:
                 metadata.remove('sample_id')
             else:
@@ -449,7 +445,7 @@ class WGCNA(GeneExp):
             
         if self.save:
             print(f"{OKCYAN}plotting Go term for each module...{ENDC}")
-            modules = np.unique(self.geneExpr.obs['moduleColors']).tolist()
+            modules = np.unique(self.datExpr.var['moduleColors']).tolist()
             for module in modules:
                 self.findGoTerm(module)
             print("\tDone..\n")
@@ -2259,7 +2255,7 @@ class WGCNA(GeneExp):
         picklefile.close()
 
     def updateDatTraits(self):
-        index = self.geneExpr.var.index.isin(self.datExpr.index)
+        index = self.geneExpr.var.index.isin(self.datExpr.to_df().index)
         tmp = self.geneExpr.var[index]
         self.datTraits = pd.DataFrame(tmp.sample_id)
         tmp.drop(['sample_id'], axis=1, inplace=True)
@@ -2281,27 +2277,27 @@ class WGCNA(GeneExp):
                     self.datTraits.replace(to_replace=org, value=rep, inplace=True)
 
     def getModuleName(self):
-        return np.unique(self.geneExpr.obs['moduleColors']).tolist()
+        return np.unique(self.datExpr.obs['moduleColors']).tolist()
 
     def getGeneModule(self, moduleName):
         output = {}
-        moduleColors = np.unique(self.geneExpr.obs['moduleColors']).tolist()
+        moduleColors = np.unique(self.datExpr.obs['moduleColors']).tolist()
         if moduleName not in moduleColors:
             print(f"{WARNING}Module name(s) does not exist in {ENDC}")
             return None
         for color in moduleColors:
             if color in moduleName:
-                output[color] = self.geneExpr.obs[self.geneExpr.obs['moduleColors'] == color]
+                output[color] = self.datExpr.obs[self.datExpr.obs['moduleColors'] == color]
         return output
 
     def getModulesGene(self, geneIds):
         if isinstance(geneIds, str):
             geneIds = [geneIds]
 
-        moduleColors = np.unique(self.geneExpr.obs['moduleColors']).tolist()
+        moduleColors = np.unique(self.datExpr.obs['moduleColors']).tolist()
         modules = []
         for geneId in geneIds:
-            modules.append(self.geneExpr.obs.moduleColors[self.geneExpr.obs.gene_id == 'geneId'])
+            modules.append(self.datExpr.obs.moduleColors[self.datExpr.obs.gene_id == 'geneId'])
 
         if len(modules) == 1:
             modules = modules[0]
@@ -2310,21 +2306,21 @@ class WGCNA(GeneExp):
 
     def setMetadataColor(self, col, cmap):
         # check if obs_col is even there
-        if col not in self.geneExpr.var.columns.tolist():
+        if col not in self.datExpr.var.columns.tolist():
             print(f"{WARNING}Metadata column {col} not found!{ENDC}")
             return None
         self.metadata_colors[col] = cmap
 
     def plotModuleEigenGene(self, moduleName, metadata):
-        index = self.geneExpr.var.index.isin(self.datExpr.index)
-        sampleInfo = self.geneExpr.var[index]
+        index = self.datExpr.var.index.isin(self.datExpr.to_df().index)
+        sampleInfo = self.datExpr.var[index]
 
-        modules = np.unique(self.geneExpr.obs['moduleColors']).tolist()
+        modules = np.unique(self.datExpr.obs['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            heatmap = scale(self.datExpr.iloc[:, self.geneExpr.obs['moduleColors'] == moduleName]).T
+            heatmap = scale(self.datExpr.iloc[:, self.datExpr.obs['moduleColors'] == moduleName]).T
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
             ME['sample_name'] = self.datME.index
 
@@ -2375,12 +2371,12 @@ class WGCNA(GeneExp):
         return None
 
     def addGeneModulesInfo(self, moduleName, geneList):
-        modules = np.unique(self.geneExpr.obs['moduleColors']).tolist()
+        modules = np.unique(self.datExpr.obs['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            self.geneExpr.obs['gene_name'] = ""
+            self.datExpr.obs['gene_name'] = ""
             for i in range(self.geneModules[moduleName].shape[0]):
                 if self.geneModules[moduleName]['gene_id'][i] in list(geneList.keys()):
                     self.geneModules[moduleName]['gene_name'][i] = list(geneList.values())[
@@ -2393,7 +2389,7 @@ class WGCNA(GeneExp):
             print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
             os.makedirs(self.outputPath + '/figures/Go_term/')
 
-        modules = np.unique(self.geneExpr.obs['moduleColors']).tolist()
+        modules = np.unique(self.datExpr.obs['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None

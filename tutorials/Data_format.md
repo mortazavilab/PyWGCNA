@@ -7,12 +7,12 @@ network analysis, and clean the data by removing
 obvious outlier samples as well as genes and 
 samples with excessive numbers of missing entries.
 
-* [Data Input](Data%20format.md#data-input)
-    - [Gene Expression](Data%20format.md#gene-expression)
-    - [Gene Information](Data%20format.md#gene-information)
-    - [Sample Information](Data%20format.md#sample-information)
-    - [Other parameters](Data%20format.md#other-parameters)
-* [Data cleaning and pre-processing](Data%20format.md#data-cleaning-and-pre-processing)
+* [Data Input](Data_format.md#data-input)
+    - [Gene Expression](Data_format.md#gene-expression)
+    - [Gene Information](Data_format.md#gene-information)
+    - [Sample Information](Data_format.md#sample-information)
+    - [Other parameters](Data_format.md#other-parameters)
+* [Data cleaning and pre-processing](Data_format.md#data-cleaning-and-pre-processing)
 
 ## Data Input
 
