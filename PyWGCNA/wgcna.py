@@ -27,6 +27,8 @@ from PyWGCNA.geneExp import *
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
 warnings.simplefilter(action='ignore', category=FutureWarning)
+import warnings
+warnings.filterwarnings("ignore")
 
 plt.rcParams["axes.edgecolor"] = "black"
 plt.rcParams["axes.linewidth"] = 1

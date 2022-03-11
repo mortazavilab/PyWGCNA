@@ -21,12 +21,11 @@ def readWGCNA(file):
     """
     Read a WGCNA from a saved pickle file.
 
-    Parameters:
-        file (str): Name / path of WGCNA object
+    :param file: Name / path of WGCNA object
+    :type file: str
 
-    Returns:
-        WGCNA (PyWGCNA): WGCNA object
-
+    :return: PyWGCNA object
+    :rtype: PyWGCNA class
     """
     if not os.path.isfile(file):
         raise ValueError('WGCNA object not found at given path!')
@@ -43,12 +42,13 @@ def compareWGCNA(WGCNA1, WGCNA2):
     """
     Compare two WGCNAs
                 
-    Parameters:
-        WGCNA1 (WGCNA class): first WGCNA object
-        WGCNA2 (WGCNA class): second WGCNA object
+    :param WGCNA1: first WGCNA object
+    :type WGCNA1: PyWGCNA class
+    :param WGCNA2: second WGCNA object
+    :type WGCNA2: PyWGCNA class
 
-    Returns:
-        compare object (Compare class)
+    :return: compare object
+    :rtype: Compare class
 
     """""
     compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
@@ -63,12 +63,13 @@ def compareSingleCell(WGCNA, sc):
     """
     Compare WGCNA and gene marker from single cell experiment
 
-    Parameters:
-        WGCNA (WGCNA class): WGCNA object
-        sc (dataframe): gene marker table which has ....
+    :param WGCNA: WGCNA object
+    :type WGCNA: PyWGCNA class
+    :param sc: gene marker table which has ....
+    :type sc: pandas dataframe
 
-    Returns:
-        compare object (Compare class)
+    :return: compare object
+    :rtype: Compare class
 
     """""
     compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.geneModules,
@@ -82,14 +83,15 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     """
     get dictionary that map gene ensembl id to gene name from biomart
     
-    Parameters:
-        dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
+    
+    :param dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
         you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
+    :type dataset: string
+    :param attributes: List the types of data we want
+    :type attributes: list
     
-        attributes: List the types of data we want
-    
-    Returns:
-        dictionary contain gene id as a key and gene name as a value
+    :return: table extracted from biomart related to the datasets including information from attributes
+    :rtype: pandas dataframe
     """""
     # Set up connection to server
     if dataset == 'mmusculus_gene_ensembl':
@@ -121,11 +123,11 @@ def readComparison(file):
     """
     Read a comparison from a saved pickle file.
 
-    Parameters:
-        file (str): Name / path of comparison object
+    :param file: Name / path of comparison object
+    :type file: string
 
-    Returns:
-        comparison: comparison object
+    :return: comparison object
+    :rtype: comparison class
 
     """""
     if not os.path.isfile(file):

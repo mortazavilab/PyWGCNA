@@ -1,3 +1,8 @@
+PyWGCNA package
+===============
+
+Submodules
+----------
 
 PyWGCNA.comparison module
 -------------------------
