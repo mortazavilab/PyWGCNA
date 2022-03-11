@@ -357,7 +357,7 @@ class WGCNA(GeneExp):
         self.datExpr.var['moduleColors'] = merge['colors']
         # Construct numerical labels corresponding to the colors
         colorOrder = np.unique(self.datExpr.var['moduleColors']).tolist()
-        self.datExpr.var['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in self.datExpr.obs['moduleColors']]
+        self.datExpr.var['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in self.datExpr.var['moduleColors']]
         # Eigengenes of the new merged modules:
         self.MEs = merge['newMEs']
 

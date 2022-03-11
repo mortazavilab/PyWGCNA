@@ -20,16 +20,14 @@ UNDERLINE = '\033[4m'
 def readWGCNA(file):
     """
     Read a WGCNA from a saved pickle file.
-                
-    Parameters
-    ----------
-    file (str): Name / path of WGCNA object
 
-    Returns
-    -------
-    WGCNA (PyWGCNA): WGCNA object
+    Parameters:
+        file (str): Name / path of WGCNA object
 
-    """""
+    Returns:
+        WGCNA (PyWGCNA): WGCNA object
+
+    """
     if not os.path.isfile(file):
         raise ValueError('WGCNA object not found at given path!')
 
@@ -45,14 +43,12 @@ def compareWGCNA(WGCNA1, WGCNA2):
     """
     Compare two WGCNAs
                 
-    Parameters
-    ----------
-    WGCNA1 (WGCNA class): first WGCNA object
-    WGCNA2 (WGCNA class): second WGCNA object
+    Parameters:
+        WGCNA1 (WGCNA class): first WGCNA object
+        WGCNA2 (WGCNA class): second WGCNA object
 
-    Returns
-    -------
-    compare (Compare class)
+    Returns:
+        compare object (Compare class)
 
     """""
     compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
@@ -65,18 +61,16 @@ def compareWGCNA(WGCNA1, WGCNA2):
 # compare WGCNA to single cell
 def compareSingleCell(WGCNA, sc):
     """
-        Compare WGCNA and gene marker from single cell experiment
+    Compare WGCNA and gene marker from single cell experiment
 
-        Parameters
-        ----------
+    Parameters:
         WGCNA (WGCNA class): WGCNA object
         sc (dataframe): gene marker table which has ....
 
-        Returns
-        -------
-        compare (Compare class)
+    Returns:
+        compare object (Compare class)
 
-        """""
+    """""
     compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.geneModules,
                          geneMarker=sc, sc=True)
     compare.compareSingleCell()
@@ -87,16 +81,15 @@ def compareSingleCell(WGCNA, sc):
 def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     """
     get dictionary that map gene ensembl id to gene name from biomart
-    Parameters
-    ----------
-    dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
-    you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
     
-    attributes: List the types of data we want
+    Parameters:
+        dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
+        you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
     
-    Returns
-    -------
-    dictionary contain gene id as a key and gene name as a value
+        attributes: List the types of data we want
+    
+    Returns:
+        dictionary contain gene id as a key and gene name as a value
     """""
     # Set up connection to server
     if dataset == 'mmusculus_gene_ensembl':
@@ -128,13 +121,11 @@ def readComparison(file):
     """
     Read a comparison from a saved pickle file.
 
-    Parameters
-    ----------
-    file (str): Name / path of comparison object
+    Parameters:
+        file (str): Name / path of comparison object
 
-    Returns
-    -------
-    comparison: comparison object
+    Returns:
+        comparison: comparison object
 
     """""
     if not os.path.isfile(file):
