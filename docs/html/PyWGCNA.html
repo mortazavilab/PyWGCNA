@@ -330,35 +330,23 @@ you can find more information here: <a class="reference external" href="https://
 <li><p><strong>MeanCut</strong> (<em>int</em>) – mean connectivity to choose power for having scale free network (default: 100)</p></li>
 <li><p><strong>power</strong> (<em>int</em>) – power to have scale free network (default: 6)</p></li>
 <li><p><strong>sft</strong> (<em>pandas dataframe</em>) – soft threshold table which has information for each powers</p></li>
-<li><p><strong>networkType</strong> – Type of network we can create including “unsigned”, “signed” and “signed hybrid” (default: “signed hybrid”)</p></li>
+<li><p><strong>networkType</strong> (<em>str</em>) – Type of network we can create including “unsigned”, “signed” and “signed hybrid” (default: “signed hybrid”)</p></li>
+<li><p><strong>adjacency</strong> (<em>ndarray</em>) – adjacency matrix calculating base of the type of network</p></li>
+<li><p><strong>geneTree</strong> (<em>ndarray</em>) – average hierarchical clustering of dissTOM matrix</p></li>
+<li><p><strong>TOMType</strong> (<em>str</em>) – Type of topological overlap matrix(TOM) including “unsigned”, “signed” (default: “signed”)</p></li>
+<li><p><strong>TOM</strong> – topological overlap measure using average linkage hierarchical clustering which inputs a measure of interconnectedness</p></li>
+<li><p><strong>TOM</strong> – ndarray</p></li>
+<li><p><strong>minModuleSize</strong> (<em>int</em>) – We like large modules, so we set the minimum module size relatively high (default: 50)</p></li>
+<li><p><strong>dynamicMods</strong> (<em>list</em>) – name of modules by clustering similar genes together</p></li>
+<li><p><strong>naColor</strong> (<em>str</em>) – color we used to identify genes we don’t find any cluster for them (default: “grey”)</p></li>
+<li><p><strong>MEs</strong> (<em>ndarray</em>) – eigengenes</p></li>
+<li><p><strong>MEDissThres</strong> (<em>float</em>) – diss similarity threshold (default: 0.2)</p></li>
+<li><p><strong>datME</strong> (<em>ndarray</em>) – </p></li>
+<li><p><strong>moduleTraitCor</strong> (<em>pandas dataframe</em>) – correlation between each module and metadata</p></li>
+<li><p><strong>moduleTraitPvalue</strong> (<em>pandas dataframe</em>) – p-value of correlation between each module and metadata</p></li>
 </ul>
 </dd>
 </dl>
-<p>:type networkType : str
-:param adjacency: adjacency matrix calculating base of the type of network
-:type adjacency: ndarray
-:param geneTree: average hierarchical clustering of dissTOM matrix
-:type geneTree: ndarray
-:param TOMType: Type of topological overlap matrix(TOM) including “unsigned”, “signed” (default: “signed”)
-:type TOMType: str
-:param TOM: topological overlap measure using average linkage hierarchical clustering which inputs a measure of interconnectedness
-:param TOM: ndarray
-:param minModuleSize: We like large modules, so we set the minimum module size relatively high (default: 50)
-:type minModuleSize: int
-:param dynamicMods: name of modules by clustering similar genes together
-:type dynamicMods: list
-:param naColor: color we used to identify genes we don’t find any cluster for them (default: “grey”)
-:type naColor: str
-:param MEs: eigengenes
-:type MEs: ndarray
-:param MEDissThres:  diss similarity threshold (default: 0.2)
-:type MEDissThres: float
-:param datME:
-:type datME: ndarray
-:param moduleTraitCor: correlation between each module and metadata
-:type moduleTraitCor: pandas dataframe
-:param moduleTraitPvalue: p-value of correlation between each module and metadata
-:type moduleTraitPvalue: pandas dataframe</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.TOMsimilarity">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TOMsimilarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TOMType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'signed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TOMDenom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.TOMsimilarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.TOMsimilarity" title="Permalink to this definition"></a></dt>
