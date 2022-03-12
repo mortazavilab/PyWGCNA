@@ -80,7 +80,7 @@ class WGCNA(GeneExp):
     :param sft: soft threshold table which has information for each powers
     :type sft: pandas dataframe
     :param networkType: Type of network we can create including "unsigned", "signed" and "signed hybrid" (default: "signed hybrid")
-    :type networkType : str
+    :type networkType: str
     :param adjacency: adjacency matrix calculating base of the type of network
     :type adjacency: ndarray
     :param geneTree: average hierarchical clustering of dissTOM matrix
