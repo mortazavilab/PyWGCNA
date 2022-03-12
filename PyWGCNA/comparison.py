@@ -16,48 +16,27 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
+
 class Comparison:
     """
-            A class used to compare WGCNA to another WGCNA or any gene marker table
+    A class used to compare PyWGCNA to another PyWGCNA or any gene marker table
 
-            Attributes
-            ----------
-            name1 : str
-                name of first WGCNA
+    :param name1: name of first WGCNA
+    :type name1: str
+    :param name2: name of second WGCNA
+    :type name2: str
+    :param geneModule1: gene modules of first WGCNA
+    :type geneModule1: dict
+    :param geneModule2: gene modules of second WGCNA
+    :type geneModule2: dict
+    :param geneMarker: gene marker of single cell data
+    :type geneMarker: pandas dataframe
+    :param sc: indicate if object is WGCNA or single cell
+    :type sc: bool
+    :param comparison: Summary of comparison results
+    :type comparison: pandas dataframe
 
-            name2 : str
-                name of second WGCNA
-
-            geneModule1 : dict
-                gene modules of first WGCNA
-
-            geneModule2 : dict
-                gene modules of second WGCNA
-
-            geneMarker : data frame
-                gene marker of single cell data
-
-            sc : bool
-                indicate if object is WGCNA or single cell
-
-            comparison: data frame
-                Summary of comparison results
-
-            Methods
-            -------
-            compareWGCNA()
-                compare two WGCNA
-
-            compareSingleCell()
-                compare WGCNA to single cell data
-
-            plotCompareWGCA()
-                plot comparison result as a confusion matrix
-
-            saveComparison()
-                save comparison object
-
-            """
+    """
 
     def __init__(self, name1="name1", name2="name2", geneModule1=None, geneModule2=None, geneMarker=None, sc=False):
         self.name1 = name1
@@ -72,10 +51,10 @@ class Comparison:
     def compareWGCNA(self):
         """
         Compare two list of modules from two bulk gene expression data set
-        Returns
-        -------
-        compare class
-        """""
+
+        :return: update compare class that replace automatically
+        :rtype: compare class
+        """
         if self.name1 == self.name2:
             name1 = self.name1 + "1"
             name2 = self.name2 + "2"
@@ -124,11 +103,11 @@ class Comparison:
 
     def compareSingleCell(self):
         """
-        Compare bulk and single cell gene expression data
-        Returns
-        -------
-        compare class
-        """""
+        Compare PyWGCNA object to single cell gene expression data
+
+        :return: update compare class that replace automatically
+        :rtype: compare class
+        """
         list_sn = np.unique(self.geneMarker['cluster'])
         num = len(self.geneModule1.keys()) * len(list_sn)
         df = pd.DataFrame(
@@ -175,16 +154,15 @@ class Comparison:
     def plotCompareWGCA(self, order1=None, order2=None, save=False):
         """
         plot comparison
-        Parameters
-        ----------
-        order1: order of WGCNA1 you want to show in plot
-        order2: order of WGCNA2 you want to show in plot
-        save: if you want to save plot as png
 
-        Returns
-        -------
+        :param order1: order of modules in PyWGCNA1 you want to show in plot (name of each elements should mapped the name of modules in your first PyWGCNA)
+        :type order1: list of str
+        :param order2: order of modules in PyWGCNA2 you want to show in plot (name of each elements should mapped the name of modules in your second PyWGCNA)
+        :type order2: list of str
+        :param save: if you want to save plot as comparison.png near to your script
+        :type save: bool
 
-        """""
+        """
         result = self.comparison.copy(deep=True)
         result['-log10(P_value)'] = -1 * np.log10(result['P_value'].astype(np.float64))
 
@@ -275,10 +253,8 @@ class Comparison:
     def saveComparison(self):
         """
         save comparison object as comparison.p near to the script
-        Returns
-        -------
         
-        """""
+        """
         print(f"{BOLD}{OKBLUE}Saving comparison as comparison.p{ENDC}")
 
         picklefile = open('comparison.p', 'wb')

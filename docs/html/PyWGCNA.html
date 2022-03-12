@@ -196,46 +196,95 @@ Returns
 <dt class="sig sig-object py" id="PyWGCNA.utils.compareSingleCell">
 <span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">compareSingleCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">WGCNA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#compareSingleCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.compareSingleCell" title="Permalink to this definition"></a></dt>
 <dd><p>Compare WGCNA and gene marker from single cell experiment</p>
-<p>WGCNA (WGCNA class): WGCNA object
-sc (dataframe): gene marker table which has ….</p>
-<p>compare (Compare class)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>WGCNA</strong> (<em>PyWGCNA class</em>) – WGCNA object</p></li>
+<li><p><strong>sc</strong> (<em>pandas dataframe</em>) – gene marker table which has ….</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>compare object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Compare class</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.compareWGCNA">
 <span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">compareWGCNA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">WGCNA1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">WGCNA2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#compareWGCNA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.compareWGCNA" title="Permalink to this definition"></a></dt>
 <dd><p>Compare two WGCNAs</p>
-<p>WGCNA1 (WGCNA class): first WGCNA object
-WGCNA2 (WGCNA class): second WGCNA object</p>
-<p>compare (Compare class)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>WGCNA1</strong> (<em>PyWGCNA class</em>) – first WGCNA object</p></li>
+<li><p><strong>WGCNA2</strong> (<em>PyWGCNA class</em>) – second WGCNA object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>compare object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Compare class</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.getGeneList">
 <span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition"></a></dt>
-<dd><p>get dictionary that map gene ensembl id to gene name from biomart
-Parameters
-———-
-dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
-you can find more information here: <a class="reference external" href="https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset">https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</a></p>
-<p>attributes: List the types of data we want</p>
-<p>dictionary contain gene id as a key and gene name as a value</p>
+<dd><p>get dictionary that map gene ensembl id to gene name from biomart</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>string</em>) – name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
+you can find more information here: <a class="reference external" href="https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset">https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</a></p></li>
+<li><p><strong>attributes</strong> (<em>list</em>) – List the types of data we want</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>table extracted from biomart related to the datasets including information from attributes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas dataframe</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.readComparison">
 <span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">readComparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#readComparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.readComparison" title="Permalink to this definition"></a></dt>
 <dd><p>Read a comparison from a saved pickle file.</p>
-<p>file (str): Name / path of comparison object</p>
-<p>comparison: comparison object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>string</em>) – Name / path of comparison object</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>comparison object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>comparison class</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.readWGCNA">
 <span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">readWGCNA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#readWGCNA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.readWGCNA" title="Permalink to this definition"></a></dt>
 <dd><p>Read a WGCNA from a saved pickle file.</p>
-<p>file (str): Name / path of WGCNA object</p>
-<p>WGCNA (PyWGCNA): WGCNA object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>str</em>) – Name / path of WGCNA object</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>PyWGCNA object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>PyWGCNA class</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

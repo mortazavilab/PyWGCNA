@@ -88,16 +88,13 @@
 <div class="viewcode-block" id="readWGCNA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.readWGCNA">[docs]</a><span class="k">def</span> <span class="nf">readWGCNA</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a WGCNA from a saved pickle file.</span>
-<span class="sd">                </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    file (str): Name / path of WGCNA object</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    WGCNA (PyWGCNA): WGCNA object</span>
+<span class="sd">    :param file: Name / path of WGCNA object</span>
+<span class="sd">    :type file: str</span>
 
-<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">    :return: PyWGCNA object</span>
+<span class="sd">    :rtype: PyWGCNA class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;WGCNA object not found at given path!&#39;</span><span class="p">)</span>
 
@@ -113,14 +110,13 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compare two WGCNAs</span>
 <span class="sd">                </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    WGCNA1 (WGCNA class): first WGCNA object</span>
-<span class="sd">    WGCNA2 (WGCNA class): second WGCNA object</span>
+<span class="sd">    :param WGCNA1: first WGCNA object</span>
+<span class="sd">    :type WGCNA1: PyWGCNA class</span>
+<span class="sd">    :param WGCNA2: second WGCNA object</span>
+<span class="sd">    :type WGCNA2: PyWGCNA class</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    compare (Compare class)</span>
+<span class="sd">    :return: compare object</span>
+<span class="sd">    :rtype: Compare class</span>
 
 <span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
     <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -133,18 +129,17 @@
 <span class="c1"># compare WGCNA to single cell</span>
 <div class="viewcode-block" id="compareSingleCell"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.compareSingleCell">[docs]</a><span class="k">def</span> <span class="nf">compareSingleCell</span><span class="p">(</span><span class="n">WGCNA</span><span class="p">,</span> <span class="n">sc</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compare WGCNA and gene marker from single cell experiment</span>
+<span class="sd">    Compare WGCNA and gene marker from single cell experiment</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        WGCNA (WGCNA class): WGCNA object</span>
-<span class="sd">        sc (dataframe): gene marker table which has ....</span>
+<span class="sd">    :param WGCNA: WGCNA object</span>
+<span class="sd">    :type WGCNA: PyWGCNA class</span>
+<span class="sd">    :param sc: gene marker table which has ....</span>
+<span class="sd">    :type sc: pandas dataframe</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        compare (Compare class)</span>
+<span class="sd">    :return: compare object</span>
+<span class="sd">    :rtype: Compare class</span>
 
-<span class="sd">        &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">geneModule1</span><span class="o">=</span><span class="n">WGCNA</span><span class="o">.</span><span class="n">geneModules</span><span class="p">,</span>
                          <span class="n">geneMarker</span><span class="o">=</span><span class="n">sc</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">compare</span><span class="o">.</span><span class="n">compareSingleCell</span><span class="p">()</span>
@@ -155,16 +150,16 @@
 <div class="viewcode-block" id="getGeneList"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.getGeneList">[docs]</a><span class="k">def</span> <span class="nf">getGeneList</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get dictionary that map gene ensembl id to gene name from biomart</span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl</span>
-<span class="sd">    you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</span>
 <span class="sd">    </span>
-<span class="sd">    attributes: List the types of data we want</span>
 <span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dictionary contain gene id as a key and gene name as a value</span>
+<span class="sd">    :param dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl</span>
+<span class="sd">        you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</span>
+<span class="sd">    :type dataset: string</span>
+<span class="sd">    :param attributes: List the types of data we want</span>
+<span class="sd">    :type attributes: list</span>
+<span class="sd">    </span>
+<span class="sd">    :return: table extracted from biomart related to the datasets including information from attributes</span>
+<span class="sd">    :rtype: pandas dataframe</span>
 <span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
     <span class="c1"># Set up connection to server</span>
     <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">:</span>
@@ -196,13 +191,11 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a comparison from a saved pickle file.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    file (str): Name / path of comparison object</span>
+<span class="sd">    :param file: Name / path of comparison object</span>
+<span class="sd">    :type file: string</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    comparison: comparison object</span>
+<span class="sd">    :return: comparison object</span>
+<span class="sd">    :rtype: comparison class</span>
 
 <span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>

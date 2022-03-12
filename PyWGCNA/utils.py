@@ -49,8 +49,7 @@ def compareWGCNA(WGCNA1, WGCNA2):
 
     :return: compare object
     :rtype: Compare class
-
-    """""
+    """
     compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
                          geneModule1=WGCNA1.geneModules, geneModule2=WGCNA2.geneModules)
     compare.compareWGCNA()
@@ -92,7 +91,7 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     
     :return: table extracted from biomart related to the datasets including information from attributes
     :rtype: pandas dataframe
-    """""
+    """
     # Set up connection to server
     if dataset == 'mmusculus_gene_ensembl':
         attributes = ['ensembl_transcript_id', 'mgi_symbol', 'ensembl_gene_id']
@@ -128,8 +127,7 @@ def readComparison(file):
 
     :return: comparison object
     :rtype: comparison class
-
-    """""
+    """
     if not os.path.isfile(file):
         raise ValueError('Comparison object not found at given path!')
 
