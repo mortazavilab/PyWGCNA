@@ -78,21 +78,21 @@
 
 <div class="viewcode-block" id="GeneExp"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp">[docs]</a><span class="k">class</span> <span class="nc">GeneExp</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A class used to creat gene expression matrix along data trait including both genes and samples information.</span>
+<span class="sd">    A class used to creat gene expression anndata along data trait including both genes and samples information.</span>
 
-<span class="sd">        Attributes</span>
-<span class="sd">        ----------</span>
-<span class="sd">        geneExpr: anndata</span>
-<span class="sd">            gene expression matrix along sample information in the var (i.e. age, sex, tissue, genotype)</span>
-<span class="sd">             and gene information in the obs(i.e. gene name, gene id, gene type)</span>
-
-<span class="sd">        Methods</span>
-<span class="sd">        -------</span>
-<span class="sd">        updateMetadata(path)</span>
-<span class="sd">            add/update genes info</span>
-<span class="sd">        addSampleInfo(path)</span>
-<span class="sd">            add/update samples info</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">    :param species: species of the data you use i.e mouse, human</span>
+<span class="sd">    :type species: str</span>
+<span class="sd">    :param level: which type of data you use including gene, transcript (default: gene)</span>
+<span class="sd">    :type level: str</span>
+<span class="sd">    :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.</span>
+<span class="sd">    :param anndata: anndata</span>
+<span class="sd">    :param geneExpr: expression matrix which genes are in the rows and samples are columns</span>
+<span class="sd">    :type geneExpr: pandas dataframe</span>
+<span class="sd">    :param geneExpPath: path of expression matrix</span>
+<span class="sd">    :type geneExpPath: str</span>
+<span class="sd">    :param sep: separation symbol to use for reading data in geneExpPath properly</span>
+<span class="sd">    :param sep: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;gene&#39;</span><span class="p">,</span>
                  <span class="n">anndata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneExp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -131,10 +131,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">expressionList</span><span class="p">,</span> <span class="n">obs</span><span class="o">=</span><span class="n">geneInfo</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">sampleInfo</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GeneExp.updateGeneInfo"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp.updateGeneInfo">[docs]</a>    <span class="k">def</span> <span class="nf">updateGeneInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        add/update genes info in geneExp anndata</span>
+
+<span class="sd">        :param geneInfo: gene information table you want to add to your data</span>
+<span class="sd">        :type geneInfo: pandas dataframe</span>
+<span class="sd">        :param path: path of geneInfo</span>
+<span class="sd">        :type path: str</span>
+<span class="sd">        :param sep: separation symbol to use for reading data in path properly</span>
+<span class="sd">        :type sep: str</span>
+<span class="sd">        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)</span>
+<span class="sd">        :type order: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;file does not exist!&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path does not exist!&quot;</span><span class="p">)</span>
             <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">geneInfo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geneInfo</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;geneInfo is not pandas dataframe!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path and geneInfo can not be empty at the same time!&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">order</span><span class="p">:</span>
             <span class="n">geneInfo</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span>
@@ -158,13 +175,29 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">geneInfo</span><span class="p">[</span>
                             <span class="n">geneInfo</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;gene_id&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">column</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="GeneExp.updateMetadata"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp.updateMetadata">[docs]</a>    <span class="k">def</span> <span class="nf">updateMetadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;file does not exist!&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="GeneExp.updateMetadata"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp.updateMetadata">[docs]</a>    <span class="k">def</span> <span class="nf">updateMetadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metaData</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        add/update metadata in geneExp anndata</span>
 
-        <span class="n">samples</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
-        <span class="n">samples</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="sd">        :param metaData: Sample information table you want to add to your data</span>
+<span class="sd">        :type metaData: pandas dataframe</span>
+<span class="sd">        :param path: path of metaData</span>
+<span class="sd">        :type path: str</span>
+<span class="sd">        :param sep: separation symbol to use for reading data in path properly</span>
+<span class="sd">        :type sep: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path does not exist!&quot;</span><span class="p">)</span>
+            <span class="n">metaData</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">metaData</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metaData</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;meta data is not pandas dataframe!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path and metaData can not be empty at the same time!&quot;</span><span class="p">)</span>
+
+        <span class="n">metaData</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">metaData</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span></div></div>
 </pre></div>
 

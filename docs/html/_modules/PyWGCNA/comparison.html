@@ -84,48 +84,27 @@
 <span class="n">BOLD</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[1m&#39;</span>
 <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[4m&#39;</span>
 
+
 <div class="viewcode-block" id="Comparison"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.comparison.Comparison">[docs]</a><span class="k">class</span> <span class="nc">Comparison</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            A class used to compare WGCNA to another WGCNA or any gene marker table</span>
+<span class="sd">    A class used to compare PyWGCNA to another PyWGCNA or any gene marker table</span>
 
-<span class="sd">            Attributes</span>
-<span class="sd">            ----------</span>
-<span class="sd">            name1 : str</span>
-<span class="sd">                name of first WGCNA</span>
+<span class="sd">    :param name1: name of first WGCNA</span>
+<span class="sd">    :type name1: str</span>
+<span class="sd">    :param name2: name of second WGCNA</span>
+<span class="sd">    :type name2: str</span>
+<span class="sd">    :param geneModule1: gene modules of first WGCNA</span>
+<span class="sd">    :type geneModule1: dict</span>
+<span class="sd">    :param geneModule2: gene modules of second WGCNA</span>
+<span class="sd">    :type geneModule2: dict</span>
+<span class="sd">    :param geneMarker: gene marker of single cell data</span>
+<span class="sd">    :type geneMarker: pandas dataframe</span>
+<span class="sd">    :param sc: indicate if object is WGCNA or single cell</span>
+<span class="sd">    :type sc: bool</span>
+<span class="sd">    :param comparison: Summary of comparison results</span>
+<span class="sd">    :type comparison: pandas dataframe</span>
 
-<span class="sd">            name2 : str</span>
-<span class="sd">                name of second WGCNA</span>
-
-<span class="sd">            geneModule1 : dict</span>
-<span class="sd">                gene modules of first WGCNA</span>
-
-<span class="sd">            geneModule2 : dict</span>
-<span class="sd">                gene modules of second WGCNA</span>
-
-<span class="sd">            geneMarker : data frame</span>
-<span class="sd">                gene marker of single cell data</span>
-
-<span class="sd">            sc : bool</span>
-<span class="sd">                indicate if object is WGCNA or single cell</span>
-
-<span class="sd">            comparison: data frame</span>
-<span class="sd">                Summary of comparison results</span>
-
-<span class="sd">            Methods</span>
-<span class="sd">            -------</span>
-<span class="sd">            compareWGCNA()</span>
-<span class="sd">                compare two WGCNA</span>
-
-<span class="sd">            compareSingleCell()</span>
-<span class="sd">                compare WGCNA to single cell data</span>
-
-<span class="sd">            plotCompareWGCA()</span>
-<span class="sd">                plot comparison result as a confusion matrix</span>
-
-<span class="sd">            saveComparison()</span>
-<span class="sd">                save comparison object</span>
-
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name1</span><span class="o">=</span><span class="s2">&quot;name1&quot;</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span><span class="s2">&quot;name2&quot;</span><span class="p">,</span> <span class="n">geneModule1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneModule2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneMarker</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name1</span> <span class="o">=</span> <span class="n">name1</span>
@@ -140,10 +119,10 @@
 <div class="viewcode-block" id="Comparison.compareWGCNA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.comparison.Comparison.compareWGCNA">[docs]</a>    <span class="k">def</span> <span class="nf">compareWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compare two list of modules from two bulk gene expression data set</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        compare class</span>
-<span class="sd">        &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+
+<span class="sd">        :return: update compare class that replace automatically</span>
+<span class="sd">        :rtype: compare class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name2</span><span class="p">:</span>
             <span class="n">name1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name1</span> <span class="o">+</span> <span class="s2">&quot;1&quot;</span>
             <span class="n">name2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name2</span> <span class="o">+</span> <span class="s2">&quot;2&quot;</span>
@@ -192,11 +171,11 @@
 
 <div class="viewcode-block" id="Comparison.compareSingleCell"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.comparison.Comparison.compareSingleCell">[docs]</a>    <span class="k">def</span> <span class="nf">compareSingleCell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compare bulk and single cell gene expression data</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        compare class</span>
-<span class="sd">        &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">        Compare PyWGCNA object to single cell gene expression data</span>
+
+<span class="sd">        :return: update compare class that replace automatically</span>
+<span class="sd">        :rtype: compare class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">list_sn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geneMarker</span><span class="p">[</span><span class="s1">&#39;cluster&#39;</span><span class="p">])</span>
         <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geneModule1</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_sn</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -243,16 +222,15 @@
 <div class="viewcode-block" id="Comparison.plotCompareWGCA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.comparison.Comparison.plotCompareWGCA">[docs]</a>    <span class="k">def</span> <span class="nf">plotCompareWGCA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">order2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot comparison</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        order1: order of WGCNA1 you want to show in plot</span>
-<span class="sd">        order2: order of WGCNA2 you want to show in plot</span>
-<span class="sd">        save: if you want to save plot as png</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
+<span class="sd">        :param order1: order of modules in PyWGCNA1 you want to show in plot (name of each elements should mapped the name of modules in your first PyWGCNA)</span>
+<span class="sd">        :type order1: list of str</span>
+<span class="sd">        :param order2: order of modules in PyWGCNA2 you want to show in plot (name of each elements should mapped the name of modules in your second PyWGCNA)</span>
+<span class="sd">        :type order2: list of str</span>
+<span class="sd">        :param save: if you want to save plot as comparison.png near to your script</span>
+<span class="sd">        :type save: bool</span>
 
-<span class="sd">        &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comparison</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">result</span><span class="p">[</span><span class="s1">&#39;-log10(P_value)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;P_value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
 
@@ -343,10 +321,8 @@
 <div class="viewcode-block" id="Comparison.saveComparison"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.comparison.Comparison.saveComparison">[docs]</a>    <span class="k">def</span> <span class="nf">saveComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        save comparison object as comparison.p near to the script</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
 <span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Saving comparison as comparison.p</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">picklefile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;comparison.p&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>

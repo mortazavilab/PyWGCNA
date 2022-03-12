@@ -90,68 +90,67 @@
 <dt class="sig sig-object py" id="PyWGCNA.comparison.Comparison">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyWGCNA.comparison.</span></span><span class="sig-name descname"><span class="pre">Comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneModule1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneModule2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneMarker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/comparison.html#Comparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.comparison.Comparison" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class used to compare WGCNA to another WGCNA or any gene marker table</p>
-<dl class="simple">
-<dt>name1<span class="classifier">str</span></dt><dd><p>name of first WGCNA</p>
-</dd>
-<dt>name2<span class="classifier">str</span></dt><dd><p>name of second WGCNA</p>
-</dd>
-<dt>geneModule1<span class="classifier">dict</span></dt><dd><p>gene modules of first WGCNA</p>
-</dd>
-<dt>geneModule2<span class="classifier">dict</span></dt><dd><p>gene modules of second WGCNA</p>
-</dd>
-<dt>geneMarker<span class="classifier">data frame</span></dt><dd><p>gene marker of single cell data</p>
-</dd>
-<dt>sc<span class="classifier">bool</span></dt><dd><p>indicate if object is WGCNA or single cell</p>
-</dd>
-<dt>comparison: data frame</dt><dd><p>Summary of comparison results</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>compareWGCNA()</dt><dd><p>compare two WGCNA</p>
-</dd>
-<dt>compareSingleCell()</dt><dd><p>compare WGCNA to single cell data</p>
-</dd>
-<dt>plotCompareWGCA()</dt><dd><p>plot comparison result as a confusion matrix</p>
-</dd>
-<dt>saveComparison()</dt><dd><p>save comparison object</p>
+<p>A class used to compare PyWGCNA to another PyWGCNA or any gene marker table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name1</strong> (<em>str</em>) – name of first WGCNA</p></li>
+<li><p><strong>name2</strong> (<em>str</em>) – name of second WGCNA</p></li>
+<li><p><strong>geneModule1</strong> (<em>dict</em>) – gene modules of first WGCNA</p></li>
+<li><p><strong>geneModule2</strong> (<em>dict</em>) – gene modules of second WGCNA</p></li>
+<li><p><strong>geneMarker</strong> (<em>pandas dataframe</em>) – gene marker of single cell data</p></li>
+<li><p><strong>sc</strong> (<em>bool</em>) – indicate if object is WGCNA or single cell</p></li>
+<li><p><strong>comparison</strong> (<em>pandas dataframe</em>) – Summary of comparison results</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.comparison.Comparison.compareSingleCell">
 <span class="sig-name descname"><span class="pre">compareSingleCell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/comparison.html#Comparison.compareSingleCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.comparison.Comparison.compareSingleCell" title="Permalink to this definition"></a></dt>
-<dd><p>Compare bulk and single cell gene expression data
-Returns
-——-
-compare class</p>
+<dd><p>Compare PyWGCNA object to single cell gene expression data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>update compare class that replace automatically</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>compare class</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.comparison.Comparison.compareWGCNA">
 <span class="sig-name descname"><span class="pre">compareWGCNA</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/comparison.html#Comparison.compareWGCNA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.comparison.Comparison.compareWGCNA" title="Permalink to this definition"></a></dt>
-<dd><p>Compare two list of modules from two bulk gene expression data set
-Returns
-——-
-compare class</p>
+<dd><p>Compare two list of modules from two bulk gene expression data set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>update compare class that replace automatically</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>compare class</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.comparison.Comparison.plotCompareWGCA">
 <span class="sig-name descname"><span class="pre">plotCompareWGCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/comparison.html#Comparison.plotCompareWGCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.comparison.Comparison.plotCompareWGCA" title="Permalink to this definition"></a></dt>
-<dd><p>plot comparison
-Parameters
-———-
-order1: order of WGCNA1 you want to show in plot
-order2: order of WGCNA2 you want to show in plot
-save: if you want to save plot as png</p>
+<dd><p>plot comparison</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>order1</strong> (<em>list of str</em>) – order of modules in PyWGCNA1 you want to show in plot (name of each elements should mapped the name of modules in your first PyWGCNA)</p></li>
+<li><p><strong>order2</strong> (<em>list of str</em>) – order of modules in PyWGCNA2 you want to show in plot (name of each elements should mapped the name of modules in your second PyWGCNA)</p></li>
+<li><p><strong>save</strong> (<em>bool</em>) – if you want to save plot as comparison.png near to your script</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.comparison.Comparison.saveComparison">
 <span class="sig-name descname"><span class="pre">saveComparison</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/comparison.html#Comparison.saveComparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.comparison.Comparison.saveComparison" title="Permalink to this definition"></a></dt>
-<dd><p>save comparison object as comparison.p near to the script
-Returns
-——-</p>
+<dd><p>save comparison object as comparison.p near to the script</p>
 </dd></dl>
 
 </dd></dl>
@@ -163,29 +162,51 @@ Returns
 <dt class="sig sig-object py" id="PyWGCNA.geneExp.GeneExp">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyWGCNA.geneExp.</span></span><span class="sig-name descname"><span class="pre">GeneExp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gene'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anndata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneExp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneExpPath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class used to creat gene expression matrix along data trait including both genes and samples information.</p>
-<dl class="simple">
-<dt>geneExpr: anndata</dt><dd><dl class="simple">
-<dt>gene expression matrix along sample information in the var (i.e. age, sex, tissue, genotype)</dt><dd><p>and gene information in the obs(i.e. gene name, gene id, gene type)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="simple">
-<dt>updateMetadata(path)</dt><dd><p>add/update genes info</p>
-</dd>
-<dt>addSampleInfo(path)</dt><dd><p>add/update samples info</p>
+<p>A class used to creat gene expression anndata along data trait including both genes and samples information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>species</strong> (<em>str</em>) – species of the data you use i.e mouse, human</p></li>
+<li><p><strong>level</strong> (<em>str</em>) – which type of data you use including gene, transcript (default: gene)</p></li>
+<li><p><strong>anndata</strong> – if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.</p></li>
+<li><p><strong>anndata</strong> – anndata</p></li>
+<li><p><strong>geneExpr</strong> (<em>pandas dataframe</em>) – expression matrix which genes are in the rows and samples are columns</p></li>
+<li><p><strong>geneExpPath</strong> (<em>str</em>) – path of expression matrix</p></li>
+<li><p><strong>sep</strong> – separation symbol to use for reading data in geneExpPath properly</p></li>
+<li><p><strong>sep</strong> – str</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.geneExp.GeneExp.updateGeneInfo">
 <span class="sig-name descname"><span class="pre">updateGeneInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geneInfo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateGeneInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateGeneInfo" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>add/update genes info in geneExp anndata</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geneInfo</strong> (<em>pandas dataframe</em>) – gene information table you want to add to your data</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path of geneInfo</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in path properly</p></li>
+<li><p><strong>order</strong> (<em>bool</em>) – if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.geneExp.GeneExp.updateMetadata">
-<span class="sig-name descname"><span class="pre">updateMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateMetadata" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">updateMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metaData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateMetadata" title="Permalink to this definition"></a></dt>
+<dd><p>add/update metadata in geneExp anndata</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metaData</strong> (<em>pandas dataframe</em>) – Sample information table you want to add to your data</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path of metaData</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in path properly</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

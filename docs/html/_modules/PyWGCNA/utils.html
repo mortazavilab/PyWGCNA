@@ -117,8 +117,7 @@
 
 <span class="sd">    :return: compare object</span>
 <span class="sd">    :rtype: Compare class</span>
-
-<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                          <span class="n">geneModule1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">geneModules</span><span class="p">,</span> <span class="n">geneModule2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">geneModules</span><span class="p">)</span>
     <span class="n">compare</span><span class="o">.</span><span class="n">compareWGCNA</span><span class="p">()</span>
@@ -160,7 +159,7 @@
 <span class="sd">    </span>
 <span class="sd">    :return: table extracted from biomart related to the datasets including information from attributes</span>
 <span class="sd">    :rtype: pandas dataframe</span>
-<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Set up connection to server</span>
     <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">:</span>
         <span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ensembl_transcript_id&#39;</span><span class="p">,</span> <span class="s1">&#39;mgi_symbol&#39;</span><span class="p">,</span> <span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">]</span>
@@ -196,8 +195,7 @@
 
 <span class="sd">    :return: comparison object</span>
 <span class="sd">    :rtype: comparison class</span>
-
-<span class="sd">    &quot;&quot;&quot;</span><span class="s2">&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Comparison object not found at given path!&#39;</span><span class="p">)</span>
 
