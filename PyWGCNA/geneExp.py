@@ -23,7 +23,7 @@ class GeneExp:
     :param geneExpPath: path of expression matrix
     :type geneExpPath: str
     :param sep: separation symbol to use for reading data in geneExpPath properly
-    :param sep: str
+    :type sep: str
     """
 
     def __init__(self, species=None, level='gene',

@@ -53,120 +53,60 @@ UNDERLINE = '\033[4m'
 
 class WGCNA(GeneExp):
     """
-        A class used to create WGCNA (weighted gene co-expression network analysis).
+    A class used to do weighted gene co-expression network analysis.
 
-        Attributes
-        ----------
-        name: str
-            name of the WGCNA we used to visualize data (default: 'WGCNA')
+    :param name: name of the WGCNA we used to visualize data (default: 'WGCNA')
+    :type name: str
+    :param save: indicate if you want to save result of important steps in a figure directory (default: False)
+    :type save: bool
+    :param outputPath: path you want to save all you figures and object (default: '', where you rau your script)
+    :type outputPath: str
+    :param geneExpr: expression matrix
+    :type geneExpr: geneExp class
+    :param datExpr: data expression data that contains preprocessed data
+    :type datExpr: anndata
+    :param TPMcutoff: cut off for removing genes that expressed under this number along samples
+    :type TPMcutoff: int
+    :param cut: number to remove outlier sample (default: 'inf') By default we don't remove any sample by hierarchical clustering
+    :type cut: float
+    :param powers: different powers to test to have scale free network (default: [1:10, 11:21:2])
+    :type powers: list of int
+    :param RsquaredCut: R squaered cut to choose power for having scale free network; between 0 to 1 (default: 0.9)
+    :type RsquaredCut: float
+    :param MeanCut: mean connectivity to choose power for having scale free network (default: 100)
+    :type MeanCut: int
+    :param power: power to have scale free network (default: 6)
+    :type power: int
+    :param sft: soft threshold table which has information for each powers
+    :type sft: pandas dataframe
+    :param networkType: Type of network we can create including "unsigned", "signed" and "signed hybrid" (default: "signed hybrid")
+    :type networkType : str
+    :param adjacency: adjacency matrix calculating base of the type of network
+    :type adjacency: ndarray
+    :param geneTree: average hierarchical clustering of dissTOM matrix
+    :type geneTree: ndarray
+    :param TOMType: Type of topological overlap matrix(TOM) including "unsigned", "signed" (default: "signed")
+    :type TOMType: str
+    :param TOM: topological overlap measure using average linkage hierarchical clustering which inputs a measure of interconnectedness
+    :param TOM: ndarray
+    :param minModuleSize: We like large modules, so we set the minimum module size relatively high (default: 50)
+    :type minModuleSize: int
+    :param dynamicMods: name of modules by clustering similar genes together
+    :type dynamicMods: list
+    :param naColor: color we used to identify genes we don't find any cluster for them (default: "grey")
+    :type naColor: str
+    :param MEs: eigengenes
+    :type MEs: ndarray
+    :param MEDissThres:  diss similarity threshold (default: 0.2)
+    :type MEDissThres: float
+    :param datME:
+    :type datME: ndarray
+    :param moduleTraitCor: correlation between each module and metadata
+    :type moduleTraitCor: pandas dataframe
+    :param moduleTraitPvalue: p-value of correlation between each module and metadata
+    :type moduleTraitPvalue: pandas dataframe
 
-        geneExpression : class GeneExp
-            gene expression class
-                geneExpPath: str
-                geneExp: dataframe
-                sep: str
-
-        datExpr: anndata
-            clean gene expression matrix with genes and sample information
-
-        TPMcutoff: int
-            cut off for removing genes with out any specific expression
-
-        power : int
-            power used to have scale free network (default: 6)
-
-        networkType : str
-            Type of network we can create (default: "signed hybrid")
-            possible Type: "unsigned", "signed" and "signed hybrid"
-
-        TOMType: str
-            Type of topological overlap matrix(TOM) (default: "signed")
-            possible Type: "unsigned", "signed"
-
-        minModuleSize : int
-            We like large modules, so we set the minimum module size relatively high (default: 50)
-
-        naColor: str
-            color we used to identify genes we don't find any cluster for them (default: "grey")
-
-        cut: float
-            number to remove outlier sample (default: 'inf')
-            By default we don't remove any sample by hierarchical clustering
-
-        MEDissThres: int
-            (default: 0.2)
-
-        save: bool
-            define wether you want to save result of important steps or not (default: False)
-
-        outputPath: str
-            if save is TRUE, define where you want to save your data (default: '')
-
-        Methods
-        -------
-        main iner function to run PyWGCNA:
-            checkAndScaleWeights()
-                check and scale weights of gene expression
-
-            goodSamplesGenes()
-                remove outlier genes and samples
-
-            goodGenesFun()
-                define good genes
-
-            hclust()
-                hierarchical clustering
-
-            cutree()
-                remove samples/genes/modules base on hierarchical clustering
-
-            pickSoftThreshold()
-                Analysis of scale free topology for multiple soft thresholding powers
-
-            adjacency()
-                Calculates (correlation or distance) network adjacency from given expression data or from a similarity
-
-            TOMsimilarity()
-                Calculation of the topological overlap matrix, and the corresponding dissimilarity, from a given adjacency matrix
-
-            cutreeHybrid()
-                Detect clusters in a dendorgram produced by the function hclust.
-
-            labels2colors()
-                Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.
-
-            moduleEigengenes()
-                Calculates module eigengenes (1st principal component) of modules in a given single dataset.
-
-            orderMEs()
-                Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.
-
-            multiSetMEs()
-                Calculates module eigengenes for several sets.
-
-            consensusMEDissimilarity()
-                Calculates consensus dissimilarity (1-cor) of given module eigengenes realized in several sets.
-
-            mergeCloseModules()
-                Merges modules in gene expression networks that are too close as measured by the correlation of their eigengenes.
-
-        getGeneModule()
-            return list of module corresponding to gene
-
-        addGeneList()
-            create gene list for each module
-
-        updateDatTraits()
-            update data trait module base on samples
-
-        plotModuleEigenGene()
-            plot module eigen gene figure in given module
-
-        saveWGCNA()
-            Saves the current WGCNA in pickle format with the .p extension
-
-
-        """
+    """
 
     def __init__(self, name='WGCNA',
                  TPMcutoff=1,
@@ -195,7 +135,6 @@ class WGCNA(GeneExp):
 
         self.datExpr = self.geneExpr.copy()
 
-        self.metadata = None
         self.metadata_colors = {}
         self.datTraits = None
 
@@ -469,6 +408,10 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def checkAndScaleWeights(weights, expr, scaleByMax=True):
+        """
+        check and scale weights of gene expression
+
+        """
         if weights is None:
             return weights
 
@@ -494,6 +437,9 @@ class WGCNA(GeneExp):
     @staticmethod
     def goodSamplesGenes(datExpr, weights=None, minFraction=1 / 2, minNSamples=4, minNGenes=4, tol=None,
                          minRelativeWeight=0.1):
+        """
+        remove outlier genes and samples
+        """
         goodGenes = None
         goodSamples = None
         nBadGenes = 0
@@ -523,6 +469,9 @@ class WGCNA(GeneExp):
     @staticmethod
     def goodGenesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
                      minNSamples=4, minNGenes=4, tol=None, minRelativeWeight=0.1):
+        """
+        define good genes
+        """
         if not datExpr.apply(lambda s: pd.to_numeric(s, errors='coerce').notnull().all()).all():
             sys.exit("datExpr must contain numeric data.")
 
@@ -576,6 +525,9 @@ class WGCNA(GeneExp):
     @staticmethod
     def goodSamplesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
                        minNSamples=4, minNGenes=4, minRelativeWeight=0.1):
+        """
+        define good samples
+        """
         if useGenes is None:
             useGenes = np.repeat(True, datExpr.shape[0])
 
@@ -614,6 +566,9 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def hclust(d, method="complete"):
+        """
+        hierarchical clustering
+        """
         METHODS = ["single", "complete", "average", "weighted", "centroid"]
 
         if method not in METHODS:
@@ -629,6 +584,9 @@ class WGCNA(GeneExp):
     # Determine cluster under the line
     @staticmethod
     def cutree(sampleTree, cutHeight=50000.0):
+        """
+        remove samples/genes/modules base on hierarchical clustering
+        """
         cutTree = cut_tree(sampleTree, height=cutHeight)
 
         return cutTree
@@ -638,6 +596,9 @@ class WGCNA(GeneExp):
     def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, MeanCut=100, powerVector=None, nBreaks=10,
                           blockSize=None, corOptions=None, networkType="unsigned", moreNetworkConcepts=False,
                           gcInterval=None):
+        """
+        Analysis of scale free topology for multiple soft thresholding powers
+        """
         if powerVector is None:
             powerVector = list(range(1, 11)) + list(range(1, 21, 2))
         powerVector = np.sort(powerVector)
@@ -842,6 +803,9 @@ class WGCNA(GeneExp):
     @staticmethod
     def adjacency(datExpr, selectCols=None, adjacencyType="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
                   weightArgNames=None):
+        """
+        Calculates (correlation or distance) network adjacency from given expression data or from a similarity
+        """
         print(f"{OKCYAN}calculating adjacency matrix ...{ENDC}")
         if weightArgNames is None:
             weightArgNames = ["weights.x", "weights.y"]
@@ -923,6 +887,9 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def TOMsimilarity(adjMat, TOMType="signed", TOMDenom="min"):
+        """
+        Calculation of the topological overlap matrix, and the corresponding dissimilarity, from a given adjacency matrix
+        """
         TOMTypeC = TOMTypes.index(TOMType)
         if TOMTypeC is None:
             sys.exit(("Invalid 'TOMType'. Recognized values are", str(TOMTypes)))
@@ -976,6 +943,9 @@ class WGCNA(GeneExp):
                      assumeSimpleExternalSpecification=True, pamStage=True,
                      pamRespectsDendro=True, useMedoids=False, maxPamDist=None,
                      respectSmallClusters=True):
+        """
+        Detect clusters in a dendorgram produced by the function hclust.
+        """
         tmp = dendro[:, 0] > dendro.shape[0]
         dendro[tmp, 0] = dendro[tmp, 0] - dendro.shape[0]
         dendro[np.logical_not(tmp), 0] = -1 * (dendro[np.logical_not(tmp), 0] + 1)
@@ -1547,6 +1517,9 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
+        """
+        Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.
+        """
         if colorSeq is None:
             colors = dict(**mcolors.CSS4_COLORS)
             # Sort colors by hue, saturation, value and name.
@@ -1590,7 +1563,9 @@ class WGCNA(GeneExp):
     @staticmethod
     def moduleEigengenes(expr, colors, impute=True, nPC=1, align="along average", excludeGrey=False, grey="grey",
                          subHubs=True, softPower=6, scaleVar=True, trapErrors=False):
-
+        """
+        Calculates module eigengenes (1st principal component) of modules in a given single dataset.
+        """
         print(f"{OKCYAN}Calculating {len(pd.Categorical(colors).categories)} module eigengenes in given set...{ENDC}")
         check = True
         pc = None
@@ -1814,6 +1789,9 @@ class WGCNA(GeneExp):
     def multiSetMEs(exprData, colors, universalColors=None, useSets=None, useGenes=None, impute=True, nPC=1,
                     align="along average", excludeGrey=False, subHubs=True, trapErrors=False, softPower=6,
                     grey=None):
+        """
+        Calculates module eigengenes for several sets.
+        """
         returnValidOnly = trapErrors
         if grey is None:
             if universalColors is None:
@@ -1897,6 +1875,9 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def consensusMEDissimilarityMajor(MEs, useAbs=False, useSets=None, method="consensus"):
+        """
+        Calculates consensus dissimilarity (1-cor) of given module eigengenes realized in several sets.
+        """
         methods = ["consensus", "majority"]
         m = methods.index(method)
         if m is None:
@@ -1964,6 +1945,9 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def orderMEs(MEs, greyLast=True, greyName="MEgrey", orderBy=0, order=None, useSets=None):
+        """
+        Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.
+        """
         if "eigengenes" in MEs.keys():
             if order is None:
                 print("orderMEs: order not given, calculating using given set", str(orderBy), flush=True)
@@ -2088,6 +2072,9 @@ class WGCNA(GeneExp):
                           unassdColor="grey", useAbs=False, equalizeQuantiles=False, quantileSummary="mean",
                           consensusQuantile=0, cutHeight=0.2, iterate=True, relabel=False, colorSeq=None,
                           getNewMEs=True, getNewUnassdME=True, trapErrors=False):
+        """
+        Merges modules in gene expression networks that are too close as measured by the correlation of their eigengenes.
+        """
         if all(isinstance(x, int) for x in colors):
             unassdColor = 0
         MEsInSingleFrame = False
@@ -2250,6 +2237,9 @@ class WGCNA(GeneExp):
         return 2 * pt
 
     def saveWGCNA(self):
+        """
+        Saves the current WGCNA in pickle format with the .p extension
+        """
         print(f"{BOLD}{OKBLUE}Saving WGCNA as {self.name}.p{ENDC}")
 
         picklefile = open(self.outputPath + '/' + self.name + '.p', 'wb')
@@ -2257,6 +2247,9 @@ class WGCNA(GeneExp):
         picklefile.close()
 
     def updateDatTraits(self):
+        """
+        update data trait module base on samples
+        """
         index = self.geneExpr.var.index.isin(self.datExpr.to_df().index)
         tmp = self.geneExpr.var[index]
         self.datTraits = pd.DataFrame(tmp.sample_id)
@@ -2282,6 +2275,9 @@ class WGCNA(GeneExp):
         return np.unique(self.datExpr.obs['moduleColors']).tolist()
 
     def getGeneModule(self, moduleName):
+        """
+        return list of module corresponding to gene
+        """
         output = {}
         moduleColors = np.unique(self.datExpr.obs['moduleColors']).tolist()
         if moduleName not in moduleColors:
@@ -2314,6 +2310,9 @@ class WGCNA(GeneExp):
         self.metadata_colors[col] = cmap
 
     def plotModuleEigenGene(self, moduleName, metadata):
+        """
+        plot module eigen gene figure in given module
+        """
         index = self.datExpr.var.index.isin(self.datExpr.to_df().index)
         sampleInfo = self.datExpr.var[index]
 
@@ -2371,20 +2370,6 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/ModuleHeatmapEigengene' + moduleName + '.png')
 
         return None
-
-    def addGeneModulesInfo(self, moduleName, geneList):
-        modules = np.unique(self.datExpr.obs['moduleColors']).tolist()
-        if np.all(moduleName not in modules):
-            print(f"{WARNING}Module name does not exist in {ENDC}")
-            return None
-        else:
-            self.datExpr.obs['gene_name'] = ""
-            for i in range(self.geneModules[moduleName].shape[0]):
-                if self.geneModules[moduleName]['gene_id'][i] in list(geneList.keys()):
-                    self.geneModules[moduleName]['gene_name'][i] = list(geneList.values())[
-                        list(geneList.keys()).index(self.geneModules[moduleName]['gene_id'][i])]
-                else:
-                    self.geneModules[moduleName]['gene_name'][i] = self.geneModules[moduleName]['gene_id'][i]
 
     def findGoTerm(self, moduleName):
         if not os.path.exists(self.outputPath + '/figures/Go_term/'):
