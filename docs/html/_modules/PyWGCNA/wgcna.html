@@ -239,6 +239,9 @@
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputPath</span> <span class="o">+</span> <span class="s1">&#39;/figures/&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="WGCNA.preprocess"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preprocessing PyWGCNA object including removing obvious outlier on genes and samples</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Pre-processing...</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Prepare and clean data</span>
@@ -286,6 +289,9 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Done pre-processing..</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="WGCNA.findModules"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.findModules">[docs]</a>    <span class="k">def</span> <span class="nf">findModules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Run WGCNA...</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Call the network topology analysis function</span>
@@ -379,6 +385,9 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Done running WGCNA..</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="WGCNA.runWGCNA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.runWGCNA">[docs]</a>    <span class="k">def</span> <span class="nf">runWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preprocess and find modules</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">WGCNA</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="n">WGCNA</span><span class="o">.</span><span class="n">findModules</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -386,6 +395,9 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="WGCNA.analyseWGCNA"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.analyseWGCNA">[docs]</a>    <span class="k">def</span> <span class="nf">analyseWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Analysing WGCNA...</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">updateDatTraits</span><span class="p">()</span>
@@ -463,6 +475,16 @@
 
 <div class="viewcode-block" id="WGCNA.replaceMissing"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.replaceMissing">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">replaceMissing</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">replaceWith</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Replacing missing (NA) value with appropriate value (for integer number replace with 0 and for string replace with &quot;&quot;)</span>
+
+<span class="sd">        :param x: value want to replace (single item)</span>
+<span class="sd">        :type x: object</span>
+<span class="sd">        :param replaceWith: define character you want to replace na value by looking at type of data</span>
+<span class="sd">        :type replaceWith: object</span>
+
+<span class="sd">        :return: object without any missing (NA) value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">replaceWith</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
                 <span class="n">replaceWith</span> <span class="o">=</span> <span class="mi">0</span>
@@ -478,7 +500,15 @@
     <span class="k">def</span> <span class="nf">checkAndScaleWeights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">scaleByMax</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        check and scale weights of gene expression</span>
+<span class="sd">        :param weights: weights of gene expression</span>
+<span class="sd">        :type weights: pandas dataframe</span>
+<span class="sd">        :param expr: gene expression matrix</span>
+<span class="sd">        :type expr: pandas dataframe</span>
+<span class="sd">        :param scaleByMax: if you want to scale your weights by diving to max</span>
+<span class="sd">        :type scaleByMax: boll</span>
 
+<span class="sd">        :return: processed weights of gene expression</span>
+<span class="sd">        :rtype: pandas dataframe</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">weights</span>
@@ -506,7 +536,25 @@
     <span class="k">def</span> <span class="nf">goodSamplesGenes</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minFraction</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">minNSamples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minNGenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">minRelativeWeight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        remove outlier genes and samples</span>
+<span class="sd">        Checks data for missing entries, entries with weights below a threshold, and zero-variance genes. If necessary, the filtering is iterated.</span>
+
+<span class="sd">        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.</span>
+<span class="sd">        :type datExpr: pandas dataframe</span>
+<span class="sd">        :param weights: optional observation weights in the same format (and dimensions) as datExpr.</span>
+<span class="sd">        :type weights: pandas dataframe</span>
+<span class="sd">        :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)</span>
+<span class="sd">        :type minFraction: float</span>
+<span class="sd">        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)</span>
+<span class="sd">        :type minNSamples: int</span>
+<span class="sd">        :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)</span>
+<span class="sd">        :type minNGenes: int</span>
+<span class="sd">        :param tol: An optional &#39;small&#39; number to compare the variance against</span>
+<span class="sd">        :type tol: float</span>
+<span class="sd">        :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)</span>
+<span class="sd">        :type minRelativeWeight: float</span>
+
+<span class="sd">        :return: A triple containing (goodGenes, goodSamples, allOK) goodSamples: A logical vector with one entry per sample that is TRUE if the sample is considered good and FALSE otherwise. goodGenes: A logical vector with one entry per gene that is TRUE if the gene is considered good and FALSE otherwise. allOK: if everything is okay</span>
+<span class="sd">        :rtype: list, list, bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">goodGenes</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">goodSamples</span> <span class="o">=</span> <span class="kc">None</span>
@@ -538,7 +586,29 @@
     <span class="k">def</span> <span class="nf">goodGenesFun</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useGenes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minFraction</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                      <span class="n">minNSamples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minNGenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minRelativeWeight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        define good genes</span>
+<span class="sd">        Check data for missing entries and returns a list of genes that have non-zero variance</span>
+
+<span class="sd">        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.</span>
+<span class="sd">        :type datExpr: pandas dataframe</span>
+<span class="sd">        :param weights: optional observation weights in the same format (and dimensions) as datExpr.</span>
+<span class="sd">        :type weights: pandas dataframe</span>
+<span class="sd">        :param useSamples: optional specifications of which samples to use for the check (Defaults to using all samples)</span>
+<span class="sd">        :type useSamples: list of bool</span>
+<span class="sd">        :param useGenes: optional specifications of genes for which to perform the check (Defaults to using all genes)</span>
+<span class="sd">        :type useGenes: list of bool</span>
+<span class="sd">        :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)</span>
+<span class="sd">        :type minFraction: float</span>
+<span class="sd">        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)</span>
+<span class="sd">        :type minNSamples: int</span>
+<span class="sd">        :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)</span>
+<span class="sd">        :type minNGenes: int</span>
+<span class="sd">        :param tol: An optional &#39;small&#39; number to compare the variance against</span>
+<span class="sd">        :type tol: float</span>
+<span class="sd">        :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)</span>
+<span class="sd">        :type minRelativeWeight: float</span>
+
+<span class="sd">        :return: A logical list with one entry per gene that is TRUE if the gene is considered good and FALSE otherwise. Note that all genes excluded by useGenes are automatically assigned FALSE.</span>
+<span class="sd">        :rtype: list of bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">datExpr</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;datExpr must contain numeric data.&quot;</span><span class="p">)</span>
@@ -594,7 +664,29 @@
     <span class="k">def</span> <span class="nf">goodSamplesFun</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useGenes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minFraction</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                        <span class="n">minNSamples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minNGenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minRelativeWeight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        define good samples</span>
+<span class="sd">        Check data for missing entries and returns a list of samples that have non-zero variance</span>
+
+<span class="sd">        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.</span>
+<span class="sd">        :type datExpr: pandas dataframe</span>
+<span class="sd">        :param weights: optional observation weights in the same format (and dimensions) as datExpr.</span>
+<span class="sd">        :type weights: pandas dataframe</span>
+<span class="sd">        :param useSamples: optional specifications of which samples to use for the check (Defaults to using all samples)</span>
+<span class="sd">        :type useSamples: list of bool</span>
+<span class="sd">        :param useGenes: optional specifications of genes for which to perform the check (Defaults to using all genes)</span>
+<span class="sd">        :type useGenes: list of bool</span>
+<span class="sd">        :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)</span>
+<span class="sd">        :type minFraction: float</span>
+<span class="sd">        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)</span>
+<span class="sd">        :type minNSamples: int</span>
+<span class="sd">        :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)</span>
+<span class="sd">        :type minNGenes: int</span>
+<span class="sd">        :param tol: An optional &#39;small&#39; number to compare the variance against</span>
+<span class="sd">        :type tol: float</span>
+<span class="sd">        :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)</span>
+<span class="sd">        :type minRelativeWeight: float</span>
+
+<span class="sd">        :return: A logical list with one entry per sample that is TRUE if the sample is considered good and FALSE otherwise. Note that all samples excluded by useSamples are automatically assigned FALSE.</span>
+<span class="sd">        :rtype: list of bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">useGenes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">useGenes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">datExpr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -635,7 +727,15 @@
 <div class="viewcode-block" id="WGCNA.hclust"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.hclust">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">hclust</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        hierarchical clustering</span>
+<span class="sd">        Hierarchical cluster analysis on a set of dissimilarities and methods for analyzing it.</span>
+
+<span class="sd">        :param d: a dissimilarity structure as produced by &#39;pdist&#39;.</span>
+<span class="sd">        :type d: ndarray</span>
+<span class="sd">        :param method: The linkage algorithm to use. (default = complete)</span>
+<span class="sd">        :type method: str</span>
+
+<span class="sd">        :return: The hierarchical clustering encoded as a linkage matrix.</span>
+<span class="sd">        :rtype: ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span> <span class="s2">&quot;weighted&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid&quot;</span><span class="p">]</span>
 
@@ -653,7 +753,15 @@
 <div class="viewcode-block" id="WGCNA.cutree"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.cutree">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">cutree</span><span class="p">(</span><span class="n">sampleTree</span><span class="p">,</span> <span class="n">cutHeight</span><span class="o">=</span><span class="mf">50000.0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        remove samples/genes/modules base on hierarchical clustering</span>
+<span class="sd">        Given a linkage matrix Z, return the cut tree. remove samples/genes/modules base on hierarchical clustering</span>
+
+<span class="sd">        :param sampleTree: The linkage matrix.</span>
+<span class="sd">        :type sampleTree: scipy.cluster.linkage array</span>
+<span class="sd">        :param cutHeight: A optional height at which to cut the tree (default = 50000)</span>
+<span class="sd">        :type cutHeight: array_like</span>
+
+<span class="sd">        :return: An array indicating group membership at each agglomeration step. I.e., for a full cut tree, in the first column each data point is in its own cluster. At the next step, two nodes are merged. Finally, all singleton and non-singleton clusters are in one group. If n_clusters or height are given, the columns correspond to the columns of n_clusters or height.</span>
+<span class="sd">        :rtype: array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cutTree</span> <span class="o">=</span> <span class="n">cut_tree</span><span class="p">(</span><span class="n">sampleTree</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">cutHeight</span><span class="p">)</span>
 
@@ -665,7 +773,35 @@
                           <span class="n">blockSize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">networkType</span><span class="o">=</span><span class="s2">&quot;unsigned&quot;</span><span class="p">,</span> <span class="n">moreNetworkConcepts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                           <span class="n">gcInterval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Analysis of scale free topology for multiple soft thresholding powers</span>
+<span class="sd">        Analysis of scale free topology for multiple soft thresholding powers.</span>
+
+<span class="sd">        :param data: expression data in a matrix or data frame. Rows correspond to samples and columns to genes.</span>
+<span class="sd">        :param data: pandas dataframe</span>
+<span class="sd">        :param dataIsExpr: should the data be interpreted as expression (or other numeric) data, or as a similarity matrix of network nodes?</span>
+<span class="sd">        :type dataIsExpr: bool</span>
+<span class="sd">        :param weights: optional observation weights for data to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.</span>
+<span class="sd">        :type weights: pandas dataframe</span>
+<span class="sd">        :param RsquaredCut: desired minimum scale free topology fitting index (R^2). (default = 0.9)</span>
+<span class="sd">        :type RsquaredCut: float</span>
+<span class="sd">        :param MeanCut: desired maximum mean connectivity scale free topology fitting index. (default = 100)</span>
+<span class="sd">        :type MeanCut: int</span>
+<span class="sd">        :param powerVector: A list of soft thresholding powers for which the scale free topology fit indices are to be calculated.</span>
+<span class="sd">        :type powerVector: list of int</span>
+<span class="sd">        :param nBreaks: number of bins in connectivity histograms (default = 10)</span>
+<span class="sd">        :type nBreaks: int</span>
+<span class="sd">        :param blockSize: block size into which the calculation of connectivity should be broken up. If not given, a suitable value will be calculated using function blockSize and printed if verbose&gt;0. If R runs into memory problems, decrease this value.</span>
+<span class="sd">        :type blockSize: int</span>
+<span class="sd">        :param corOptions: a list giving further options to the correlation function specified in corFnc.</span>
+<span class="sd">        :type corOptions: list</span>
+<span class="sd">        :param networkType: network type. Allowed values are (unique abbreviations of) &quot;unsigned&quot;, &quot;signed&quot;, &quot;signed hybrid&quot;. (default = unsigned)</span>
+<span class="sd">        :type networkType: str</span>
+<span class="sd">        :param moreNetworkConcepts: should additional network concepts be calculated? If TRUE, the function will calculate how the network density, the network heterogeneity, and the network centralization depend on the power. For the definition of these additional network concepts, see Horvath and Dong (2008). PloS Comp Biol.</span>
+<span class="sd">        :type moreNetworkConcepts: bool</span>
+<span class="sd">        :param gcInterval: a number specifying in interval (in terms of individual genes) in which garbage collection will be performed. The actual interval will never be less than blockSize.</span>
+<span class="sd">        :type gcInterval: int</span>
+
+<span class="sd">        :return: tuple including powerEstimate: estimate of an appropriate soft-thresholding power which is the lowest power for which the scale free topology fit \(R^2\) exceeds RsquaredCut and conectivity is less than MeanCut. If \(R^2\) is below RsquaredCut for all powers maximum will re returned and datout which is a data frame containing the fit indices for scale free topology. The columns contain the soft-thresholding power, adjusted \(R^2\) for the linear fit, the linear coefficient, adjusted \(R^2\) for a more complicated fit models, mean connectivity, median connectivity and maximum connectivity. If input moreNetworkConcepts is TRUE, 3 additional columns containing network density, centralization, and heterogeneity.</span>
+<span class="sd">        :type: int and pandas dataframe</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">powerVector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">powerVector</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
@@ -804,6 +940,18 @@
 
 <div class="viewcode-block" id="WGCNA.checkSimilarity"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.checkSimilarity">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkSimilarity</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check similarity matrix format is correct</span>
+
+<span class="sd">        :param adjMat: data we want to be checked</span>
+<span class="sd">        :type adjMat: pandas dataframe</span>
+<span class="sd">        :param min: minimum value to be allowed for data (default = 0)</span>
+<span class="sd">        :type min: int</span>
+<span class="sd">        :param max: maximum value to be allowed for data (default = 1)</span>
+<span class="sd">        :type max: int</span>
+
+<span class="sd">        :raises exit: if format is not correct</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="n">adjMat</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">if</span> <span class="n">dim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;adjacency is not two-dimensional&quot;</span><span class="p">)</span>
@@ -822,6 +970,9 @@
 
 <div class="viewcode-block" id="WGCNA.calBlockSize"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.calBlockSize">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calBlockSize</span><span class="p">(</span><span class="n">matrixSize</span><span class="p">,</span> <span class="n">rectangularBlocks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxMemoryAllocation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overheadFactor</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        find suitable block size for calculating soft power threshold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">maxMemoryAllocation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">maxAlloc</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrlimit</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">RLIMIT_AS</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -839,6 +990,14 @@
     <span class="c1"># Calculation of fitting statistics for evaluating scale free topology fit.</span>
 <div class="viewcode-block" id="WGCNA.scaleFreeFitIndex"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.scaleFreeFitIndex">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">scaleFreeFitIndex</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nBreaks</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates several indices (fitting statistics) for evaluating scale free topology fit.</span>
+
+<span class="sd">        :param k: numeric list whose components contain non-negative values</span>
+<span class="sd">        :type k: list</span>
+<span class="sd">        :param nBreaks: (default = 10)</span>
+<span class="sd">        :type nBreaks: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">k</span><span class="p">})</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;discretized_k&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">nBreaks</span><span class="p">)</span>
         <span class="n">dk</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;discretized_k&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>  <span class="c1"># tapply(k, discretized_k, mean)</span>
@@ -873,6 +1032,24 @@
                   <span class="n">weightArgNames</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates (correlation or distance) network adjacency from given expression data or from a similarity</span>
+
+<span class="sd">        :param datExpr: data frame containing expression data. Columns correspond to genes and rows to samples.</span>
+<span class="sd">        :type datExpr: pandas dataframe</span>
+<span class="sd">        :param selectCols: for correlation networks only; can be used to select genes whose adjacencies will be calculated. Should be either a numeric list giving the indices of the genes to be used, or a boolean list indicating which genes are to be used.</span>
+<span class="sd">        :type selectCols: list</span>
+<span class="sd">        :param adjacencyType: adjacency network type. Allowed values are (unique abbreviations of) &quot;unsigned&quot;, &quot;signed&quot;, &quot;signed hybrid&quot;. (default = unsigned)</span>
+<span class="sd">        :type adjacencyType: str</span>
+<span class="sd">        :param power: soft thresholding power.</span>
+<span class="sd">        :type power: int</span>
+<span class="sd">        :param corOptions: specifying additional arguments to be passed to the function given by corFnc.</span>
+<span class="sd">        :type corOptions: pandas dataframe</span>
+<span class="sd">        :param weights: optional observation weights for datExpr to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.</span>
+<span class="sd">        :type weights: pandas dataframe</span>
+<span class="sd">        :param weightArgNames: character list of length 2 giving the names of the arguments to corFnc that represent weights for variable x and y. Only used if weights are non-NULL.</span>
+<span class="sd">        :type weightArgNames: list</span>
+
+<span class="sd">        :return: Adjacency matrix</span>
+<span class="sd">        :rtype: pandas dataframe</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKCYAN</span><span class="si">}</span><span class="s2">calculating adjacency matrix ...</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">weightArgNames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -919,6 +1096,18 @@
 
 <div class="viewcode-block" id="WGCNA.checkAdjMat"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.checkAdjMat">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkAdjMat</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check adjacency matrix format is correct</span>
+
+<span class="sd">        :param adjMat: data we want to be checked</span>
+<span class="sd">        :type adjMat: pandas dataframe</span>
+<span class="sd">        :param min: minimum value to be allowed for data (default = 0)</span>
+<span class="sd">        :type min: int</span>
+<span class="sd">        :param max: maximum value to be allowed for data (default = 1)</span>
+<span class="sd">        :type max: int</span>
+
+<span class="sd">        :raises exit: if format is not correct</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">shape</span> <span class="o">=</span> <span class="n">adjMat</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;adjacency is not two-dimensional&quot;</span><span class="p">)</span>
@@ -957,6 +1146,16 @@
     <span class="k">def</span> <span class="nf">TOMsimilarity</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="n">TOMType</span><span class="o">=</span><span class="s2">&quot;signed&quot;</span><span class="p">,</span> <span class="n">TOMDenom</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculation of the topological overlap matrix, and the corresponding dissimilarity, from a given adjacency matrix</span>
+
+<span class="sd">        :param adjMat: adjacency matrix, that is a square, symmetric matrix with entries between 0 and 1 (negative values are allowed if TOMType==&quot;signed&quot;).</span>
+<span class="sd">        :type adjMat: pandas dataframe</span>
+<span class="sd">        :param TOMType: one of &quot;unsigned&quot;, &quot;signed&quot;</span>
+<span class="sd">        :type TOMType: str</span>
+<span class="sd">        :param TOMDenom: a character string specifying the TOM variant to be used. Recognized values are &quot;min&quot; giving the standard TOM described in Zhang and Horvath (2005), and &quot;mean&quot; in which the min function in the denominator is replaced by mean. The &quot;mean&quot; may produce better results but at this time should be considered experimental.</span>
+<span class="sd">        :type TOMDenom: str</span>
+
+<span class="sd">        :return: A matrix holding the topological overlap.</span>
+<span class="sd">        :rtype: pandas dataframe</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">TOMTypeC</span> <span class="o">=</span> <span class="n">TOMTypes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">TOMType</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">TOMTypeC</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1013,6 +1212,51 @@
                      <span class="n">respectSmallClusters</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect clusters in a dendorgram produced by the function hclust.</span>
+
+<span class="sd">        :param dendro: a hierarchical clustering dendorgram such as one returned by hclust.</span>
+<span class="sd">        :type dendro: ndarray</span>
+<span class="sd">        :param distM: Distance matrix that was used as input to hclust.</span>
+<span class="sd">        :type distM: pandas dataframe</span>
+<span class="sd">        :param cutHeight: Maximum joining heights that will be considered. It defaults to 99of the range between the 5th percentile and the maximum of the joining heights on the dendrogram.</span>
+<span class="sd">        :type cutHeight: int</span>
+<span class="sd">        :param minClusterSize: Minimum cluster size. (default = 20)</span>
+<span class="sd">        :type minClusterSize: int</span>
+<span class="sd">        :param deepSplit: Either logical or integer in the range 0 to 4. Provides a rough control over sensitivity to cluster splitting. The higher the value, the more and smaller clusters will be produced. (default = 1)</span>
+<span class="sd">        :type deepSplit: int or bool</span>
+<span class="sd">        :param maxCoreScatter: Maximum scatter of the core for a branch to be a cluster, given as the fraction of cutHeight relative to the 5th percentile of joining heights.</span>
+<span class="sd">        :type maxCoreScatter: int</span>
+<span class="sd">        :param minGap: Minimum cluster gap given as the fraction of the difference between cutHeight and the 5th percentile of joining heights.</span>
+<span class="sd">        :type minGap: int</span>
+<span class="sd">        :param maxAbsCoreScatter: Maximum scatter of the core for a branch to be a cluster given as absolute heights. If given, overrides maxCoreScatter.</span>
+<span class="sd">        :type maxAbsCoreScatter: int</span>
+<span class="sd">        :param minAbsGap: Minimum cluster gap given as absolute height difference. If given, overrides minGap.</span>
+<span class="sd">        :type minAbsGap: int</span>
+<span class="sd">        :param minSplitHeight: Minimum split height given as the fraction of the difference between cutHeight and the 5th percentile of joining heights. Branches merging below this height will automatically be merged. Defaults to zero but is used only if minAbsSplitH</span>
+<span class="sd">        :type minSplitHeight: int</span>
+<span class="sd">        :param minAbsSplitHeight: Minimum split height given as an absolute height. Branches merging below this height will automatically be merged. If not given (default), will be determined from minSplitHeight above.</span>
+<span class="sd">        :type minAbsSplitHeight: int</span>
+<span class="sd">        :param externalBranchSplitFnc: Optional function to evaluate split (dissimilarity) between two branches. Either a single function or a list in which each component is a function.</span>
+
+<span class="sd">        :param minExternalSplit: Thresholds to decide whether two branches should be merged. It should be a numeric list of the same length as the number of functions in externalBranchSplitFnc above.</span>
+<span class="sd">        :type minExternalSplit: list</span>
+<span class="sd">        :param externalSplitOptions: Further arguments to function externalBranchSplitFnc. If only one external function is specified in externalBranchSplitFnc above, externalSplitOptions can be a named list of arguments or a list with one component.</span>
+<span class="sd">        :type externalSplitOptions: pandas dataframe</span>
+<span class="sd">        :param externalSplitFncNeedsDistance: Optional specification of whether the external branch split functions need the distance matrix as one of their arguments. Either NULL or a logical list with one element per branch</span>
+<span class="sd">        :type externalSplitFncNeedsDistance: pandas dataframe</span>
+<span class="sd">        :param assumeSimpleExternalSpecification: when minExternalSplit above is a scalar (has length 1), should the function assume a simple specification of externalBranchSplitFnc and externalSplitOptions. (default = True)</span>
+<span class="sd">        :type assumeSimpleExternalSpecification: bool</span>
+<span class="sd">        :param pamStage: If TRUE, the second (PAM-like) stage will be performed. (default = True)</span>
+<span class="sd">        :type pamStage: bool</span>
+<span class="sd">        :param pamRespectsDendro: If TRUE, the PAM stage will respect the dendrogram in the sense an object can be PAM-assigned only to clusters that lie below it on the branch that the object is merged into. (default = True)</span>
+<span class="sd">        :type pamRespectsDendro: bool</span>
+<span class="sd">        :param useMedoids: if TRUE, the second stage will be use object to medoid distance; if FALSE, it will use average object to cluster distance. (default = False)</span>
+<span class="sd">        :param maxPamDist: Maximum object distance to closest cluster that will result in the object assigned to that cluster. Defaults to cutHeight.</span>
+<span class="sd">        :type maxPamDist: float</span>
+<span class="sd">        :param respectSmallClusters: If TRUE, branches that failed to be clusters in stage 1 only because of insufficient size will be assigned together in stage 2. If FALSE, all objects will be assigned individually. (default = False)</span>
+<span class="sd">        :type respectSmallClusters: bool</span>
+
+<span class="sd">        :return: list detailing the deteced branch structure.</span>
+<span class="sd">        :rtype: list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tmp</span> <span class="o">=</span> <span class="n">dendro</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dendro</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dendro</span><span class="p">[</span><span class="n">tmp</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dendro</span><span class="p">[</span><span class="n">tmp</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dendro</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1587,6 +1831,18 @@
     <span class="k">def</span> <span class="nf">labels2colors</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">zeroIsGrey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorSeq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">naColor</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.</span>
+
+<span class="sd">        :param labels: list or matrix of non-negative integer or other (such as character) labels.</span>
+<span class="sd">        :type labels: list or matrix</span>
+<span class="sd">        :param zeroIsGrey: If TRUE, labels 0 will be assigned color grey. Otherwise, labels below 1 will trigger an error. (default = True)</span>
+<span class="sd">        :type zeroIsGrey: bool</span>
+<span class="sd">        :param colorSeq: Color sequence corresponding to labels. If not given, a standard sequence will be used.</span>
+<span class="sd">        :type colorSeq: list or matrix</span>
+<span class="sd">        :param naColor: Color that will encode missing values.</span>
+<span class="sd">        :type naColor: str</span>
+
+<span class="sd">        :return: An array of character strings of the same length or dimensions as labels.</span>
+<span class="sd">        :rtype: ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">colorSeq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">colors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">mcolors</span><span class="o">.</span><span class="n">CSS4_COLORS</span><span class="p">)</span>
@@ -1633,6 +1889,32 @@
                          <span class="n">subHubs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">softPower</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">scaleVar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trapErrors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates module eigengenes (1st principal component) of modules in a given single dataset.</span>
+
+<span class="sd">        :param expr: Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).</span>
+<span class="sd">        :type expr: pandas dataframe</span>
+<span class="sd">        :param colors: A list of the same length as the number of probes in expr, giving module color for all probes (genes). Color &quot;grey&quot; is reserved for unassigned genes.</span>
+<span class="sd">        :type colors: list</span>
+<span class="sd">        :param impute: If TRUE, expression data will be checked for the presence of NA entries and if the latter are present, numerical data will be imputed. (defualt = True)</span>
+<span class="sd">        :type impute: bool</span>
+<span class="sd">        :param nPC: Number of principal components and variance explained entries to be calculated. Note that only the first principal component is returned; the rest are used only for the calculation of proportion of variance explained. If given nPC is greater than 10, a warning is issued. (default = 1)</span>
+<span class="sd">        :type nPC: int</span>
+<span class="sd">        :param align: Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (align = &quot;along average&quot;) or left as they are (align = &quot;&quot;). Any other value will trigger an error. (default = &quot;along average&quot;)</span>
+<span class="sd">        :type align: str</span>
+<span class="sd">        :param excludeGrey: Should the improper module consisting of &#39;grey&#39; genes be excluded from the eigengenes (default = False)</span>
+<span class="sd">        :type excludeGrey: bool</span>
+<span class="sd">        :param grey: Value of colors designating the improper module. Note that if colors is a factor of numbers, the default value will be incorrect. (default = grey)</span>
+<span class="sd">        :type grey: str</span>
+<span class="sd">        :param subHubs: Controls whether hub genes should be substituted for missing eigengenes. If TRUE, each missing eigengene (i.e., eigengene whose calculation failed and the error was trapped) will be replaced by a weighted average of the most connected hub genes in the corresponding module. If this calculation fails, or if subHubs==FALSE, the value of trapErrors will determine whether the offending module will be removed or whether the function will issue an error and stop. (default = True)</span>
+<span class="sd">        :type subHubs: bool</span>
+<span class="sd">        :param softPower: The power used in soft-thresholding the adjacency matrix. Only used when the hubgene approximation is necessary because the principal component calculation failed. It must be non-negative. The default value should only be changed if there is a clear indication that it leads to incorrect results. (default = 6)</span>
+<span class="sd">        :type softPower: int</span>
+<span class="sd">        :param trapErrors: Controls handling of errors from that may arise when there are too many NA entries in expression data. If TRUE, errors from calling these functions will be trapped without abnormal exit. If FALSE, errors will cause the function to stop. Note, however, that subHubs takes precedence in the sense that if subHubs==TRUE and trapErrors==FALSE, an error will be issued only if both the principal component and the hubgene calculations have failed. (default = False)</span>
+<span class="sd">        :type trapErrors: bool</span>
+<span class="sd">        :param scaleVar: can be used to turn off scaling of the expression data before calculating the singular value decomposition. The scaling should only be turned off if the data has been scaled previously, in which case the function can run a bit faster. Note however that the function first imputes, then scales the expression data in each module. If the expression contain missing data, scaling outside of the function and letting the function impute missing data may lead to slightly different results than if the data is scaled within the function. (default = True)</span>
+<span class="sd">        :type scaleVar: bool</span>
+
+<span class="sd">        :return: A dictionary containing: &quot;eigengenes&quot;: Module eigengenes in a dataframe, with each column corresponding to one eigengene. The columns are named by the corresponding color with an &quot;ME&quot; prepended, e.g., MEturquoise etc. If returnValidOnly==FALSE, module eigengenes whose calculation failed have all components set to NA. &quot;averageExpr&quot;: If align == &quot;along average&quot;, a dataframe containing average normalized expression in each module. The columns are named by the corresponding color with an &quot;AE&quot; prepended, e.g., AEturquoise etc. &quot;varExplained&quot;: A dataframe in which each column corresponds to a module, with the component varExplained[PC, module] giving the variance of module module explained by the principal component no. PC. The calculation is exact irrespective of the number of computed principal components. At most 10 variance explained values are recorded in this dataframe. &quot;nPC&quot;: A copy of the input nPC. &quot;validMEs&quot;: A boolean vector. Each component (corresponding to the columns in data) is TRUE if the corresponding eigengene is valid, and FALSE if it is invalid. Valid eigengenes include both principal components and their hubgene approximations. When returnValidOnly==FALSE, by definition all returned eigengenes are valid and the entries of validMEs are all TRUE. &quot;validColors&quot;: A copy of the input colors with entries corresponding to invalid modules set to grey if given, otherwise 0 if colors is numeric and &quot;grey&quot; otherwise. &quot;allOK&quot;: Boolean flag signalling whether all eigengenes have been calculated correctly, either as principal components or as the hubgene average approximation. &quot;allPC&quot;: Boolean flag signalling whether all returned eigengenes are principal components. &quot;isPC&quot;: Boolean vector. Each component (corresponding to the columns in eigengenes) is TRUE if the corresponding eigengene is the first principal component and FALSE if it is the hubgene approximation or is invalid. &quot;isHub&quot;: Boolean vector. Each component (corresponding to the columns in eigengenes) is TRUE if the corresponding eigengene is the hubgene approximation and FALSE if it is the first principal component or is invalid. &quot;validAEs&quot;: Boolean vector. Each component (corresponding to the columns in eigengenes) is TRUE if the corresponding module average expression is valid. &quot;allAEOK&quot;: Boolean flag signalling whether all returned module average expressions contain valid data. Note that returnValidOnly==TRUE does not imply allAEOK==TRUE: some invalid average expressions may be returned if their corresponding eigengenes have been calculated correctly.</span>
+<span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKCYAN</span><span class="si">}</span><span class="s2">Calculating </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span><span class="si">}</span><span class="s2"> module eigengenes in given set...</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">check</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1806,6 +2088,19 @@
 
 <div class="viewcode-block" id="WGCNA.checkSets"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.checkSets">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkSets</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">checkStructure</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether given sets have the correct format and retrieves dimensions.</span>
+
+<span class="sd">        :param data: A dict of lists; in each list there must be a component named data whose content is a matrix or dataframe or array of dimension 2.</span>
+<span class="sd">        :type data: dict</span>
+<span class="sd">        :param checkStructure: If FALSE, incorrect structure of data will trigger an error. If TRUE, an appropriate flag (see output) will be set to indicate whether data has correct structure. (default = False)</span>
+<span class="sd">        :type checkStructure: bool</span>
+<span class="sd">        :param useSets: Optional specification of entries of the list data that are to be checked. Defaults to all components. This may be useful when data only contains information for some of the sets.</span>
+<span class="sd">        :type useSets: list</span>
+
+<span class="sd">        :return: a dictionary contains: &quot;nSets&quot;: Number of sets (length of the vector data). &quot;nGenes&quot;: Number of columns in the data components in the lists. This number must be the same for all sets. &quot;nSamples&quot;: A vector of length nSets giving the number of rows in the data components. &quot;structureOK&quot;: Only set if the argument checkStructure equals TRUE. The value is TRUE if the paramter data passes a few tests of its structure, and FALSE otherwise. The tests are not exhaustive and are meant to catch obvious user errors rather than be bulletproof.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
             <span class="n">nSets</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1847,6 +2142,15 @@
 
 <div class="viewcode-block" id="WGCNA.fixDataStructure"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.fixDataStructure">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">fixDataStructure</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encapsulates single-set data in a wrapper that makes the data suitable for functions working on multiset data collections.</span>
+
+<span class="sd">        :param data: A dataframe, matrix or array with two dimensions to be encapsulated.</span>
+<span class="sd">        :type data: pandas dataframe ot dict</span>
+
+<span class="sd">        :return: input data in a format suitable for functions operating on multiset data collections.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fixDataStructure: data is not a Dictionary: converting it into one.&quot;</span><span class="p">)</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1859,6 +2163,36 @@
                     <span class="n">grey</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates module eigengenes for several sets.</span>
+
+<span class="sd">        :param exprData: Expression data in a multi-set format</span>
+<span class="sd">        :type exprData: pandas dataframe</span>
+<span class="sd">        :param colors: A list of the same length as the number of probes in expr, giving module color for all probes (genes). Color &quot;grey&quot; is reserved for unassigned genes.</span>
+<span class="sd">        :type colors: list</span>
+<span class="sd">        :param universalColors: Alternative specification of module assignment</span>
+<span class="sd">        :type universalColors: list</span>
+<span class="sd">        :param useSets: If calculations are requested in (a) selected set(s) only, the set(s) can be specified here. Defaults to all sets.</span>
+<span class="sd">        :type useSets: list</span>
+<span class="sd">        :param useGenes: Can be used to restrict calculation to a subset of genes</span>
+<span class="sd">        :type useGenes: list</span>
+<span class="sd">        :param impute: If TRUE, expression data will be checked for the presence of NA entries and if the latter are present, numerical data will be imputed. (defualt = True)</span>
+<span class="sd">        :type impute: bool</span>
+<span class="sd">        :param nPC: Number of principal components and variance explained entries to be calculated. Note that only the first principal component is returned; the rest are used only for the calculation of proportion of variance explained. If given nPC is greater than 10, a warning is issued. (default = 1)</span>
+<span class="sd">        :type nPC: int</span>
+<span class="sd">        :param align: Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (align = &quot;along average&quot;) or left as they are (align = &quot;&quot;). Any other value will trigger an error. (default = &quot;along average&quot;)</span>
+<span class="sd">        :type align: str</span>
+<span class="sd">        :param excludeGrey: Should the improper module consisting of &#39;grey&#39; genes be excluded from the eigengenes (default = False)</span>
+<span class="sd">        :type excludeGrey: bool</span>
+<span class="sd">        :param subHubs: Controls whether hub genes should be substituted for missing eigengenes. If TRUE, each missing eigengene (i.e., eigengene whose calculation failed and the error was trapped) will be replaced by a weighted average of the most connected hub genes in the corresponding module. If this calculation fails, or if subHubs==FALSE, the value of trapErrors will determine whether the offending module will be removed or whether the function will issue an error and stop. (default = True)</span>
+<span class="sd">        :type subHubs: bool</span>
+<span class="sd">        :param trapErrors: Controls handling of errors from that may arise when there are too many NA entries in expression data. If TRUE, errors from calling these functions will be trapped without abnormal exit. If FALSE, errors will cause the function to stop. Note, however, that subHubs takes precedence in the sense that if subHubs==TRUE and trapErrors==FALSE, an error will be issued only if both the principal component and the hubgene calculations have failed. (default = False)</span>
+<span class="sd">        :type trapErrors: bool</span>
+<span class="sd">        :param softPower: The power used in soft-thresholding the adjacency matrix. Only used when the hubgene approximation is necessary because the principal component calculation failed. It must be non-negative. The default value should only be changed if there is a clear indication that it leads to incorrect results. (default = 6)</span>
+<span class="sd">        :type softPower: int</span>
+<span class="sd">        :param grey: Value of colors or universalColors (whichever applies) designating the improper module</span>
+<span class="sd">        :type grey: str</span>
+
+<span class="sd">        :return: A dictionary similar in spirit to the input exprData</span>
+<span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">returnValidOnly</span> <span class="o">=</span> <span class="n">trapErrors</span>
         <span class="k">if</span> <span class="n">grey</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2015,6 +2349,22 @@
     <span class="k">def</span> <span class="nf">orderMEs</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="s2">&quot;MEgrey&quot;</span><span class="p">,</span> <span class="n">orderBy</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.</span>
+
+<span class="sd">        :param MEs: Module eigengenes in a multi-set format.</span>
+<span class="sd">        :type MEs: dict</span>
+<span class="sd">        :param greyLast: Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (default = True)</span>
+<span class="sd">        :type greyLast:bool</span>
+<span class="sd">        :param greyName: Name of the grey module eigengene. (default = &quot;MEgrey&quot;)</span>
+<span class="sd">        :type greyName: str</span>
+<span class="sd">        :param orderBy: Specifies the set by which the eigengenes are to be ordered (in all other sets as well). Defaults to the first set in useSets (or the first set, if useSets is not given). (defualt = 0)</span>
+<span class="sd">        :type orderBy: int</span>
+<span class="sd">        :param order: Allows the user to specify a custom ordering.</span>
+<span class="sd">        :type order: list</span>
+<span class="sd">        :param useSets: Allows the user to specify for which sets the eigengene ordering is to be performed.</span>
+<span class="sd">        :type useSets: list</span>
+
+<span class="sd">        :return: A dictionary of the same type as MEs containing the re-ordered eigengenes.</span>
+<span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;eigengenes&quot;</span> <span class="ow">in</span> <span class="n">MEs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2073,6 +2423,25 @@
 
 <div class="viewcode-block" id="WGCNA.consensusOrderMEs"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.consensusOrderMEs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">consensusOrderMEs</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">useAbs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="s2">&quot;MEgrey&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;consensus&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.</span>
+
+<span class="sd">        :param MEs: Module eigengenes of several sets in a multi-set format</span>
+<span class="sd">        :type MEs: dict</span>
+<span class="sd">        :param useAbs: Controls whether vector similarity should be given by absolute value of correlation or plain correlation. (defualt = False)</span>
+<span class="sd">        :type useAbs: bool</span>
+<span class="sd">        :param useSet: Allows the user to specify for which sets the eigengene ordering is to be performed.</span>
+<span class="sd">        :type useSets: list</span>
+<span class="sd">        :param greyLast: Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (defualt = True)</span>
+<span class="sd">        :type greyLast: bool</span>
+<span class="sd">        :param greyName: Name of the grey module eigengene. (defualt = &quot;MEgrey&quot;)</span>
+<span class="sd">        :type greyName: str</span>
+<span class="sd">        :param method: A character string giving the method to be used calculating the consensus dissimilarity. Allowed values are (abbreviations of) &quot;consensus&quot; and &quot;majority&quot;. The consensus dissimilarity is calculated as the maximum of given set dissimilarities for &quot;consensus&quot; and as the average for &quot;majority&quot;.</span>
+<span class="sd">        :type method: str</span>
+
+<span class="sd">        :return: A dictionary of the same type as MEs containing the re-ordered eigengenes</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Diss</span> <span class="o">=</span> <span class="n">WGCNA</span><span class="o">.</span><span class="n">consensusMEDissimilarityMajor</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">useAbs</span><span class="o">=</span><span class="n">useAbs</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="n">useSets</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
         <span class="n">order</span> <span class="o">=</span> <span class="n">WGCNA</span><span class="o">.</span><span class="n">clustOrder</span><span class="p">(</span><span class="n">Diss</span><span class="p">,</span> <span class="n">greyLast</span><span class="p">,</span> <span class="n">greyName</span><span class="p">)</span>
         <span class="n">MEs</span> <span class="o">=</span> <span class="n">WGCNA</span><span class="o">.</span><span class="n">orderMEs</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="n">greyLast</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="n">greyName</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="n">useSets</span><span class="p">)</span>
@@ -2142,6 +2511,46 @@
                           <span class="n">getNewMEs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">getNewUnassdME</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trapErrors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merges modules in gene expression networks that are too close as measured by the correlation of their eigengenes.</span>
+
+<span class="sd">        :param exprData: Expression data, either a single data frame with rows corresponding to samples and columns to genes, or in a multi-set format.</span>
+<span class="sd">        :type exprData: pandas dataframe</span>
+<span class="sd">        :param colors: A list (numeric, character or a factor) giving module colors for genes. The method only makes sense when genes have the same color label in all sets, hence a single list.</span>
+<span class="sd">        :type colors: list</span>
+<span class="sd">        :param MEs: If module eigengenes have been calculated before, the user can save some computational time by inputting them. MEs should have the same format as exprData. If they are not given, they will be calculated.</span>
+<span class="sd">        :type MEs: dict</span>
+<span class="sd">        :param useSets: A list of scalar allowing the user to specify which sets will be used to calculate the consensus dissimilarity of module eigengenes. Defaults to all given sets.</span>
+<span class="sd">        :type useSets: list</span>
+<span class="sd">        :param impute: Should missing values be imputed in eigengene calculation? If imputation is disabled, the presence of NA entries will cause the eigengene calculation to fail and eigengenes will be replaced by their hubgene approximation. (defualt = True)</span>
+<span class="sd">        :type impute: bool</span>
+<span class="sd">        :param checkDataFormat: If TRUE, the function will check exprData and MEs for correct multi-set structure. If single set data is given, it will be converted into a format usable for the function. If FALSE, incorrect structure of input data will trigger an error. (defualt = True)</span>
+<span class="sd">        :type checkDataFormat: bool</span>
+<span class="sd">        :param unassdColor: Specifies the string that labels unassigned genes. Module of this color will not enter the module eigengene clustering and will not be merged with other modules. (default = &quot;grey&quot;)</span>
+<span class="sd">        :type unassdColor: str</span>
+<span class="sd">        :param useAbs: Specifies whether absolute value of correlation or plain correlation (of module eigengenes) should be used in calculating module dissimilarity. (defualt = False)</span>
+<span class="sd">        :type useAbs: bool</span>
+<span class="sd">        :param equalizeQuantiles: should quantiles of the eigengene dissimilarity matrix be equalized (&quot;quantile normalized&quot;)? The default is FALSE for reproducibility of old code; when there are many eigengenes (e.g., at least 50), better results may be achieved if quantile equalization is used. (defualt = False)</span>
+<span class="sd">        :type equalizeQuantiles: bool</span>
+<span class="sd">        :param quantileSummary: One of &quot;mean&quot; or &quot;median&quot;. Controls how a reference dissimilarity is computed from the input ones (using mean or median, respectively). (default = &quot;mean&quot;)</span>
+<span class="sd">        :type quantileSummary: str</span>
+<span class="sd">        :param consensusQuantile: A number giving the desired quantile to use in the consensus similarity calculation. (defualt = 0)</span>
+<span class="sd">        :type consensusQuantile: int</span>
+<span class="sd">        :param cutHeight: Maximum dissimilarity (i.e., 1-correlation) that qualifies modules for merging. (defualt = 0.2)</span>
+<span class="sd">        :type cutHeight: float</span>
+<span class="sd">        :param iterate: Controls whether the merging procedure should be repeated until there is no change. If FALSE, only one iteration will be executed. (defualt = True)</span>
+<span class="sd">        :type iterate: bool</span>
+<span class="sd">        :param relabel: Controls whether, after merging, color labels should be ordered by module size. (defualt = False)</span>
+<span class="sd">        :type relabel: bool</span>
+<span class="sd">        :param colorSeq: Color labels to be used for relabeling. Defaults to the standard color order used in this package if colors are not numeric, and to integers starting from 1 if colors is numeric.</span>
+<span class="sd">        :type colorSeq: list</span>
+<span class="sd">        :param getNewMEs: Controls whether module eigengenes of merged modules should be calculated and returned. (defualt = True)</span>
+<span class="sd">        :type getNewMEs: bool</span>
+<span class="sd">        :param getNewUnassdME: When doing module eigengene manipulations, the function does not normally calculate the eigengene of the &#39;module&#39; of unassigned (&#39;grey&#39;) genes. Setting this option to TRUE will force the calculation of the unassigned eigengene in the returned newMEs, but not in the returned oldMEs. (defualt = True)</span>
+<span class="sd">        :type getNewUnassdME: bool</span>
+<span class="sd">        :param trapErrors: Controls whether computational errors in calculating module eigengenes, their dissimilarity, and merging trees should be trapped. If TRUE, errors will be trapped and the function will return the input colors. If FALSE, errors will cause the function to stop. (defualt = False)</span>
+
+<span class="sd">        :return: A dictionaty contains: &quot;colors&quot;: Color labels for the genes corresponding to merged modules. The function attempts to mimic the mode of the input colors: if the input colors is numeric, character and factor, respectively, so is the output. Note, however, that if the fnction performs relabeling, a standard sequence of labels will be used: integers starting at 1 if the input colors is numeric, and a sequence of color labels otherwise. &quot;dendro&quot;: Hierarchical clustering dendrogram (average linkage) of the eigengenes of the most recently computed tree. If iterate was set TRUE, this will be the dendrogram of the merged modules, otherwise it will be the dendrogram of the original modules. &quot;oldDendro&quot;: Hierarchical clustering dendrogram (average linkage) of the eigengenes of the original modules. &quot;cutHeight&quot;: The input cutHeight. &quot;oldMEs&quot;: Module eigengenes of the original modules in the sets given by useSets. &quot;newMEs&quot;: Module eigengenes of the merged modules in the sets given by useSets. &quot;allOK&quot;: A boolean set to TRUE.</span>
+<span class="sd">        :raises trapErrors==TRUE: A dictionaty contains: &quot;colors&quot;: A copy of the input colors. &quot;allOK&quot;: a boolean set to FALSE.</span>
+<span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">colors</span><span class="p">):</span>
             <span class="n">unassdColor</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2340,11 +2749,23 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">datTraits</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="n">org</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">rep</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="WGCNA.getModuleName"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.getModuleName">[docs]</a>    <span class="k">def</span> <span class="nf">getModuleName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get names of modules</span>
+
+<span class="sd">        :return: name of modules</span>
+<span class="sd">        :rtype: ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;moduleColors&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="WGCNA.getGeneModule"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.getGeneModule">[docs]</a>    <span class="k">def</span> <span class="nf">getGeneModule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        return list of module corresponding to gene</span>
+<span class="sd">        get list of genes corresponding to modules</span>
+
+<span class="sd">        :param moduleName: name of modules</span>
+<span class="sd">        :type moduleName: list</span>
+
+<span class="sd">        :return: A dictionary contains list of genes for requested module(s)</span>
+<span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">moduleColors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;moduleColors&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -2357,13 +2778,21 @@
         <span class="k">return</span> <span class="n">output</span></div>
 
 <div class="viewcode-block" id="WGCNA.getModulesGene"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.getModulesGene">[docs]</a>    <span class="k">def</span> <span class="nf">getModulesGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneIds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get list of modules corresponding to gene(s)</span>
+
+<span class="sd">        :param geneIds: gene id</span>
+<span class="sd">        :type geneIds: list or str</span>
+
+<span class="sd">        :return: A list contains name of module(s) for requested gene(s)</span>
+<span class="sd">        :rtype: list or str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geneIds</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">geneIds</span> <span class="o">=</span> <span class="p">[</span><span class="n">geneIds</span><span class="p">]</span>
 
-        <span class="n">moduleColors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;moduleColors&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">modules</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">geneId</span> <span class="ow">in</span> <span class="n">geneIds</span><span class="p">:</span>
-            <span class="n">modules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">moduleColors</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">gene_id</span> <span class="o">==</span> <span class="s1">&#39;geneId&#39;</span><span class="p">])</span>
+            <span class="n">modules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">moduleColors</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">gene_id</span> <span class="o">==</span> <span class="n">geneId</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">modules</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -2371,6 +2800,14 @@
         <span class="k">return</span> <span class="n">modules</span></div>
 
 <div class="viewcode-block" id="WGCNA.setMetadataColor"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.setMetadataColor">[docs]</a>    <span class="k">def</span> <span class="nf">setMetadataColor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">cmap</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        set color pallete for each group of metadata</span>
+
+<span class="sd">        :param col: name of metadata</span>
+<span class="sd">        :type col: str</span>
+<span class="sd">        :param cmap: color pallet</span>
+<span class="sd">        :type cmap: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check if obs_col is even there</span>
         <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">WARNING</span><span class="si">}</span><span class="s2">Metadata column </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2"> not found!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -2380,6 +2817,11 @@
 <div class="viewcode-block" id="WGCNA.plotModuleEigenGene"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.plotModuleEigenGene">[docs]</a>    <span class="k">def</span> <span class="nf">plotModuleEigenGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot module eigen gene figure in given module</span>
+
+<span class="sd">        :param moduleName: module name</span>
+<span class="sd">        :type moduleName: str</span>
+<span class="sd">        :param metadata: list of metadata you want to be plotted</span>
+<span class="sd">        :type metadata: list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
         <span class="n">sampleInfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -2440,6 +2882,12 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="WGCNA.findGoTerm"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.wgcna.WGCNA.findGoTerm">[docs]</a>    <span class="k">def</span> <span class="nf">findGoTerm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        find and plot gene ontology(GO) for given module</span>
+
+<span class="sd">        :param moduleName: module name</span>
+<span class="sd">        :type moduleName: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputPath</span> <span class="o">+</span> <span class="s1">&#39;/figures/Go_term/&#39;</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">WARNING</span><span class="si">}</span><span class="s2">Go_term directory does not exist!</span><span class="se">\n</span><span class="s2">Creating Go_term directory!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputPath</span> <span class="o">+</span> <span class="s1">&#39;/figures/Go_term/&#39;</span><span class="p">)</span>
