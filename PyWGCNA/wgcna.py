@@ -171,6 +171,9 @@ class WGCNA(GeneExp):
                 os.makedirs(self.outputPath + '/figures/')
 
     def preprocess(self):
+        """
+        Preprocessing PyWGCNA object including removing obvious outlier on genes and samples
+        """
         print(f"{BOLD}{OKBLUE}Pre-processing...{ENDC}")
 
         # Prepare and clean data
@@ -218,6 +221,9 @@ class WGCNA(GeneExp):
         print("\tDone pre-processing..\n")
 
     def findModules(self):
+        """
+        Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically
+        """
         print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
 
         # Call the network topology analysis function
@@ -311,6 +317,9 @@ class WGCNA(GeneExp):
         print("\tDone running WGCNA..\n")
 
     def runWGCNA(self):
+        """
+        Preprocess and find modules
+        """
         WGCNA.preprocess(self)
 
         WGCNA.findModules(self)
@@ -318,6 +327,9 @@ class WGCNA(GeneExp):
         return self
 
     def analyseWGCNA(self, order=None, geneList=None):
+        """
+        Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module
+        """
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
         self.updateDatTraits()
@@ -395,6 +407,16 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def replaceMissing(x, replaceWith):
+        """
+        Replacing missing (NA) value with appropriate value (for integer number replace with 0 and for string replace with "")
+
+        :param x: value want to replace (single item)
+        :type x: object
+        :param replaceWith: define character you want to replace na value by looking at type of data
+        :type replaceWith: object
+
+        :return: object without any missing (NA) value
+        """
         if replaceWith:
             if x.isnumeric():
                 replaceWith = 0
@@ -410,7 +432,15 @@ class WGCNA(GeneExp):
     def checkAndScaleWeights(weights, expr, scaleByMax=True):
         """
         check and scale weights of gene expression
+        :param weights: weights of gene expression
+        :type weights: pandas dataframe
+        :param expr: gene expression matrix
+        :type expr: pandas dataframe
+        :param scaleByMax: if you want to scale your weights by diving to max
+        :type scaleByMax: boll
 
+        :return: processed weights of gene expression
+        :rtype: pandas dataframe
         """
         if weights is None:
             return weights
@@ -438,7 +468,25 @@ class WGCNA(GeneExp):
     def goodSamplesGenes(datExpr, weights=None, minFraction=1 / 2, minNSamples=4, minNGenes=4, tol=None,
                          minRelativeWeight=0.1):
         """
-        remove outlier genes and samples
+        Checks data for missing entries, entries with weights below a threshold, and zero-variance genes. If necessary, the filtering is iterated.
+
+        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.
+        :type datExpr: pandas dataframe
+        :param weights: optional observation weights in the same format (and dimensions) as datExpr.
+        :type weights: pandas dataframe
+        :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)
+        :type minFraction: float
+        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)
+        :type minNSamples: int
+        :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)
+        :type minNGenes: int
+        :param tol: An optional 'small' number to compare the variance against
+        :type tol: float
+        :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)
+        :type minRelativeWeight: float
+
+        :return: A triple containing (goodGenes, goodSamples, allOK) goodSamples: A logical vector with one entry per sample that is TRUE if the sample is considered good and FALSE otherwise. goodGenes: A logical vector with one entry per gene that is TRUE if the gene is considered good and FALSE otherwise. allOK: if everything is okay
+        :rtype: list, list, bool
         """
         goodGenes = None
         goodSamples = None
@@ -470,7 +518,29 @@ class WGCNA(GeneExp):
     def goodGenesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
                      minNSamples=4, minNGenes=4, tol=None, minRelativeWeight=0.1):
         """
-        define good genes
+        Check data for missing entries and returns a list of genes that have non-zero variance
+
+        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.
+        :type datExpr: pandas dataframe
+        :param weights: optional observation weights in the same format (and dimensions) as datExpr.
+        :type weights: pandas dataframe
+        :param useSamples: optional specifications of which samples to use for the check (Defaults to using all samples)
+        :type useSamples: list of bool
+        :param useGenes: optional specifications of genes for which to perform the check (Defaults to using all genes)
+        :type useGenes: list of bool
+        :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)
+        :type minFraction: float
+        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)
+        :type minNSamples: int
+        :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)
+        :type minNGenes: int
+        :param tol: An optional 'small' number to compare the variance against
+        :type tol: float
+        :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)
+        :type minRelativeWeight: float
+
+        :return: A logical list with one entry per gene that is TRUE if the gene is considered good and FALSE otherwise. Note that all genes excluded by useGenes are automatically assigned FALSE.
+        :rtype: list of bool
         """
         if not datExpr.apply(lambda s: pd.to_numeric(s, errors='coerce').notnull().all()).all():
             sys.exit("datExpr must contain numeric data.")
@@ -526,7 +596,29 @@ class WGCNA(GeneExp):
     def goodSamplesFun(datExpr, weights=None, useSamples=None, useGenes=None, minFraction=1 / 2,
                        minNSamples=4, minNGenes=4, minRelativeWeight=0.1):
         """
-        define good samples
+        Check data for missing entries and returns a list of samples that have non-zero variance
+
+        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.
+        :type datExpr: pandas dataframe
+        :param weights: optional observation weights in the same format (and dimensions) as datExpr.
+        :type weights: pandas dataframe
+        :param useSamples: optional specifications of which samples to use for the check (Defaults to using all samples)
+        :type useSamples: list of bool
+        :param useGenes: optional specifications of genes for which to perform the check (Defaults to using all genes)
+        :type useGenes: list of bool
+        :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)
+        :type minFraction: float
+        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)
+        :type minNSamples: int
+        :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)
+        :type minNGenes: int
+        :param tol: An optional 'small' number to compare the variance against
+        :type tol: float
+        :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)
+        :type minRelativeWeight: float
+
+        :return: A logical list with one entry per sample that is TRUE if the sample is considered good and FALSE otherwise. Note that all samples excluded by useSamples are automatically assigned FALSE.
+        :rtype: list of bool
         """
         if useGenes is None:
             useGenes = np.repeat(True, datExpr.shape[0])
@@ -567,7 +659,15 @@ class WGCNA(GeneExp):
     @staticmethod
     def hclust(d, method="complete"):
         """
-        hierarchical clustering
+        Hierarchical cluster analysis on a set of dissimilarities and methods for analyzing it.
+
+        :param d: a dissimilarity structure as produced by 'pdist'.
+        :type d: ndarray
+        :param method: The linkage algorithm to use. (default = complete)
+        :type method: str
+
+        :return: The hierarchical clustering encoded as a linkage matrix.
+        :rtype: ndarray
         """
         METHODS = ["single", "complete", "average", "weighted", "centroid"]
 
@@ -585,7 +685,15 @@ class WGCNA(GeneExp):
     @staticmethod
     def cutree(sampleTree, cutHeight=50000.0):
         """
-        remove samples/genes/modules base on hierarchical clustering
+        Given a linkage matrix Z, return the cut tree. remove samples/genes/modules base on hierarchical clustering
+
+        :param sampleTree: The linkage matrix.
+        :type sampleTree: scipy.cluster.linkage array
+        :param cutHeight: A optional height at which to cut the tree (default = 50000)
+        :type cutHeight: array_like
+
+        :return: An array indicating group membership at each agglomeration step. I.e., for a full cut tree, in the first column each data point is in its own cluster. At the next step, two nodes are merged. Finally, all singleton and non-singleton clusters are in one group. If n_clusters or height are given, the columns correspond to the columns of n_clusters or height.
+        :rtype: array
         """
         cutTree = cut_tree(sampleTree, height=cutHeight)
 
@@ -597,7 +705,35 @@ class WGCNA(GeneExp):
                           blockSize=None, corOptions=None, networkType="unsigned", moreNetworkConcepts=False,
                           gcInterval=None):
         """
-        Analysis of scale free topology for multiple soft thresholding powers
+        Analysis of scale free topology for multiple soft thresholding powers.
+
+        :param data: expression data in a matrix or data frame. Rows correspond to samples and columns to genes.
+        :param data: pandas dataframe
+        :param dataIsExpr: should the data be interpreted as expression (or other numeric) data, or as a similarity matrix of network nodes?
+        :type dataIsExpr: bool
+        :param weights: optional observation weights for data to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.
+        :type weights: pandas dataframe
+        :param RsquaredCut: desired minimum scale free topology fitting index (R^2). (default = 0.9)
+        :type RsquaredCut: float
+        :param MeanCut: desired maximum mean connectivity scale free topology fitting index. (default = 100)
+        :type MeanCut: int
+        :param powerVector: A list of soft thresholding powers for which the scale free topology fit indices are to be calculated.
+        :type powerVector: list of int
+        :param nBreaks: number of bins in connectivity histograms (default = 10)
+        :type nBreaks: int
+        :param blockSize: block size into which the calculation of connectivity should be broken up. If not given, a suitable value will be calculated using function blockSize and printed if verbose>0. If R runs into memory problems, decrease this value.
+        :type blockSize: int
+        :param corOptions: a list giving further options to the correlation function specified in corFnc.
+        :type corOptions: list
+        :param networkType: network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". (default = unsigned)
+        :type networkType: str
+        :param moreNetworkConcepts: should additional network concepts be calculated? If TRUE, the function will calculate how the network density, the network heterogeneity, and the network centralization depend on the power. For the definition of these additional network concepts, see Horvath and Dong (2008). PloS Comp Biol.
+        :type moreNetworkConcepts: bool
+        :param gcInterval: a number specifying in interval (in terms of individual genes) in which garbage collection will be performed. The actual interval will never be less than blockSize.
+        :type gcInterval: int
+
+        :return: tuple including powerEstimate: estimate of an appropriate soft-thresholding power which is the lowest power for which the scale free topology fit \(R^2\) exceeds RsquaredCut and conectivity is less than MeanCut. If \(R^2\) is below RsquaredCut for all powers maximum will re returned and datout which is a data frame containing the fit indices for scale free topology. The columns contain the soft-thresholding power, adjusted \(R^2\) for the linear fit, the linear coefficient, adjusted \(R^2\) for a more complicated fit models, mean connectivity, median connectivity and maximum connectivity. If input moreNetworkConcepts is TRUE, 3 additional columns containing network density, centralization, and heterogeneity.
+        :type: int and pandas dataframe
         """
         if powerVector is None:
             powerVector = list(range(1, 11)) + list(range(1, 21, 2))
@@ -736,6 +872,18 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def checkSimilarity(adjMat, min=0, max=1):
+        """
+        check similarity matrix format is correct
+
+        :param adjMat: data we want to be checked
+        :type adjMat: pandas dataframe
+        :param min: minimum value to be allowed for data (default = 0)
+        :type min: int
+        :param max: maximum value to be allowed for data (default = 1)
+        :type max: int
+
+        :raises exit: if format is not correct
+        """
         dim = adjMat.shape
         if dim is None or len(dim) != 2:
             sys.exit("adjacency is not two-dimensional")
@@ -754,6 +902,9 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def calBlockSize(matrixSize, rectangularBlocks=True, maxMemoryAllocation=None, overheadFactor=3):
+        """
+        find suitable block size for calculating soft power threshold
+        """
         if maxMemoryAllocation is None:
             maxAlloc = resource.getrlimit(resource.RLIMIT_AS)[1]
         else:
@@ -771,6 +922,14 @@ class WGCNA(GeneExp):
     # Calculation of fitting statistics for evaluating scale free topology fit.
     @staticmethod
     def scaleFreeFitIndex(k, nBreaks=10):
+        """
+        calculates several indices (fitting statistics) for evaluating scale free topology fit.
+
+        :param k: numeric list whose components contain non-negative values
+        :type k: list
+        :param nBreaks: (default = 10)
+        :type nBreaks: int
+        """
         df = pd.DataFrame({'data': k})
         df['discretized_k'] = pd.cut(df['data'], nBreaks)
         dk = df.groupby('discretized_k').mean()  # tapply(k, discretized_k, mean)
@@ -805,6 +964,24 @@ class WGCNA(GeneExp):
                   weightArgNames=None):
         """
         Calculates (correlation or distance) network adjacency from given expression data or from a similarity
+
+        :param datExpr: data frame containing expression data. Columns correspond to genes and rows to samples.
+        :type datExpr: pandas dataframe
+        :param selectCols: for correlation networks only; can be used to select genes whose adjacencies will be calculated. Should be either a numeric list giving the indices of the genes to be used, or a boolean list indicating which genes are to be used.
+        :type selectCols: list
+        :param adjacencyType: adjacency network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". (default = unsigned)
+        :type adjacencyType: str
+        :param power: soft thresholding power.
+        :type power: int
+        :param corOptions: specifying additional arguments to be passed to the function given by corFnc.
+        :type corOptions: pandas dataframe
+        :param weights: optional observation weights for datExpr to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.
+        :type weights: pandas dataframe
+        :param weightArgNames: character list of length 2 giving the names of the arguments to corFnc that represent weights for variable x and y. Only used if weights are non-NULL.
+        :type weightArgNames: list
+
+        :return: Adjacency matrix
+        :rtype: pandas dataframe
         """
         print(f"{OKCYAN}calculating adjacency matrix ...{ENDC}")
         if weightArgNames is None:
@@ -851,6 +1028,18 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def checkAdjMat(adjMat, min=0, max=1):
+        """
+        check adjacency matrix format is correct
+
+        :param adjMat: data we want to be checked
+        :type adjMat: pandas dataframe
+        :param min: minimum value to be allowed for data (default = 0)
+        :type min: int
+        :param max: maximum value to be allowed for data (default = 1)
+        :type max: int
+
+        :raises exit: if format is not correct
+        """
         shape = adjMat.shape
         if shape is None or len(shape) != 2:
             sys.exit("adjacency is not two-dimensional")
@@ -889,6 +1078,16 @@ class WGCNA(GeneExp):
     def TOMsimilarity(adjMat, TOMType="signed", TOMDenom="min"):
         """
         Calculation of the topological overlap matrix, and the corresponding dissimilarity, from a given adjacency matrix
+
+        :param adjMat: adjacency matrix, that is a square, symmetric matrix with entries between 0 and 1 (negative values are allowed if TOMType=="signed").
+        :type adjMat: pandas dataframe
+        :param TOMType: one of "unsigned", "signed"
+        :type TOMType: str
+        :param TOMDenom: a character string specifying the TOM variant to be used. Recognized values are "min" giving the standard TOM described in Zhang and Horvath (2005), and "mean" in which the min function in the denominator is replaced by mean. The "mean" may produce better results but at this time should be considered experimental.
+        :type TOMDenom: str
+
+        :return: A matrix holding the topological overlap.
+        :rtype: pandas dataframe
         """
         TOMTypeC = TOMTypes.index(TOMType)
         if TOMTypeC is None:
@@ -945,6 +1144,51 @@ class WGCNA(GeneExp):
                      respectSmallClusters=True):
         """
         Detect clusters in a dendorgram produced by the function hclust.
+
+        :param dendro: a hierarchical clustering dendorgram such as one returned by hclust.
+        :type dendro: ndarray
+        :param distM: Distance matrix that was used as input to hclust.
+        :type distM: pandas dataframe
+        :param cutHeight: Maximum joining heights that will be considered. It defaults to 99of the range between the 5th percentile and the maximum of the joining heights on the dendrogram.
+        :type cutHeight: int
+        :param minClusterSize: Minimum cluster size. (default = 20)
+        :type minClusterSize: int
+        :param deepSplit: Either logical or integer in the range 0 to 4. Provides a rough control over sensitivity to cluster splitting. The higher the value, the more and smaller clusters will be produced. (default = 1)
+        :type deepSplit: int or bool
+        :param maxCoreScatter: Maximum scatter of the core for a branch to be a cluster, given as the fraction of cutHeight relative to the 5th percentile of joining heights.
+        :type maxCoreScatter: int
+        :param minGap: Minimum cluster gap given as the fraction of the difference between cutHeight and the 5th percentile of joining heights.
+        :type minGap: int
+        :param maxAbsCoreScatter: Maximum scatter of the core for a branch to be a cluster given as absolute heights. If given, overrides maxCoreScatter.
+        :type maxAbsCoreScatter: int
+        :param minAbsGap: Minimum cluster gap given as absolute height difference. If given, overrides minGap.
+        :type minAbsGap: int
+        :param minSplitHeight: Minimum split height given as the fraction of the difference between cutHeight and the 5th percentile of joining heights. Branches merging below this height will automatically be merged. Defaults to zero but is used only if minAbsSplitH
+        :type minSplitHeight: int
+        :param minAbsSplitHeight: Minimum split height given as an absolute height. Branches merging below this height will automatically be merged. If not given (default), will be determined from minSplitHeight above.
+        :type minAbsSplitHeight: int
+        :param externalBranchSplitFnc: Optional function to evaluate split (dissimilarity) between two branches. Either a single function or a list in which each component is a function.
+
+        :param minExternalSplit: Thresholds to decide whether two branches should be merged. It should be a numeric list of the same length as the number of functions in externalBranchSplitFnc above.
+        :type minExternalSplit: list
+        :param externalSplitOptions: Further arguments to function externalBranchSplitFnc. If only one external function is specified in externalBranchSplitFnc above, externalSplitOptions can be a named list of arguments or a list with one component.
+        :type externalSplitOptions: pandas dataframe
+        :param externalSplitFncNeedsDistance: Optional specification of whether the external branch split functions need the distance matrix as one of their arguments. Either NULL or a logical list with one element per branch
+        :type externalSplitFncNeedsDistance: pandas dataframe
+        :param assumeSimpleExternalSpecification: when minExternalSplit above is a scalar (has length 1), should the function assume a simple specification of externalBranchSplitFnc and externalSplitOptions. (default = True)
+        :type assumeSimpleExternalSpecification: bool
+        :param pamStage: If TRUE, the second (PAM-like) stage will be performed. (default = True)
+        :type pamStage: bool
+        :param pamRespectsDendro: If TRUE, the PAM stage will respect the dendrogram in the sense an object can be PAM-assigned only to clusters that lie below it on the branch that the object is merged into. (default = True)
+        :type pamRespectsDendro: bool
+        :param useMedoids: if TRUE, the second stage will be use object to medoid distance; if FALSE, it will use average object to cluster distance. (default = False)
+        :param maxPamDist: Maximum object distance to closest cluster that will result in the object assigned to that cluster. Defaults to cutHeight.
+        :type maxPamDist: float
+        :param respectSmallClusters: If TRUE, branches that failed to be clusters in stage 1 only because of insufficient size will be assigned together in stage 2. If FALSE, all objects will be assigned individually. (default = False)
+        :type respectSmallClusters: bool
+
+        :return: list detailing the deteced branch structure.
+        :rtype: list
         """
         tmp = dendro[:, 0] > dendro.shape[0]
         dendro[tmp, 0] = dendro[tmp, 0] - dendro.shape[0]
@@ -1519,6 +1763,18 @@ class WGCNA(GeneExp):
     def labels2colors(labels, zeroIsGrey=True, colorSeq=None, naColor="grey"):
         """
         Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.
+
+        :param labels: list or matrix of non-negative integer or other (such as character) labels.
+        :type labels: list or matrix
+        :param zeroIsGrey: If TRUE, labels 0 will be assigned color grey. Otherwise, labels below 1 will trigger an error. (default = True)
+        :type zeroIsGrey: bool
+        :param colorSeq: Color sequence corresponding to labels. If not given, a standard sequence will be used.
+        :type colorSeq: list or matrix
+        :param naColor: Color that will encode missing values.
+        :type naColor: str
+
+        :return: An array of character strings of the same length or dimensions as labels.
+        :rtype: ndarray
         """
         if colorSeq is None:
             colors = dict(**mcolors.CSS4_COLORS)
@@ -1565,6 +1821,32 @@ class WGCNA(GeneExp):
                          subHubs=True, softPower=6, scaleVar=True, trapErrors=False):
         """
         Calculates module eigengenes (1st principal component) of modules in a given single dataset.
+
+        :param expr: Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).
+        :type expr: pandas dataframe
+        :param colors: A list of the same length as the number of probes in expr, giving module color for all probes (genes). Color "grey" is reserved for unassigned genes.
+        :type colors: list
+        :param impute: If TRUE, expression data will be checked for the presence of NA entries and if the latter are present, numerical data will be imputed. (defualt = True)
+        :type impute: bool
+        :param nPC: Number of principal components and variance explained entries to be calculated. Note that only the first principal component is returned; the rest are used only for the calculation of proportion of variance explained. If given nPC is greater than 10, a warning is issued. (default = 1)
+        :type nPC: int
+        :param align: Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (align = "along average") or left as they are (align = ""). Any other value will trigger an error. (default = "along average")
+        :type align: str
+        :param excludeGrey: Should the improper module consisting of 'grey' genes be excluded from the eigengenes (default = False)
+        :type excludeGrey: bool
+        :param grey: Value of colors designating the improper module. Note that if colors is a factor of numbers, the default value will be incorrect. (default = grey)
+        :type grey: str
+        :param subHubs: Controls whether hub genes should be substituted for missing eigengenes. If TRUE, each missing eigengene (i.e., eigengene whose calculation failed and the error was trapped) will be replaced by a weighted average of the most connected hub genes in the corresponding module. If this calculation fails, or if subHubs==FALSE, the value of trapErrors will determine whether the offending module will be removed or whether the function will issue an error and stop. (default = True)
+        :type subHubs: bool
+        :param softPower: The power used in soft-thresholding the adjacency matrix. Only used when the hubgene approximation is necessary because the principal component calculation failed. It must be non-negative. The default value should only be changed if there is a clear indication that it leads to incorrect results. (default = 6)
+        :type softPower: int
+        :param trapErrors: Controls handling of errors from that may arise when there are too many NA entries in expression data. If TRUE, errors from calling these functions will be trapped without abnormal exit. If FALSE, errors will cause the function to stop. Note, however, that subHubs takes precedence in the sense that if subHubs==TRUE and trapErrors==FALSE, an error will be issued only if both the principal component and the hubgene calculations have failed. (default = False)
+        :type trapErrors: bool
+        :param scaleVar: can be used to turn off scaling of the expression data before calculating the singular value decomposition. The scaling should only be turned off if the data has been scaled previously, in which case the function can run a bit faster. Note however that the function first imputes, then scales the expression data in each module. If the expression contain missing data, scaling outside of the function and letting the function impute missing data may lead to slightly different results than if the data is scaled within the function. (default = True)
+        :type scaleVar: bool
+
+        :return: A dictionary containing: "eigengenes": Module eigengenes in a dataframe, with each column corresponding to one eigengene. The columns are named by the corresponding color with an "ME" prepended, e.g., MEturquoise etc. If returnValidOnly==FALSE, module eigengenes whose calculation failed have all components set to NA. "averageExpr": If align == "along average", a dataframe containing average normalized expression in each module. The columns are named by the corresponding color with an "AE" prepended, e.g., AEturquoise etc. "varExplained": A dataframe in which each column corresponds to a module, with the component varExplained[PC, module] giving the variance of module module explained by the principal component no. PC. The calculation is exact irrespective of the number of computed principal components. At most 10 variance explained values are recorded in this dataframe. "nPC": A copy of the input nPC. "validMEs": A boolean vector. Each component (corresponding to the columns in data) is TRUE if the corresponding eigengene is valid, and FALSE if it is invalid. Valid eigengenes include both principal components and their hubgene approximations. When returnValidOnly==FALSE, by definition all returned eigengenes are valid and the entries of validMEs are all TRUE. "validColors": A copy of the input colors with entries corresponding to invalid modules set to grey if given, otherwise 0 if colors is numeric and "grey" otherwise. "allOK": Boolean flag signalling whether all eigengenes have been calculated correctly, either as principal components or as the hubgene average approximation. "allPC": Boolean flag signalling whether all returned eigengenes are principal components. "isPC": Boolean vector. Each component (corresponding to the columns in eigengenes) is TRUE if the corresponding eigengene is the first principal component and FALSE if it is the hubgene approximation or is invalid. "isHub": Boolean vector. Each component (corresponding to the columns in eigengenes) is TRUE if the corresponding eigengene is the hubgene approximation and FALSE if it is the first principal component or is invalid. "validAEs": Boolean vector. Each component (corresponding to the columns in eigengenes) is TRUE if the corresponding module average expression is valid. "allAEOK": Boolean flag signalling whether all returned module average expressions contain valid data. Note that returnValidOnly==TRUE does not imply allAEOK==TRUE: some invalid average expressions may be returned if their corresponding eigengenes have been calculated correctly.
+        :rtype: dict
         """
         print(f"{OKCYAN}Calculating {len(pd.Categorical(colors).categories)} module eigengenes in given set...{ENDC}")
         check = True
@@ -1738,6 +2020,19 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def checkSets(data, checkStructure=False, useSets=None):
+        """
+        Checks whether given sets have the correct format and retrieves dimensions.
+
+        :param data: A dict of lists; in each list there must be a component named data whose content is a matrix or dataframe or array of dimension 2.
+        :type data: dict
+        :param checkStructure: If FALSE, incorrect structure of data will trigger an error. If TRUE, an appropriate flag (see output) will be set to indicate whether data has correct structure. (default = False)
+        :type checkStructure: bool
+        :param useSets: Optional specification of entries of the list data that are to be checked. Defaults to all components. This may be useful when data only contains information for some of the sets.
+        :type useSets: list
+
+        :return: a dictionary contains: "nSets": Number of sets (length of the vector data). "nGenes": Number of columns in the data components in the lists. This number must be the same for all sets. "nSamples": A vector of length nSets giving the number of rows in the data components. "structureOK": Only set if the argument checkStructure equals TRUE. The value is TRUE if the paramter data passes a few tests of its structure, and FALSE otherwise. The tests are not exhaustive and are meant to catch obvious user errors rather than be bulletproof.
+        :rtype: dict
+        """
         if isinstance(data, pd.DataFrame):
             nSets = data.shape[1]
         else:
@@ -1779,6 +2074,15 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def fixDataStructure(data):
+        """
+        Encapsulates single-set data in a wrapper that makes the data suitable for functions working on multiset data collections.
+
+        :param data: A dataframe, matrix or array with two dimensions to be encapsulated.
+        :type data: pandas dataframe ot dict
+
+        :return: input data in a format suitable for functions operating on multiset data collections.
+        :rtype: dict
+        """
         if not isinstance(data, list):
             print("fixDataStructure: data is not a Dictionary: converting it into one.")
             x = data.copy()
@@ -1791,6 +2095,36 @@ class WGCNA(GeneExp):
                     grey=None):
         """
         Calculates module eigengenes for several sets.
+
+        :param exprData: Expression data in a multi-set format
+        :type exprData: pandas dataframe
+        :param colors: A list of the same length as the number of probes in expr, giving module color for all probes (genes). Color "grey" is reserved for unassigned genes.
+        :type colors: list
+        :param universalColors: Alternative specification of module assignment
+        :type universalColors: list
+        :param useSets: If calculations are requested in (a) selected set(s) only, the set(s) can be specified here. Defaults to all sets.
+        :type useSets: list
+        :param useGenes: Can be used to restrict calculation to a subset of genes
+        :type useGenes: list
+        :param impute: If TRUE, expression data will be checked for the presence of NA entries and if the latter are present, numerical data will be imputed. (defualt = True)
+        :type impute: bool
+        :param nPC: Number of principal components and variance explained entries to be calculated. Note that only the first principal component is returned; the rest are used only for the calculation of proportion of variance explained. If given nPC is greater than 10, a warning is issued. (default = 1)
+        :type nPC: int
+        :param align: Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (align = "along average") or left as they are (align = ""). Any other value will trigger an error. (default = "along average")
+        :type align: str
+        :param excludeGrey: Should the improper module consisting of 'grey' genes be excluded from the eigengenes (default = False)
+        :type excludeGrey: bool
+        :param subHubs: Controls whether hub genes should be substituted for missing eigengenes. If TRUE, each missing eigengene (i.e., eigengene whose calculation failed and the error was trapped) will be replaced by a weighted average of the most connected hub genes in the corresponding module. If this calculation fails, or if subHubs==FALSE, the value of trapErrors will determine whether the offending module will be removed or whether the function will issue an error and stop. (default = True)
+        :type subHubs: bool
+        :param trapErrors: Controls handling of errors from that may arise when there are too many NA entries in expression data. If TRUE, errors from calling these functions will be trapped without abnormal exit. If FALSE, errors will cause the function to stop. Note, however, that subHubs takes precedence in the sense that if subHubs==TRUE and trapErrors==FALSE, an error will be issued only if both the principal component and the hubgene calculations have failed. (default = False)
+        :type trapErrors: bool
+        :param softPower: The power used in soft-thresholding the adjacency matrix. Only used when the hubgene approximation is necessary because the principal component calculation failed. It must be non-negative. The default value should only be changed if there is a clear indication that it leads to incorrect results. (default = 6)
+        :type softPower: int
+        :param grey: Value of colors or universalColors (whichever applies) designating the improper module
+        :type grey: str
+
+        :return: A dictionary similar in spirit to the input exprData
+        :rtype: dict
         """
         returnValidOnly = trapErrors
         if grey is None:
@@ -1947,6 +2281,22 @@ class WGCNA(GeneExp):
     def orderMEs(MEs, greyLast=True, greyName="MEgrey", orderBy=0, order=None, useSets=None):
         """
         Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.
+
+        :param MEs: Module eigengenes in a multi-set format.
+        :type MEs: dict
+        :param greyLast: Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (default = True)
+        :type greyLast:bool
+        :param greyName: Name of the grey module eigengene. (default = "MEgrey")
+        :type greyName: str
+        :param orderBy: Specifies the set by which the eigengenes are to be ordered (in all other sets as well). Defaults to the first set in useSets (or the first set, if useSets is not given). (defualt = 0)
+        :type orderBy: int
+        :param order: Allows the user to specify a custom ordering.
+        :type order: list
+        :param useSets: Allows the user to specify for which sets the eigengene ordering is to be performed.
+        :type useSets: list
+
+        :return: A dictionary of the same type as MEs containing the re-ordered eigengenes.
+        :rtype: dict
         """
         if "eigengenes" in MEs.keys():
             if order is None:
@@ -2005,6 +2355,25 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def consensusOrderMEs(MEs, useAbs=False, useSets=None, greyLast=True, greyName="MEgrey", method="consensus"):
+        """
+        Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.
+
+        :param MEs: Module eigengenes of several sets in a multi-set format
+        :type MEs: dict
+        :param useAbs: Controls whether vector similarity should be given by absolute value of correlation or plain correlation. (defualt = False)
+        :type useAbs: bool
+        :param useSet: Allows the user to specify for which sets the eigengene ordering is to be performed.
+        :type useSets: list
+        :param greyLast: Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (defualt = True)
+        :type greyLast: bool
+        :param greyName: Name of the grey module eigengene. (defualt = "MEgrey")
+        :type greyName: str
+        :param method: A character string giving the method to be used calculating the consensus dissimilarity. Allowed values are (abbreviations of) "consensus" and "majority". The consensus dissimilarity is calculated as the maximum of given set dissimilarities for "consensus" and as the average for "majority".
+        :type method: str
+
+        :return: A dictionary of the same type as MEs containing the re-ordered eigengenes
+        :rtype: dict
+        """
         Diss = WGCNA.consensusMEDissimilarityMajor(MEs, useAbs=useAbs, useSets=useSets, method=method)
         order = WGCNA.clustOrder(Diss, greyLast, greyName)
         MEs = WGCNA.orderMEs(MEs, greyLast=greyLast, greyName=greyName, order=order, useSets=useSets)
@@ -2074,6 +2443,46 @@ class WGCNA(GeneExp):
                           getNewMEs=True, getNewUnassdME=True, trapErrors=False):
         """
         Merges modules in gene expression networks that are too close as measured by the correlation of their eigengenes.
+
+        :param exprData: Expression data, either a single data frame with rows corresponding to samples and columns to genes, or in a multi-set format.
+        :type exprData: pandas dataframe
+        :param colors: A list (numeric, character or a factor) giving module colors for genes. The method only makes sense when genes have the same color label in all sets, hence a single list.
+        :type colors: list
+        :param MEs: If module eigengenes have been calculated before, the user can save some computational time by inputting them. MEs should have the same format as exprData. If they are not given, they will be calculated.
+        :type MEs: dict
+        :param useSets: A list of scalar allowing the user to specify which sets will be used to calculate the consensus dissimilarity of module eigengenes. Defaults to all given sets.
+        :type useSets: list
+        :param impute: Should missing values be imputed in eigengene calculation? If imputation is disabled, the presence of NA entries will cause the eigengene calculation to fail and eigengenes will be replaced by their hubgene approximation. (defualt = True)
+        :type impute: bool
+        :param checkDataFormat: If TRUE, the function will check exprData and MEs for correct multi-set structure. If single set data is given, it will be converted into a format usable for the function. If FALSE, incorrect structure of input data will trigger an error. (defualt = True)
+        :type checkDataFormat: bool
+        :param unassdColor: Specifies the string that labels unassigned genes. Module of this color will not enter the module eigengene clustering and will not be merged with other modules. (default = "grey")
+        :type unassdColor: str
+        :param useAbs: Specifies whether absolute value of correlation or plain correlation (of module eigengenes) should be used in calculating module dissimilarity. (defualt = False)
+        :type useAbs: bool
+        :param equalizeQuantiles: should quantiles of the eigengene dissimilarity matrix be equalized ("quantile normalized")? The default is FALSE for reproducibility of old code; when there are many eigengenes (e.g., at least 50), better results may be achieved if quantile equalization is used. (defualt = False)
+        :type equalizeQuantiles: bool
+        :param quantileSummary: One of "mean" or "median". Controls how a reference dissimilarity is computed from the input ones (using mean or median, respectively). (default = "mean")
+        :type quantileSummary: str
+        :param consensusQuantile: A number giving the desired quantile to use in the consensus similarity calculation. (defualt = 0)
+        :type consensusQuantile: int
+        :param cutHeight: Maximum dissimilarity (i.e., 1-correlation) that qualifies modules for merging. (defualt = 0.2)
+        :type cutHeight: float
+        :param iterate: Controls whether the merging procedure should be repeated until there is no change. If FALSE, only one iteration will be executed. (defualt = True)
+        :type iterate: bool
+        :param relabel: Controls whether, after merging, color labels should be ordered by module size. (defualt = False)
+        :type relabel: bool
+        :param colorSeq: Color labels to be used for relabeling. Defaults to the standard color order used in this package if colors are not numeric, and to integers starting from 1 if colors is numeric.
+        :type colorSeq: list
+        :param getNewMEs: Controls whether module eigengenes of merged modules should be calculated and returned. (defualt = True)
+        :type getNewMEs: bool
+        :param getNewUnassdME: When doing module eigengene manipulations, the function does not normally calculate the eigengene of the 'module' of unassigned ('grey') genes. Setting this option to TRUE will force the calculation of the unassigned eigengene in the returned newMEs, but not in the returned oldMEs. (defualt = True)
+        :type getNewUnassdME: bool
+        :param trapErrors: Controls whether computational errors in calculating module eigengenes, their dissimilarity, and merging trees should be trapped. If TRUE, errors will be trapped and the function will return the input colors. If FALSE, errors will cause the function to stop. (defualt = False)
+
+        :return: A dictionaty contains: "colors": Color labels for the genes corresponding to merged modules. The function attempts to mimic the mode of the input colors: if the input colors is numeric, character and factor, respectively, so is the output. Note, however, that if the fnction performs relabeling, a standard sequence of labels will be used: integers starting at 1 if the input colors is numeric, and a sequence of color labels otherwise. "dendro": Hierarchical clustering dendrogram (average linkage) of the eigengenes of the most recently computed tree. If iterate was set TRUE, this will be the dendrogram of the merged modules, otherwise it will be the dendrogram of the original modules. "oldDendro": Hierarchical clustering dendrogram (average linkage) of the eigengenes of the original modules. "cutHeight": The input cutHeight. "oldMEs": Module eigengenes of the original modules in the sets given by useSets. "newMEs": Module eigengenes of the merged modules in the sets given by useSets. "allOK": A boolean set to TRUE.
+        :raises trapErrors==TRUE: A dictionaty contains: "colors": A copy of the input colors. "allOK": a boolean set to FALSE.
+        :rtype: dict
         """
         if all(isinstance(x, int) for x in colors):
             unassdColor = 0
@@ -2272,11 +2681,23 @@ class WGCNA(GeneExp):
                     self.datTraits.replace(to_replace=org, value=rep, inplace=True)
 
     def getModuleName(self):
+        """
+        get names of modules
+
+        :return: name of modules
+        :rtype: ndarray
+        """
         return np.unique(self.datExpr.obs['moduleColors']).tolist()
 
     def getGeneModule(self, moduleName):
         """
-        return list of module corresponding to gene
+        get list of genes corresponding to modules
+
+        :param moduleName: name of modules
+        :type moduleName: list
+
+        :return: A dictionary contains list of genes for requested module(s)
+        :rtype: dict
         """
         output = {}
         moduleColors = np.unique(self.datExpr.obs['moduleColors']).tolist()
@@ -2289,13 +2710,21 @@ class WGCNA(GeneExp):
         return output
 
     def getModulesGene(self, geneIds):
+        """
+        get list of modules corresponding to gene(s)
+
+        :param geneIds: gene id
+        :type geneIds: list or str
+
+        :return: A list contains name of module(s) for requested gene(s)
+        :rtype: list or str
+        """
         if isinstance(geneIds, str):
             geneIds = [geneIds]
 
-        moduleColors = np.unique(self.datExpr.obs['moduleColors']).tolist()
         modules = []
         for geneId in geneIds:
-            modules.append(self.datExpr.obs.moduleColors[self.datExpr.obs.gene_id == 'geneId'])
+            modules.append(self.datExpr.obs.moduleColors[self.datExpr.obs.gene_id == geneId])
 
         if len(modules) == 1:
             modules = modules[0]
@@ -2303,6 +2732,14 @@ class WGCNA(GeneExp):
         return modules
 
     def setMetadataColor(self, col, cmap):
+        """
+        set color pallete for each group of metadata
+
+        :param col: name of metadata
+        :type col: str
+        :param cmap: color pallet
+        :type cmap: list
+        """
         # check if obs_col is even there
         if col not in self.datExpr.var.columns.tolist():
             print(f"{WARNING}Metadata column {col} not found!{ENDC}")
@@ -2312,6 +2749,11 @@ class WGCNA(GeneExp):
     def plotModuleEigenGene(self, moduleName, metadata):
         """
         plot module eigen gene figure in given module
+
+        :param moduleName: module name
+        :type moduleName: str
+        :param metadata: list of metadata you want to be plotted
+        :type metadata: list
         """
         index = self.datExpr.var.index.isin(self.datExpr.to_df().index)
         sampleInfo = self.datExpr.var[index]
@@ -2372,6 +2814,12 @@ class WGCNA(GeneExp):
         return None
 
     def findGoTerm(self, moduleName):
+        """
+        find and plot gene ontology(GO) for given module
+
+        :param moduleName: module name
+        :type moduleName: str
+        """
         if not os.path.exists(self.outputPath + '/figures/Go_term/'):
             print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
             os.makedirs(self.outputPath + '/figures/Go_term/')
