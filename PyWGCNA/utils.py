@@ -78,9 +78,10 @@ def compareSingleCell(WGCNA, sc):
     return compare
 
 
-def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
+def getGeneList(dataset='mmusculus_gene_ensembl',
+                attributes=['ensembl_gene_id', 'external_gene_name']):
     """
-    get dictionary that map gene ensembl id to gene name from biomart
+    get table that map gene ensembl id to gene name from biomart
     
     
     :param dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
@@ -92,11 +93,6 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     :return: table extracted from biomart related to the datasets including information from attributes
     :rtype: pandas dataframe
     """
-    # Set up connection to server
-    if dataset == 'mmusculus_gene_ensembl':
-        attributes = ['ensembl_transcript_id', 'mgi_symbol', 'ensembl_gene_id']
-    if dataset == 'hsapiens_gene_ensembl':
-        attributes = ['ensembl_transcript_id', 'hgnc_symbol', 'ensembl_gene_id']
 
     server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
     mart = server.datasets[dataset]
@@ -109,9 +105,55 @@ def getGeneList(dataset='mmusculus_gene_ensembl', attributes=None):
     # Store the data in a dict
     for line in data.splitlines():
         line = line.split('\t')
+        dict = {}
+        for i in range(len(attributes)):
+            dict[attributes[i]] = line[i]
+        geneInfo = geneInfo.append(dict, ignore_index=True)
+
+    return geneInfo
+
+
+def getGeneListGOid(dataset='mmusculus_gene_ensembl',
+                    attributes=['ensembl_gene_id', 'external_gene_name', 'go_id'],
+                    Goid='GO:0003700'):
+    """
+    get table that find gene id and gene name to specific Go term from biomart
+
+
+    :param dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
+        you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
+    :type dataset: string
+    :param attributes: List the types of data we want
+    :type attributes: list
+    :param Goid: GO term id you would like to get genes from them
+    :type Goid: list or str
+
+    :return: table extracted from biomart related to the datasets including information from attributes with filtering
+    :rtype: pandas dataframe
+    """
+
+    server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
+    mart = server.datasets[dataset]
+
+    # mart.show_attributes()
+    # mart.show_filters()
+
+    response = mart.search({
+        'filters': {
+            'go': [Goid]
+        },
+        'attributes': attributes
+    }, header=1)
+    data = response.raw.data.decode('ascii')
+
+    geneInfo = pd.DataFrame(columns=attributes)
+    # Store the data in a dict
+    for line in data.splitlines():
+        line = line.split('\t')
         dict = {attributes[0]: line[0],
                 attributes[1]: line[1],
-                attributes[2]: line[2]}
+                attributes[2]: line[2],
+                attributes[3]: line[3]}
         geneInfo = geneInfo.append(dict, ignore_index=True)
 
     return geneInfo

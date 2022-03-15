@@ -22,7 +22,8 @@ setup(
         'seaborn',
         'biomart',
         'gseapy',
-        'pytest'
+        'pytest',
+        'pyvis'
     ],
     classifiers=[  # choose from here: https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha',

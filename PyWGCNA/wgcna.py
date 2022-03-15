@@ -27,7 +27,6 @@ from PyWGCNA.geneExp import *
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
 warnings.simplefilter(action='ignore', category=FutureWarning)
-import warnings
 warnings.filterwarnings("ignore")
 
 plt.rcParams["axes.edgecolor"] = "black"
@@ -161,8 +160,6 @@ class WGCNA(GeneExp):
 
         self.moduleTraitCor = None
         self.moduleTraitPvalue = None
-
-        self.geneModules = {}
 
         if self.save:
             print(f"{OKGREEN}Saving data to be True, checking requirements ...{ENDC}")
@@ -376,9 +373,9 @@ class WGCNA(GeneExp):
         print("\tDone..\n")
 
         if geneList is not None:
-            print(f"{OKCYAN}Adding gene name to gene information of data...{ENDC}")
-            self.datExpr.updateGeneInfo(geneInfo=geneList, order=False)
-        print("\tDone..\n")
+            print(f"{OKCYAN}Updating gene information based on given gene list ...{ENDC}")
+            self.updateGeneInfo(geneInfo=geneList, order=False, level=self.level)
+            print("\tDone..\n")
 
         if self.save:
             print(f"{OKCYAN}plotting module heatmap eigengene...{ENDC}")
@@ -397,10 +394,13 @@ class WGCNA(GeneExp):
             print("\tDone..\n")
             
         if self.save:
-            print(f"{OKCYAN}plotting Go term for each module...{ENDC}")
+            print(f"{OKCYAN}doing Go term analysis for each module...{ENDC}")
             modules = np.unique(self.datExpr.var['moduleColors']).tolist()
-            for module in modules:
-                self.findGoTerm(module)
+            if 'gene_name' not in self.datExpr.var.columns:
+                print(f"{WARNING}\tgene name didn't found in gene information!\n\t Go term analysis can not be done{ENDC}")
+            else:
+                for module in modules:
+                    self.findGoTerm(module)
             print("\tDone..\n")
 
         return self
@@ -2741,7 +2741,7 @@ class WGCNA(GeneExp):
         :type cmap: list
         """
         # check if obs_col is even there
-        if col not in self.datExpr.var.columns.tolist():
+        if col not in self.datExpr.obs.columns.tolist():
             print(f"{WARNING}Metadata column {col} not found!{ENDC}")
             return None
         self.metadata_colors[col] = cmap
@@ -2755,15 +2755,14 @@ class WGCNA(GeneExp):
         :param metadata: list of metadata you want to be plotted
         :type metadata: list
         """
-        index = self.datExpr.var.index.isin(self.datExpr.to_df().index)
-        sampleInfo = self.datExpr.var[index]
+        sampleInfo = self.datExpr.obs
 
-        modules = np.unique(self.datExpr.obs['moduleColors']).tolist()
+        modules = np.unique(self.datExpr.var['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            heatmap = scale(self.datExpr.iloc[:, self.datExpr.obs['moduleColors'] == moduleName]).T
+            heatmap = scale(self.datExpr[:, self.datExpr.var['moduleColors'] == moduleName].to_df()).T
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
             ME['sample_name'] = self.datME.index
 
@@ -2813,31 +2812,67 @@ class WGCNA(GeneExp):
 
         return None
 
-    def findGoTerm(self, moduleName):
+    def findGoTerm(self, moduleName, GoSets=['GO_Biological_Process_2021']):
         """
         find and plot gene ontology(GO) for given module
 
         :param moduleName: module name
         :type moduleName: str
+        :param GoSets: sets of datasets of GO term you want to consider
+        :type GoSets: list of str
         """
         if not os.path.exists(self.outputPath + '/figures/Go_term/'):
             print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
             os.makedirs(self.outputPath + '/figures/Go_term/')
 
-        modules = np.unique(self.datExpr.obs['moduleColors']).tolist()
+        modules = np.unique(self.datExpr.var['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            enr = gp.enrichr(gene_list=self.geneModules[moduleName]['gene_name'],
-                             gene_sets=['GO_Biological_Process_2021'],
-                             organism='Mouse',
+            geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]
+            enr = gp.enrichr(gene_list=geneModule.fillna("").values.tolist(),
+                             gene_sets=GoSets,
+                             organism=self.species,
                              description='',
                              outdir=self.outputPath + '/figures/Go_term/' + moduleName,
                              cutoff=0.5)
             dotplot(enr.res2d,
                     title="Gene ontology in " + moduleName + " module with " + str(
-                        self.geneModules[moduleName].shape[0]) + " genes",
+                        (self.datExpr.var['moduleColors'] == "black").sum()) + " genes",
                     cmap='viridis_r', cutoff=0.5,
                     ofname=self.outputPath + '/figures/Go_term/' + moduleName + '.pdf')
 
+    def updateGeneInfo(self, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
+        """
+        add/update genes info in datExpr and geneExpr anndata
+
+        :param geneInfo: gene information table you want to add to your data
+        :type geneInfo: pandas dataframe
+        :param path: path of geneInfo
+        :type path: str
+        :param sep: separation symbol to use for reading data in path properly
+        :type sep: str
+        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
+        :type order: bool
+        :param level: indicated the expression data is at gene level or transcript level
+        :type level: str
+        """
+
+        self.geneExpr = GeneExp.updateGeneInfo(self.geneExpr, geneInfo, path, sep, order, level)
+        self.datExpr = GeneExp.updateGeneInfo(self.datExpr.transpose(), geneInfo, path, sep, order, level).transpose()
+
+    def updateMetadata(self, metaData=None, path=None, sep=' '):
+        """
+        add/update metadata in datExpr and geneExpr anndata
+
+        :param metaData: Sample information table you want to add to your data
+        :type metaData: pandas dataframe
+        :param path: path of metaData
+        :type path: str
+        :param sep: separation symbol to use for reading data in path properly
+        :type sep: str
+        """
+
+        self.geneExpr = GeneExp.updateMetadata(self.geneExpr, metaData, path, sep)
+        self.datExpr = GeneExp.updateMetadata(self.datExpr.transpose(), metaData, path, sep).transpose()

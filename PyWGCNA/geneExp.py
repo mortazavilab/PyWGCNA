@@ -50,7 +50,13 @@ class GeneExp:
         else:
             raise ValueError("all type of input can not be empty at the same time!")
 
-        geneInfo = pd.DataFrame(expressionList.values[:, 0], columns=['gene_id'],
+        column = 'id'
+        if level == 'gene':
+            column = 'gene_id'
+        elif level == 'transcript':
+            column = 'transcript_id'
+
+        geneInfo = pd.DataFrame(expressionList.values[:, 0], columns=[column],
                                 index=expressionList.iloc[:, 0])
 
         sampleInfo = pd.DataFrame(range(len(expressionList.columns[1:])), columns=['sample_id'],
@@ -62,10 +68,13 @@ class GeneExp:
 
         self.geneExpr = ad.AnnData(X=expressionList, obs=geneInfo, var=sampleInfo)
 
-    def updateGeneInfo(self, geneInfo=None, path=None, sep=' ', order=True):
+    @staticmethod
+    def updateGeneInfo(expr, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
         """
-        add/update genes info in geneExp anndata
+        add/update genes info in expr anndata
 
+        :param expr: expression data
+        :type expr: anndata
         :param geneInfo: gene information table you want to add to your data
         :type geneInfo: pandas dataframe
         :param path: path of geneInfo
@@ -74,6 +83,8 @@ class GeneExp:
         :type sep: str
         :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
         :type order: bool
+        :param level: indicated the expression data is at gene level or transcript level
+        :type level: str
         """
         if path is not None:
             if not os.path.isfile(path):
@@ -86,31 +97,29 @@ class GeneExp:
             raise ValueError("path and geneInfo can not be empty at the same time!")
 
         if order:
-            geneInfo.index = self.geneExpr.obs
-            self.geneExpr.obs = pd.concat([geneInfo, self.geneExpr.obs], axis=1)
-            self.geneExpr.obs = self.geneExpr.obs.loc[:, ~self.geneExpr.obs.columns.duplicated()]
+            geneInfo.index = expr.obs
+            expr.obs = pd.concat([geneInfo, expr.obs], axis=1)
+            expr.obs = expr.obs.loc[:, ~expr.obs.columns.duplicated()]
         else:
             name = 'ensembl_gene_id'
-            if self.level == 'transcript':
+            replace = 'gene_id'
+            if level == 'transcript':
                 name = 'ensembl_transcript_id'
-            columns = geneInfo.columns
-            columns.remove(name)
-            for column in columns:
-                if 'symbol' in column:
-                    column = 'gene_name'
-                self.geneExpr.obs[column] = ""
-            for i in range(self.geneExpr.obs.shape[0]):
-                if self.geneExpr.obs['gene_id'][i] in self.geneExpr.obs[name]:
-                    for column in columns:
-                        if 'symbol' in column:
-                            column = 'gene_name'
-                        self.geneExpr.obs[column][i] = geneInfo[
-                            geneInfo[name] == self.geneExpr.obs['gene_id'][i], column]
+                replace = 'transcript_id'
+            geneInfo.rename(columns={'external_gene_name': 'gene_name', name: replace}, inplace=True)
+            expr.obs.gene_id = expr.obs.gene_id.str.split('\\.', expand=True)[0]
+            expr.obs.index.name = None
+            expr.obs = expr.obs.merge(geneInfo, on=replace, how='left')
+            expr.obs.index = expr.obs[replace]
+        return expr
 
-    def updateMetadata(self, metaData, path, sep=' '):
+    @staticmethod
+    def updateMetadata(expr, metaData=None, path=None, sep=' '):
         """
-        add/update metadata in geneExp anndata
+        add/update metadata in expr anndata
 
+        :param expr: expression data
+        :type expr: anndata
         :param metaData: Sample information table you want to add to your data
         :type metaData: pandas dataframe
         :param path: path of metaData
@@ -128,6 +137,8 @@ class GeneExp:
         else:
             raise ValueError("path and metaData can not be empty at the same time!")
 
-        metaData.index = self.geneExpr.var.index
-        self.geneExpr.var = pd.concat([metaData, self.geneExpr.var], axis=1)
-        self.geneExpr.var = self.geneExpr.var.loc[:, ~self.geneExpr.var.columns.duplicated()]
+        metaData.index = expr.var.index
+        expr.var = pd.concat([metaData, expr.var], axis=1)
+        expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
+
+        return expr
