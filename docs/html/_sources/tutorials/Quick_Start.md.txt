@@ -19,59 +19,208 @@ geneExp = '5xFAD_paper/expressionList_sorted'
 pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', species='mouse',
                               geneExpPath=geneExp, 
                               sep='\t', save=True)
-pyWGCNA_5xFAD.expressionList.head(5)
+pyWGCNA_5xFAD.geneExpr.to_df().head(5)
 ```
 
-    /Users/nargesrezaie/miniconda3/lib/python3.8/site-packages/anndata/_core/anndata.py:120: ImplicitModificationWarning: Transforming to str index.
-      warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+    [92mSaving data to be True, checking requirements ...[0m
+    [93mFigure directory does not exist!
+    Creating figure directory![0m
 
 
 
-    ---------------------------------------------------------------------------
-
-    ValueError                                Traceback (most recent call last)
-
-    /var/folders/26/90_v4ll95wjdp9l6g2lxlm8r0000gn/T/ipykernel_39001/2943457033.py in <module>
-          1 import PyWGCNA
-          2 geneExp = '5xFAD_paper/expressionList_sorted'
-    ----> 3 pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', species='mouse',
-          4                               geneExpPath=geneExp,
-          5                               sep='\t', save=True)
 
 
-    ~/miniconda3/lib/python3.8/site-packages/PyWGCNA/wgcna.py in __init__(self, name, TPMcutoff, powers, RsquaredCut, MeanCut, networkType, TOMType, minModuleSize, naColor, cut, MEDissThres, species, level, anndata, geneExp, geneExpPath, sep, save, outputPath)
-        177                  save=False, outputPath=None):
-        178 
-    --> 179         super().__init__(species=species, level=level, anndata=anndata, geneExp=geneExp,
-        180                          geneExpPath=geneExpPath, sep=sep)
-        181 
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-    ~/miniconda3/lib/python3.8/site-packages/PyWGCNA/geneExp.py in __init__(self, species, level, anndata, geneExp, geneExpPath, sep)
-         59         expressionList = expressionList.drop([expressionList.columns[0]], axis=1)
-         60 
-    ---> 61         self.geneExpr = ad.AnnData(X=expressionList, obs=geneInfo, var=sampleInfo)
-         62 
-         63     def updateGeneInfo(self, geneInfo=None, path=None, sep=' ', order=True):
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>X4mo_cortex_F_5xFADHEMI_430</th>
+      <th>X4mo_cortex_F_5xFADHEMI_431</th>
+      <th>X4mo_cortex_F_5xFADHEMI_433</th>
+      <th>X4mo_cortex_F_5xFADHEMI_434</th>
+      <th>X4mo_cortex_F_5xFADHEMI_511</th>
+      <th>X4mo_cortex_F_5xFADWT_330</th>
+      <th>X4mo_cortex_F_5xFADWT_331</th>
+      <th>X4mo_cortex_F_5xFADWT_432</th>
+      <th>X4mo_cortex_F_5xFADWT_507</th>
+      <th>X4mo_cortex_F_5xFADWT_518</th>
+      <th>...</th>
+      <th>X18mo_hipp_M_5xFADHEMI_567</th>
+      <th>X18mo_hipp_M_5xFADHEMI_617</th>
+      <th>X18mo_hipp_M_5xFADHEMI_627</th>
+      <th>X18mo_hipp_M_5xFADHEMI_640</th>
+      <th>X18mo_hipp_M_5xFADHEMI_786</th>
+      <th>X18mo_hipp_M_5xFADWT_301</th>
+      <th>X18mo_hipp_M_5xFADWT_566</th>
+      <th>X18mo_hipp_M_5xFADWT_641</th>
+      <th>X18mo_hipp_M_5xFADWT_643</th>
+      <th>X18mo_hipp_M_5xFADWT_785</th>
+    </tr>
+    <tr>
+      <th>gene_id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>ENSMUSG00000000003.15</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>ENSMUSG00000000028.15</th>
+      <td>1.90</td>
+      <td>1.10</td>
+      <td>1.18</td>
+      <td>2.18</td>
+      <td>1.50</td>
+      <td>1.75</td>
+      <td>1.15</td>
+      <td>0.78</td>
+      <td>1.26</td>
+      <td>1.05</td>
+      <td>...</td>
+      <td>2.10</td>
+      <td>2.15</td>
+      <td>1.85</td>
+      <td>1.80</td>
+      <td>1.76</td>
+      <td>1.84</td>
+      <td>1.76</td>
+      <td>1.57</td>
+      <td>1.00</td>
+      <td>0.76</td>
+    </tr>
+    <tr>
+      <th>ENSMUSG00000000031.16</th>
+      <td>0.00</td>
+      <td>0.06</td>
+      <td>0.07</td>
+      <td>0.00</td>
+      <td>0.10</td>
+      <td>0.12</td>
+      <td>0.29</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.04</td>
+      <td>...</td>
+      <td>0.40</td>
+      <td>0.32</td>
+      <td>0.24</td>
+      <td>0.45</td>
+      <td>0.21</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.17</td>
+      <td>0.15</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>ENSMUSG00000000037.16</th>
+      <td>0.13</td>
+      <td>0.07</td>
+      <td>0.13</td>
+      <td>0.07</td>
+      <td>0.14</td>
+      <td>0.08</td>
+      <td>0.16</td>
+      <td>0.15</td>
+      <td>0.08</td>
+      <td>0.11</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.09</td>
+      <td>0.10</td>
+      <td>0.04</td>
+      <td>0.12</td>
+      <td>0.04</td>
+      <td>0.09</td>
+      <td>0.13</td>
+      <td>0.15</td>
+    </tr>
+    <tr>
+      <th>ENSMUSG00000000049.11</th>
+      <td>0.43</td>
+      <td>0.18</td>
+      <td>1.90</td>
+      <td>0.31</td>
+      <td>0.53</td>
+      <td>0.44</td>
+      <td>1.92</td>
+      <td>0.40</td>
+      <td>0.88</td>
+      <td>0.37</td>
+      <td>...</td>
+      <td>3.23</td>
+      <td>0.85</td>
+      <td>0.54</td>
+      <td>0.09</td>
+      <td>0.39</td>
+      <td>0.77</td>
+      <td>1.50</td>
+      <td>1.69</td>
+      <td>0.48</td>
+      <td>1.15</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 192 columns</p>
+</div>
 
-
-    ~/miniconda3/lib/python3.8/site-packages/anndata/_core/anndata.py in __init__(self, X, obs, var, uns, obsm, varm, layers, raw, dtype, shape, filename, filemode, asview, obsp, varp, oidx, vidx)
-        306             self._init_as_view(X, oidx, vidx)
-        307         else:
-    --> 308             self._init_as_actual(
-        309                 X=X,
-        310                 obs=obs,
-
-
-    ~/miniconda3/lib/python3.8/site-packages/anndata/_core/anndata.py in _init_as_actual(self, X, obs, var, uns, obsm, varm, varp, obsp, raw, layers, dtype, shape, filename, filemode)
-        502                 attr.index = idx
-        503             elif not idx.equals(attr.index):
-    --> 504                 raise ValueError(f"Index of {attr_name} must match {x_name} of X.")
-        505 
-        506         # unstructured annotations
-
-
-    ValueError: Index of obs must match index of X.
 
 
 ## Pre-processing workflow
@@ -113,15 +262,15 @@ pyWGCNA_5xFAD.findModules()
     [96mpickSoftThreshold: calculating connectivity for given powers...[0m
     will use block size  1876
         Power  SFT.R.sq     slope truncated R.sq      mean(k)    median(k)  \
-    0       1  0.368857 -0.481613       0.701585  2444.750756  2260.416614   
-    1       2    0.7253  -0.99165       0.886361   840.665489   673.081241   
-    2       3  0.791986 -1.194264       0.946969   385.685335   258.451265   
-    3       4  0.835392   -1.3419       0.968446   207.404152   113.456087   
+    0       1  0.368857 -0.481613       0.701585  2444.750755  2260.416617   
+    1       2    0.7253  -0.99165       0.886361   840.665489   673.081242   
+    2       3  0.791986 -1.194264       0.946969   385.685335   258.451266   
+    3       4  0.835392   -1.3419       0.968446   207.404152   113.456084   
     4       5  0.853842 -1.472183       0.973346   123.232581    54.784481   
-    5       6  0.870673 -1.553348       0.979584    78.455923     28.47124   
+    5       6  0.870673 -1.553348       0.979584    78.455923    28.471239   
     6       7  0.886736 -1.600869       0.986635    52.572016    15.594822   
     7       8  0.896672 -1.639343       0.992373     36.65884     9.454046   
-    8       9  0.903531 -1.677747       0.994643    26.397061     6.024431   
+    8       9  0.903531 -1.677747       0.994643    26.397061      6.02443   
     9      10  0.906045 -1.706474       0.995895    19.521431     3.975959   
     10     11  0.905582 -1.731076       0.994806    14.767291     2.623921   
     11     13  0.914482 -1.751347       0.997466     8.941254     1.205108   
@@ -130,21 +279,21 @@ pyWGCNA_5xFAD.findModules()
     14     19  0.907649 -1.774186       0.989457     2.766824     0.135454   
     
              max(k)  
-    0   5665.102661  
-    1   3009.058821  
-    2   1916.810605  
-    3   1332.762771  
-    4    984.036824  
-    5    752.959999  
-    6    591.514192  
-    7    475.817182  
-    8    389.237531  
-    9    322.823838  
-    10   270.867416  
-    11   196.222414  
-    12   146.575349  
-    13   112.189052  
-    14    87.594344  
+    0   5665.102677  
+    1   3009.058817  
+    2   1916.810604  
+    3   1332.762767  
+    4     984.03682  
+    5    752.959995  
+    6    591.514189  
+    7    475.817179  
+    8    389.237529  
+    9    322.823835  
+    10   270.867414  
+    11   196.222412  
+    12   146.575347  
+    13   112.189051  
+    14    87.594343  
     [92mSelected power to have scale free network is 9.[0m
     [96mcalculating adjacency matrix ...[0m
     	Done..
@@ -219,7 +368,7 @@ You also can select which data Trait in which order you wish to show in module e
 
 ```python
 pyWGCNA_5xFAD.updateMetadata(path='5xFAD_paper/metaData', 
-                            sep='\t')
+                             sep='\t')
 # add color for metadata
 pyWGCNA_5xFAD.setMetadataColor('Sex', {'Female': 'green',
                                        'Male': 'yellow'})
@@ -233,10 +382,8 @@ pyWGCNA_5xFAD.setMetadataColor('Tissue', {'Hippocampus': 'red',
                                           'Cortex': 'blue'})
 
 geneList = PyWGCNA.getGeneList(dataset='mmusculus_gene_ensembl',
-                               attributes=['ensembl_transcript_id', 
-                                           'mgi_symbol', 
-                                           'ensembl_gene_id', 
-                                           'ensembl_peptide_id'])
+                               attributes=['ensembl_gene_id', 
+                                           'external_gene_name'])
 
 
 pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
@@ -246,20 +393,19 @@ pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
     [96mCalculating module trait relationship ...[0m
     	Done..
     
-    [96mAdding genes for each modules ...[0m
-    	Done..
-    
-    [96mAdding gene name to gene module lists...[0m
+    [96mUpdating gene information based on given gene list ...[0m
     	Done..
     
     [96mplotting module heatmap eigengene...[0m
     	Done..
     
-    [96mplotting Go term for each module...[0m
+    [96mdoing Go term analysis for each module...[0m
+    [93mGo_term directory does not exist!
+    Creating Go_term directory![0m
 
 
-    2022-03-07 02:02:36,395 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
-    2022-03-07 02:02:58,942 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-03-15 00:55:28,811 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-03-15 00:55:50,231 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
 
 
     	Done..
