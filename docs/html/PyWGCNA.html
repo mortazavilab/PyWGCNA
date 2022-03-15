@@ -178,15 +178,17 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.geneExp.GeneExp.updateGeneInfo">
-<span class="sig-name descname"><span class="pre">updateGeneInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geneInfo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateGeneInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateGeneInfo" title="Permalink to this definition"></a></dt>
-<dd><p>add/update genes info in geneExp anndata</p>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">updateGeneInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneInfo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gene'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateGeneInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateGeneInfo" title="Permalink to this definition"></a></dt>
+<dd><p>add/update genes info in expr anndata</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> (<em>anndata</em>) – expression data</p></li>
 <li><p><strong>geneInfo</strong> (<em>pandas dataframe</em>) – gene information table you want to add to your data</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – path of geneInfo</p></li>
 <li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in path properly</p></li>
 <li><p><strong>order</strong> (<em>bool</em>) – if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)</p></li>
+<li><p><strong>level</strong> (<em>str</em>) – indicated the expression data is at gene level or transcript level</p></li>
 </ul>
 </dd>
 </dl>
@@ -194,11 +196,12 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.geneExp.GeneExp.updateMetadata">
-<span class="sig-name descname"><span class="pre">updateMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metaData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateMetadata" title="Permalink to this definition"></a></dt>
-<dd><p>add/update metadata in geneExp anndata</p>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">updateMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaData</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/geneExp.html#GeneExp.updateMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.geneExp.GeneExp.updateMetadata" title="Permalink to this definition"></a></dt>
+<dd><p>add/update metadata in expr anndata</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> (<em>anndata</em>) – expression data</p></li>
 <li><p><strong>metaData</strong> (<em>pandas dataframe</em>) – Sample information table you want to add to your data</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – path of metaData</p></li>
 <li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in path properly</p></li>
@@ -254,8 +257,8 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.getGeneList">
-<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition"></a></dt>
-<dd><p>get dictionary that map gene ensembl id to gene name from biomart</p>
+<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition"></a></dt>
+<dd><p>get table that map gene ensembl id to gene name from biomart</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -266,6 +269,28 @@ you can find more information here: <a class="reference external" href="https://
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>table extracted from biomart related to the datasets including information from attributes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas dataframe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyWGCNA.utils.getGeneListGOid">
+<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneListGOid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name',</span> <span class="pre">'go_id']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Goid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GO:0003700'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneListGOid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneListGOid" title="Permalink to this definition"></a></dt>
+<dd><p>get table that find gene id and gene name to specific Go term from biomart</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>string</em>) – name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
+you can find more information here: <a class="reference external" href="https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset">https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</a></p></li>
+<li><p><strong>attributes</strong> (<em>list</em>) – List the types of data we want</p></li>
+<li><p><strong>Goid</strong> (<em>list</em><em> or </em><em>str</em>) – GO term id you would like to get genes from them</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>table extracted from biomart related to the datasets including information from attributes with filtering</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas dataframe</p>
@@ -603,11 +628,14 @@ you can find more information here: <a class="reference external" href="https://
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.findGoTerm">
-<span class="sig-name descname"><span class="pre">findGoTerm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moduleName</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.findGoTerm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.findGoTerm" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">findGoTerm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moduleName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GoSets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['GO_Biological_Process_2021']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.findGoTerm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.findGoTerm" title="Permalink to this definition"></a></dt>
 <dd><p>find and plot gene ontology(GO) for given module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>moduleName</strong> (<em>str</em>) – module name</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moduleName</strong> (<em>str</em>) – module name</p></li>
+<li><p><strong>GoSets</strong> (<em>list of str</em>) – sets of datasets of GO term you want to consider</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1074,6 +1102,38 @@ you can find more information here: <a class="reference external" href="https://
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.updateDatTraits">
 <span class="sig-name descname"><span class="pre">updateDatTraits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.updateDatTraits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.updateDatTraits" title="Permalink to this definition"></a></dt>
 <dd><p>update data trait module base on samples</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.updateGeneInfo">
+<span class="sig-name descname"><span class="pre">updateGeneInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geneInfo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gene'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.updateGeneInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.updateGeneInfo" title="Permalink to this definition"></a></dt>
+<dd><p>add/update genes info in datExpr and geneExpr anndata</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geneInfo</strong> (<em>pandas dataframe</em>) – gene information table you want to add to your data</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path of geneInfo</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in path properly</p></li>
+<li><p><strong>order</strong> (<em>bool</em>) – if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)</p></li>
+<li><p><strong>level</strong> (<em>str</em>) – indicated the expression data is at gene level or transcript level</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.updateMetadata">
+<span class="sig-name descname"><span class="pre">updateMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metaData</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.updateMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.updateMetadata" title="Permalink to this definition"></a></dt>
+<dd><p>add/update metadata in datExpr and geneExpr anndata</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metaData</strong> (<em>pandas dataframe</em>) – Sample information table you want to add to your data</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path of metaData</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in path properly</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
