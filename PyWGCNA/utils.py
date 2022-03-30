@@ -79,7 +79,7 @@ def compareSingleCell(WGCNA, sc):
 
 
 def getGeneList(dataset='mmusculus_gene_ensembl',
-                attributes=['ensembl_gene_id', 'external_gene_name']):
+                attributes=['ensembl_gene_id', 'external_gene_name', 'gene_biotype']):
     """
     get table that map gene ensembl id to gene name from biomart
     
@@ -115,7 +115,7 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
 
 def getGeneListGOid(dataset='mmusculus_gene_ensembl',
                     attributes=['ensembl_gene_id', 'external_gene_name', 'go_id'],
-                    Goid='GO:0003700'):
+                    Goid='GO:0003700', combine=False):
     """
     get table that find gene id and gene name to specific Go term from biomart
 
@@ -127,6 +127,8 @@ def getGeneListGOid(dataset='mmusculus_gene_ensembl',
     :type attributes: list
     :param Goid: GO term id you would like to get genes from them
     :type Goid: list or str
+    :param combine: indicate if you want to remove multiple GO term accession and only map it to the given Go id (default=False)
+    :type combine: bool
 
     :return: table extracted from biomart related to the datasets including information from attributes with filtering
     :rtype: pandas dataframe
@@ -143,17 +145,16 @@ def getGeneListGOid(dataset='mmusculus_gene_ensembl',
             'go': [Goid]
         },
         'attributes': attributes
-    }, header=1)
+    })
     data = response.raw.data.decode('ascii')
 
     geneInfo = pd.DataFrame(columns=attributes)
     # Store the data in a dict
     for line in data.splitlines():
         line = line.split('\t')
-        dict = {attributes[0]: line[0],
-                attributes[1]: line[1],
-                attributes[2]: line[2],
-                attributes[3]: line[3]}
+        dict = {}
+        for i in range(len(attributes)):
+            dict[attributes[i]] = line[i]
         geneInfo = geneInfo.append(dict, ignore_index=True)
 
     return geneInfo

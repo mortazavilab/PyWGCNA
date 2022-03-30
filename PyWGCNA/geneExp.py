@@ -106,9 +106,15 @@ class GeneExp:
             if level == 'transcript':
                 name = 'ensembl_transcript_id'
                 replace = 'transcript_id'
-            geneInfo.rename(columns={'external_gene_name': 'gene_name', name: replace}, inplace=True)
+            if 'external_gene_name' in geneInfo.columns:
+                geneInfo.rename(columns={'external_gene_name': 'gene_name', name: replace}, inplace=True)
+            else:
+                geneInfo.rename(columns={name: replace}, inplace=True)
             expr.obs.gene_id = expr.obs.gene_id.str.split('\\.', expand=True)[0]
             expr.obs.index.name = None
+            rmv = [x for x in geneInfo.columns if x in expr.obs.columns]
+            rmv.remove(replace)
+            expr.obs.drop(rmv, axis=1, inplace=True)
             expr.obs = expr.obs.merge(geneInfo, on=replace, how='left')
             expr.obs.index = expr.obs[replace]
         return expr

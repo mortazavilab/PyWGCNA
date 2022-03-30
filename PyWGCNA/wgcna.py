@@ -21,6 +21,7 @@ import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 import gseapy as gp
 from gseapy.plot import dotplot
+from pyvis.network import Network
 
 from PyWGCNA.geneExp import *
 
@@ -35,7 +36,7 @@ plt.rcParams["axes.linewidth"] = 1
 # public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
 adjacencyTypes = ["unsigned", "signed", "signed hybrid"]
-TOMTypes = ["NA", "unsigned", "signed"]
+TOMTypes = ["unsigned", "signed"]
 TOMDenoms = ["min", "mean"]
 
 # bcolors
@@ -99,7 +100,9 @@ class WGCNA(GeneExp):
     :param MEDissThres:  diss similarity threshold (default: 0.2)
     :type MEDissThres: float
     :param datME:
-    :type datME: ndarray
+    :type datME: pandas dataframe
+    :param signedKME:(signed) eigengene-based connectivity (module membership)
+    :type signedKME: pandas dataframe
     :param moduleTraitCor: correlation between each module and metadata
     :type moduleTraitCor: pandas dataframe
     :param moduleTraitPvalue: p-value of correlation between each module and metadata
@@ -157,6 +160,7 @@ class WGCNA(GeneExp):
         self.MEDissThres = MEDissThres
 
         self.datME = None
+        self.signedKME = None
 
         self.moduleTraitCor = None
         self.moduleTraitPvalue = None
@@ -183,10 +187,12 @@ class WGCNA(GeneExp):
         if not allOK:
             # Optionally, print the gene and sample names that were removed:
             if np.count_nonzero(goodGenes) > 0:
-                print(f"{OKGREEN} {np.size(goodGenes) - np.count_nonzero(goodGenes)} gene(s) detected as an outlier!{ENDC}")
+                print(
+                    f"{OKGREEN} {np.size(goodGenes) - np.count_nonzero(goodGenes)} gene(s) detected as an outlier!{ENDC}")
                 print(f"{OKGREEN}Removing genes: {self.datExpr.obs.index[not goodGenes].values}{ENDC}")
             if np.count_nonzero(goodSamples) > 0:
-                print(f"{OKGREEN} {np.size(goodSamples) - np.count_nonzero(goodSamples)} sample(s) detected as an outlier!{ENDC}")
+                print(
+                    f"{OKGREEN} {np.size(goodSamples) - np.count_nonzero(goodSamples)} sample(s) detected as an outlier!{ENDC}")
                 print(f"{OKGREEN}Removing samples: {self.datExpr.obs.columns[not goodSamples].values}{ENDC}")
             # Remove the offending genes and samples from the data:
             self.datExpr.X = self.datExpr.X.loc[goodGenes, goodSamples]
@@ -194,7 +200,7 @@ class WGCNA(GeneExp):
         # Clustering
         sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df().T), method="average")
 
-        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1]/20)), 10))
+        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1] / 20)), 10))
         dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().T.index, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
@@ -301,7 +307,8 @@ class WGCNA(GeneExp):
         self.datExpr.var['moduleColors'] = merge['colors']
         # Construct numerical labels corresponding to the colors
         colorOrder = np.unique(self.datExpr.var['moduleColors']).tolist()
-        self.datExpr.var['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in self.datExpr.var['moduleColors']]
+        self.datExpr.var['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in
+                                            self.datExpr.var['moduleColors']]
         # Eigengenes of the new merged modules:
         self.MEs = merge['newMEs']
 
@@ -392,12 +399,13 @@ class WGCNA(GeneExp):
             for module in modules:
                 self.plotModuleEigenGene(module, metadata)
             print("\tDone..\n")
-            
+
         if self.save:
             print(f"{OKCYAN}doing Go term analysis for each module...{ENDC}")
             modules = np.unique(self.datExpr.var['moduleColors']).tolist()
             if 'gene_name' not in self.datExpr.var.columns:
-                print(f"{WARNING}\tgene name didn't found in gene information!\n\t Go term analysis can not be done{ENDC}")
+                print(
+                    f"{WARNING}\tgene name didn't found in gene information!\n\t Go term analysis can not be done{ENDC}")
             else:
                 for module in modules:
                     self.findGoTerm(module)
@@ -701,7 +709,8 @@ class WGCNA(GeneExp):
 
     # Call the network topology analysis function
     @staticmethod
-    def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, MeanCut=100, powerVector=None, nBreaks=10,
+    def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, MeanCut=100, powerVector=None,
+                          nBreaks=10,
                           blockSize=None, corOptions=None, networkType="unsigned", moreNetworkConcepts=False,
                           gcInterval=None):
         """
@@ -1057,8 +1066,6 @@ class WGCNA(GeneExp):
     def TomSimilarityFromAdj(adjMat, TOMDenom, TOMType):
         # Prepare adjacency
         np.fill_diagonal(adjMat, 0)
-        # Prepare TOM
-        tom = np.zeros_like(adjMat)
         # Compute TOM
         L = np.matmul(adjMat, adjMat)
         ki = adjMat.sum(axis=1)
@@ -2566,7 +2573,8 @@ class WGCNA(GeneExp):
                 TreeBranches = pd.DataFrame(TreeBranches, index=ConsDiss.index).T
                 for branch in range(nBranches):
                     if NumberOnBranch[branch] > 1:
-                        ModulesOnThisBranch = TreeBranches.columns[np.where(TreeBranches == UniqueBranches[branch])[1].tolist()]
+                        ModulesOnThisBranch = TreeBranches.columns[
+                            np.where(TreeBranches == UniqueBranches[branch])[1].tolist()]
                         ColorsOnThisBranch = [x[2:] for x in ModulesOnThisBranch]
                         if all(isinstance(x, int) for x in origColors):
                             ColorsOnThisBranch = [int(x) for x in ColorsOnThisBranch]
@@ -2803,7 +2811,7 @@ class WGCNA(GeneExp):
             axs[1, 0].set_ylabel('eigengeneExp')
             axs[1, 0].set_facecolor('white')
 
-            sns.heatmap(heatmap, cmap="RdBu",
+            sns.heatmap(heatmap, cmap="Reds",
                         cbar=False,  # cbar_ax=axs[2,1],
                         yticklabels=False, xticklabels=False,
                         ax=axs[2, 0])
@@ -2876,3 +2884,218 @@ class WGCNA(GeneExp):
 
         self.geneExpr = GeneExp.updateMetadata(self.geneExpr, metaData, path, sep)
         self.datExpr = GeneExp.updateMetadata(self.datExpr.transpose(), metaData, path, sep).transpose()
+
+    @staticmethod
+    def softConnectivity(datExpr, corOptions=pd.DataFrame(), weights=None, type="unsigned", power=6, blockSize=1500,
+                         minNSamples=None):
+        """
+        Given expression data or a similarity, the function constructs the adjacency matrix and for each node calculates its connectivity, that is the sum of the adjacency to the other nodes.
+
+        :param datExpr: a data frame containing the expression data, with rows corresponding to samples and columns to genes.
+        :type datExpr: pandas dataframe
+        :param corOptions: character string giving further options to be passed to the correlation function.
+        :type corOptions: pandas dataframe
+        :param weights: optional observation weights for datExpr to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.
+        :type weights: pandas dataframe
+        :param type: network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid".
+        :type type: str
+        :param power: soft thresholding power.
+        :type power: int
+        :param blockSize: block size in which adjacency is to be calculated. Too low (say below 100) may make the calculation inefficient, while too high may cause R to run out of physical memory and slow down the computer. Should be chosen such that an array of doubles of size (number of genes) * (block size) fits into available physical memory.
+        :type blockSize: int
+        :param minNSamples: minimum number of samples available for the calculation of adjacency for the adjacency to be considered valid. If not given, defaults to the greater of ..minNSamples (currently 4) and number of samples divided by 3. If the number of samples falls below this threshold, the connectivity of the corresponding gene will be returned as NA.
+        :type minNSamples: int
+
+        :return: A list with one entry per gene giving the connectivity of each gene in the weighted network.
+        :rtype: ndarray
+        """
+        if type == "signed":
+            power = 15
+
+        nGenes = datExpr.shape[1]
+        nSamples = datExpr.shape[0]
+
+        if blockSize * nGenes > resource.getrlimit(resource.RLIMIT_AS)[1]:
+            blockSize = int(resource.getrlimit(resource.RLIMIT_AS)[1] / nGenes)
+
+        if minNSamples is None:
+            minNSamples = max(4, nSamples / 3)
+
+        if nGenes < 10 or nSamples < minNSamples:
+            sys.exit(
+                f"Error: Something seems to be wrong. \n Make sure that the input data frame has genes as rows and "
+                f"array samples as columns.\n Alternatively, there seem to be fewer than 10 genes or fewer than "
+                f"{minNSamples} samples.")
+        if nGenes < nSamples:
+            print(
+                f"{WARNING}Warning: There are fewer genes than samples in the function softConnectivity. Maybe you "
+                f"should transpose the data?{ENDC}")
+
+        k = np.zeros((nGenes,))
+        start = 1
+        while start < nGenes:
+            end = min(start + blockSize - 1, nGenes)
+            index1 = range(start, end)
+            ad1 = WGCNA.adjacency(datExpr, weights=weights, selectCols=index1, power=power, adjacencyType=type,
+                                  corOptions=corOptions)
+            k[index1] = ad1.sum(axis=1) - 1
+            # If fewer than minNSamples contain gene expression information for a given
+            # gene, then we set its connectivity to 0.
+            NoSamplesAvailable = datExpr.iloc[:, index1].notna().sum(axis=1)
+            k[index1][NoSamplesAvailable < minNSamples] = np.nan
+            start = end + 1
+        return k
+
+    @staticmethod
+    def intramodularConnectivity(mat, colors, scaleByMax=False, index=None):
+        """
+        Calculates intramodular connectivity, i.e., connectivity of nodes to other nodes within the same module.
+
+        :param mat: adjacency which should be a square, symmetric matrix with entries between 0 and 1.
+        :type mat: ndarray
+        :param colors: module labels. A list of length ncol(adjMat) giving a module label for each gene (node) of the network.
+        :type colors: list
+        :param scaleByMax: should intramodular connectivity be scaled by the maximum IM connectivity in each module?
+        :type scaleByMax: bool
+        :param index: gene id or name of mat index
+        :type index: ndarray
+
+        :return: If input getWholeNetworkConnectivity is TRUE, a data frame with 4 columns giving the total connectivity, intramodular connectivity, extra-modular connectivity, and the difference of the intra- and extra-modular connectivities for all genes; otherwise a vector of intramodular connectivities
+        :rtype: pandas dataframe
+
+        """
+        if all(ele.isdigit() for ele in colors):
+            ignoreColors = 0
+
+        if mat.shape[0] != mat.shape[1]:
+            sys.exit("input matrix is not a square matrix.")
+
+        if mat.shape[0] != len(colors):
+            sys.exit("Dimensions of matrix (number of genes) and length of 'colors' differ.")
+
+        nNodes = len(colors)
+        colorLevels = pd.Categorical(colors).categories
+        nLevels = len(colorLevels)
+        kWithin = np.zeros((nNodes,))
+
+        np.fill_diagonal(mat, 0)
+        mat = np.nan_to_num(mat)
+        mat = pd.DataFrame(mat)
+        for i in range(nLevels):
+            rest1 = np.where(colors == colorLevels[i])[0].tolist()
+            if len(rest1) < 3:
+                kWithin[colors == colorLevels[i]] = 0
+            else:
+                kWithin[rest1] = mat.iloc[rest1, rest1].sum(axis=1)
+                if scaleByMax:
+                    kWithin[rest1] = kWithin[rest1] / max(kWithin[rest1])
+        kTotal = mat.sum(axis=1)  # apply(adjMat, 2, sum, na.rm = TRUE)
+        kOut = np.subtract(kTotal, kWithin)
+        if scaleByMax:
+            kOut = np.zeros((nNodes,))
+        kDiff = np.subtract(kWithin, kOut)
+        res = pd.DataFrame({'kTotal': kTotal, 'kWithin': kWithin, 'kOut': kOut, 'kDiff': kDiff})
+        if index is not None:
+            res.index = index
+        return res
+
+    def CalculateSignedKME(self, exprWeights=None, MEWeights=None):
+        """
+        Calculation of (signed) eigengene-based connectivity, also known as module membership.
+
+        :param exprWeights: optional weight matrix of observation weights for datExpr, of the same dimensions as datExpr
+        :type exprWeights: pandas dataframe
+        :param MEWeights: optional weight matrix of observation weights for datME, of the same dimensions as datME
+        :type MEWeights: pandas dataframe
+
+        :return: A data frame in which rows correspond to input genes and columns to module eigengenes, giving the signed eigengene-based connectivity of each gene with respect to each eigengene.
+        :rtype: pandas dataframe
+        """
+        corOptions = []
+        if self.datME.shape[0] != self.datExpr.to_df().shape[0]:
+            sys.exit("Number of samples (rows) in 'datExpr' and 'datME' must be the same.")
+        datExpr = self.datExpr.to_df()
+        datME = self.datME
+        if exprWeights is not None:
+            exprWeights = WGCNA.checkAndScaleWeights(exprWeights, datExpr, scaleByMax=False)
+        if MEWeights is not None:
+            MEWeights = WGCNA.checkAndScaleWeights(exprWeights, datME, scaleByMax=False)
+
+        varianceZeroIndicatordatExpr = sum(datExpr.var(axis=0) == 0)
+        varianceZeroIndicatordatME = sum(datME.var(axis=0) == 0)
+        if varianceZeroIndicatordatExpr > 0:
+            print(f"{WARNING}Some genes are constant. Hint: consider removing constant columns from datExpr.{ENDC}")
+        if varianceZeroIndicatordatME > 0:
+            print(f"{WARNING}Some module eigengenes are constant, which is suspicious. Hint: consider removing "
+                  f"constant columns from datME.{ENDC}")
+        if MEWeights is not None:
+            corOptions.append("weights.y = MEWeights, ")
+        if exprWeights is not None:
+            corOptions.append("weights.x = exprWeights, ")
+
+        output = np.corrcoef(datExpr.T, datME.T)
+        tmp = len(datME.columns)
+        col = ["k" + datME.columns[i] for i in range(tmp)]
+        self.signedKME = pd.DataFrame(output[0:datExpr.shape[1], datExpr.shape[1]:],
+                                      index=datExpr.columns, columns=col)
+
+    def CoexpressionModulePlot(self, module, numGenes=10, numConnections=100, minTOM=0, filterCols=None, keepCats=None):
+        """
+        plot Coexpression for given module
+
+        :param module: name of modules you like to plot
+        :type module: str
+        :param numGenes: number of genes you want to show
+        :type numGenes: int
+        :param numConnections: number of connection you want to show
+        :type numConnections: int
+        :param minTOM: minimum TOM to keep connections
+        :type minTOM: float
+
+        :return: save a html file with name of modules in figures directory
+        """
+        if self.signedKME is None:
+            print("signedKME is empty! call signedKME() to calcuate it")
+        name = 'gene_id'
+        name_biotype = 'gene_biotype'
+        if self.level == 'transcript':
+            name = 'transcript_id'
+            name_biotype = 'transcript_biotype'
+        gene_id = self.datExpr.var.loc[self.datExpr.var.moduleColors == module, :]
+        if filterCols is not None:
+            for i in range(len(filterCols)):
+                gene_id = gene_id.loc[gene_id[filterCols[i]] == keepCats[i], :]
+        gene_id = gene_id[name]
+        if len(gene_id) < numGenes:
+            numGenes = len(gene_id)
+            numConnections = numGenes * (numGenes - 1)
+        mat = self.signedKME.loc[gene_id].sort_values(["kME" + module], ascending=False)
+        mat = mat.iloc[:numGenes, :]
+
+        self.TOM.columns = self.datExpr.to_df().columns
+        self.TOM.index = self.datExpr.to_df().columns
+        adj = self.TOM.loc[mat.index, mat.index]
+        adj[adj < minTOM] = 0
+        adj = adj.where(np.triu(np.ones(adj.shape)).astype(np.bool))
+        adj = adj.where(adj.values != np.diag(adj), 0,
+                        adj.where(adj.values != np.flipud(adj).diagonal(0), 0, inplace=True))
+        adj = adj.stack().nlargest(numConnections)
+
+        net = Network()
+        gene_id = list(adj.index.get_level_values(0)) + list(adj.index.get_level_values(1))
+        gene_id = np.unique(gene_id)
+        nodes = self.datExpr.var.loc[gene_id,]
+        print(nodes)
+        title = name + ":" + nodes[name] + "\n" + name_biotype + ":" + nodes[name_biotype]
+        net.add_nodes(list(nodes[name]),
+                      title=title,
+                      label=list(nodes.gene_name),
+                      color=[module] * numGenes)
+        for i in range(numConnections):
+            if adj[i] != 0:
+                net.add_edge(adj.index.get_level_values(0)[i],
+                             adj.index.get_level_values(1)[i],
+                             weight=adj[i])
+
+        net.show(self.outputPath + '/figures/' + "_".join((module, "_".join(filterCols))) + '.html')
+
