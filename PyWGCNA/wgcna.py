@@ -379,6 +379,10 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/Module-traitRelationships.png')
         print("\tDone..\n")
 
+        print(f"{OKCYAN}Adding (signed) eigengene-based connectivity (module membership) ...{ENDC}")
+        self.CalculateSignedKME()
+        print("\tDone..\n")
+
         if geneList is not None:
             print(f"{OKCYAN}Updating gene information based on given gene list ...{ENDC}")
             self.updateGeneInfo(geneInfo=geneList, order=False, level=self.level)
@@ -398,6 +402,22 @@ class WGCNA(GeneExp):
                     sys.exit("Given order is not valid!")
             for module in modules:
                 self.plotModuleEigenGene(module, metadata)
+            print("\tDone..\n")
+
+        if self.save:
+            print(f"{OKCYAN}plotting module barplot eigengene...{ENDC}")
+            # Select module probes
+            modules = np.unique(self.datExpr.var['moduleColors']).tolist()
+            metadata = self.datExpr.obs.columns.tolist()
+            if order is None:
+                metadata.remove('sample_id')
+            else:
+                if all(item in order for item in metadata):
+                    metadata = order
+                else:
+                    sys.exit("Given order is not valid!")
+            for module in modules:
+                self.barplotModuleEigenGene(module, metadata)
             print("\tDone..\n")
 
         if self.save:
@@ -1902,8 +1922,8 @@ class WGCNA(GeneExp):
         PrinComps.columns = ["ME" + str(modlevel) for modlevel in modlevels]
         averExpr.columns = ["AE" + str(modlevel) for modlevel in modlevels]
         if expr.index is not None:
-            PrinComps.index = np.unique(expr.index)
-            averExpr.index = np.unique(expr.index)
+            PrinComps.index = expr.index
+            averExpr.index = expr.index
         for i in range(len(modlevels)):
             modulename = modlevels[i]
             restrict1 = (colors == modulename)
@@ -2811,7 +2831,8 @@ class WGCNA(GeneExp):
             axs[1, 0].set_ylabel('eigengeneExp')
             axs[1, 0].set_facecolor('white')
 
-            sns.heatmap(heatmap, cmap="Reds",
+            cmap = sns.color_palette("dark:salmon_r", as_cmap=True)
+            sns.heatmap(heatmap, cmap=cmap,
                         cbar=False,  # cbar_ax=axs[2,1],
                         yticklabels=False, xticklabels=False,
                         ax=axs[2, 0])
@@ -2819,6 +2840,34 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/ModuleHeatmapEigengene' + moduleName + '.png')
 
         return None
+
+    def barplotModuleEigenGene(self, moduleName, metadata):
+        """
+        bar plot of module eigen gene figure in given module
+
+        :param moduleName: module name
+        :type moduleName: str
+        :param metadata: list of metadata you want to be plotted
+        :type metadata: list
+        """
+        sampleInfo = self.datExpr.obs
+
+        modules = np.unique(self.datExpr.var['moduleColors']).tolist()
+        if np.all(moduleName not in modules):
+            print(f"{WARNING}Module name does not exist in {ENDC}")
+            return None
+        else:
+            ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
+            ME['sample_name'] = self.datME.index
+
+            for m in metadata:
+                df = ME.copy(deep=True)
+                df[m] = sampleInfo[m].values
+                palette = self.metadata_colors[m]
+                sns.barplot(x=m, y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1)
+                plt.tight_layout()
+                plt.savefig(self.outputPath + '/figures/' + moduleName + '_' + m + '.png')
+                plt.close()
 
     def findGoTerm(self, moduleName, GoSets=['GO_Biological_Process_2021']):
         """
