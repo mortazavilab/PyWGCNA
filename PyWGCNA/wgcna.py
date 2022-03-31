@@ -2986,7 +2986,7 @@ class WGCNA(GeneExp):
                              cutoff=0.5)
             dotplot(enr.res2d,
                     title="Gene ontology in " + moduleName + " module with " + str(
-                        (self.datExpr.var['moduleColors'] == "black").sum()) + " genes",
+                        sum(self.datExpr.var['moduleColors'] == moduleName)) + " genes",
                     cmap='viridis_r', cutoff=0.5,
                     ofname=self.outputPath + '/figures/Go_term/' + moduleName + '.pdf')
 
