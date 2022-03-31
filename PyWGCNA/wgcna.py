@@ -353,7 +353,7 @@ class WGCNA(GeneExp):
         # names
         xlabels = []
         for label in self.MEs.columns:
-            xlabels.append(label[2:].capitalize())
+            xlabels.append(label[2:].capitalize() + '(' + str(sum(pyWGCNA_5xFAD.datExpr.var['moduleColors'] == label[2:])) + ')')
         ylabels = self.datTraits.columns
 
         # Loop over data dimensions and create text annotations.
@@ -2897,10 +2897,10 @@ class WGCNA(GeneExp):
                     palette.replace(self.metadata_colors[colorBar], inplace=True)
                     palette = palette[colorBar].values
 
-                fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(26, len(metadata) * 4),
+                fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(cat.shape[0] + 2, len(metadata) * 4),
                                         sharex='col', gridspec_kw={
                         'height_ratios': [len(metadata) * 0.4, len(metadata) * 0.6],
-                        'width_ratios': [20, 3]})
+                        'width_ratios': [cat.shape[0], 3]})
 
                 gs = axs[0, 1].get_gridspec()
                 # remove the underlying axes
@@ -2910,7 +2910,7 @@ class WGCNA(GeneExp):
                 ax_legend.axis('off')
                 axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend)
 
-                ind = [i + 0.5 for i in range(cat.shape[0])]
+                ind = [i for i in range(cat.shape[0])]
                 for m in metadata:
                     handles = []
                     x = ind
@@ -2939,6 +2939,7 @@ class WGCNA(GeneExp):
                 axs[1, 0].set_xticks(np.arange(len(ind)))
                 axs[1, 0].set_xticklabels(label, rotation=90)
                 axs[1, 0].set_ylabel('eigengeneExp')
+                axs[1, 0].set_facecolor('white')
                 fig.subplots_adjust(bottom=0.3)
                 fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
                 plt.close(fig)
