@@ -257,7 +257,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.getGeneList">
-<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name',</span> <span class="pre">'gene_biotype']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition"></a></dt>
 <dd><p>get table that map gene ensembl id to gene name from biomart</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -366,12 +366,55 @@ you can find more information here: <a class="reference external" href="https://
 <li><p><strong>naColor</strong> (<em>str</em>) – color we used to identify genes we don’t find any cluster for them (default: “grey”)</p></li>
 <li><p><strong>MEs</strong> (<em>ndarray</em>) – eigengenes</p></li>
 <li><p><strong>MEDissThres</strong> (<em>float</em>) – diss similarity threshold (default: 0.2)</p></li>
-<li><p><strong>datME</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>moduleTraitCor</strong> (<em>pandas dataframe</em>) – correlation between each module and metadata</p></li>
-<li><p><strong>moduleTraitPvalue</strong> (<em>pandas dataframe</em>) – p-value of correlation between each module and metadata</p></li>
+<li><p><strong>datME</strong> (<em>pandas dataframe</em>) – </p></li>
 </ul>
 </dd>
 </dl>
+<p>:param signedKME:(signed) eigengene-based connectivity (module membership)
+:type signedKME: pandas dataframe
+:param moduleTraitCor: correlation between each module and metadata
+:type moduleTraitCor: pandas dataframe
+:param moduleTraitPvalue: p-value of correlation between each module and metadata
+:type moduleTraitPvalue: pandas dataframe</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.CalculateSignedKME">
+<span class="sig-name descname"><span class="pre">CalculateSignedKME</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exprWeights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MEWeights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.CalculateSignedKME"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.CalculateSignedKME" title="Permalink to this definition"></a></dt>
+<dd><p>Calculation of (signed) eigengene-based connectivity, also known as module membership.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exprWeights</strong> (<em>pandas dataframe</em>) – optional weight matrix of observation weights for datExpr, of the same dimensions as datExpr</p></li>
+<li><p><strong>MEWeights</strong> (<em>pandas dataframe</em>) – optional weight matrix of observation weights for datME, of the same dimensions as datME</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A data frame in which rows correspond to input genes and columns to module eigengenes, giving the signed eigengene-based connectivity of each gene with respect to each eigengene.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas dataframe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.CoexpressionModulePlot">
+<span class="sig-name descname"><span class="pre">CoexpressionModulePlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numGenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numConnections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minTOM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterCols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepCats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.CoexpressionModulePlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.CoexpressionModulePlot" title="Permalink to this definition"></a></dt>
+<dd><p>plot Coexpression for given module</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> (<em>str</em>) – name of modules you like to plot</p></li>
+<li><p><strong>numGenes</strong> (<em>int</em>) – number of genes you want to show</p></li>
+<li><p><strong>numConnections</strong> (<em>int</em>) – number of connection you want to show</p></li>
+<li><p><strong>minTOM</strong> (<em>float</em>) – minimum TOM to keep connections</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>save a html file with name of modules in figures directory</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.TOMsimilarity">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TOMsimilarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TOMType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'signed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TOMDenom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.TOMsimilarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.TOMsimilarity" title="Permalink to this definition"></a></dt>
@@ -427,6 +470,24 @@ you can find more information here: <a class="reference external" href="https://
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.analyseWGCNA">
 <span class="sig-name descname"><span class="pre">analyseWGCNA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneList</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.analyseWGCNA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.analyseWGCNA" title="Permalink to this definition"></a></dt>
 <dd><p>Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.barplotModuleEigenGene">
+<span class="sig-name descname"><span class="pre">barplotModuleEigenGene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moduleName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorBar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.barplotModuleEigenGene"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.barplotModuleEigenGene" title="Permalink to this definition"></a></dt>
+<dd><p>bar plot of module eigen gene figure in given module</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moduleName</strong> (<em>str</em>) – module name</p></li>
+<li><p><strong>metadata</strong> (<em>list</em>) – list of metadata you want to be plotted</p></li>
+<li><p><strong>combine</strong> (<em>bool</em>) – indicate if you want to combine all metadata to show them together</p></li>
+</ul>
+</dd>
+<dt class="field-even">Praram colorBar</dt>
+<dd class="field-even"><p>metadata you want to use to color bar plot with</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -829,6 +890,28 @@ you can find more information here: <a class="reference external" href="https://
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.intramodularConnectivity">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">intramodularConnectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaleByMax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.intramodularConnectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.intramodularConnectivity" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates intramodular connectivity, i.e., connectivity of nodes to other nodes within the same module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat</strong> (<em>ndarray</em>) – adjacency which should be a square, symmetric matrix with entries between 0 and 1.</p></li>
+<li><p><strong>colors</strong> (<em>list</em>) – module labels. A list of length ncol(adjMat) giving a module label for each gene (node) of the network.</p></li>
+<li><p><strong>scaleByMax</strong> (<em>bool</em>) – should intramodular connectivity be scaled by the maximum IM connectivity in each module?</p></li>
+<li><p><strong>index</strong> (<em>ndarray</em>) – gene id or name of mat index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If input getWholeNetworkConnectivity is TRUE, a data frame with 4 columns giving the total connectivity, intramodular connectivity, extra-modular connectivity, and the difference of the intra- and extra-modular connectivities for all genes; otherwise a vector of intramodular connectivities</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas dataframe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.labels2colors">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">labels2colors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zeroIsGrey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorSeq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">naColor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grey'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.labels2colors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.labels2colors" title="Permalink to this definition"></a></dt>
 <dd><p>Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.</p>
@@ -1094,6 +1177,31 @@ you can find more information here: <a class="reference external" href="https://
 <li><p><strong>col</strong> (<em>str</em>) – name of metadata</p></li>
 <li><p><strong>cmap</strong> (<em>list</em>) – color pallet</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.softConnectivity">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">softConnectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datExpr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corOptions=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type='unsigned'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power=6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blockSize=1500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minNSamples=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.softConnectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.softConnectivity" title="Permalink to this definition"></a></dt>
+<dd><p>Given expression data or a similarity, the function constructs the adjacency matrix and for each node calculates its connectivity, that is the sum of the adjacency to the other nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datExpr</strong> (<em>pandas dataframe</em>) – a data frame containing the expression data, with rows corresponding to samples and columns to genes.</p></li>
+<li><p><strong>corOptions</strong> (<em>pandas dataframe</em>) – character string giving further options to be passed to the correlation function.</p></li>
+<li><p><strong>weights</strong> (<em>pandas dataframe</em>) – optional observation weights for datExpr to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – network type. Allowed values are (unique abbreviations of) “unsigned”, “signed”, “signed hybrid”.</p></li>
+<li><p><strong>power</strong> (<em>int</em>) – soft thresholding power.</p></li>
+<li><p><strong>blockSize</strong> (<em>int</em>) – block size in which adjacency is to be calculated. Too low (say below 100) may make the calculation inefficient, while too high may cause R to run out of physical memory and slow down the computer. Should be chosen such that an array of doubles of size (number of genes) * (block size) fits into available physical memory.</p></li>
+<li><p><strong>minNSamples</strong> (<em>int</em>) – minimum number of samples available for the calculation of adjacency for the adjacency to be considered valid. If not given, defaults to the greater of ..minNSamples (currently 4) and number of samples divided by 3. If the number of samples falls below this threshold, the connectivity of the corresponding gene will be returned as NA.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list with one entry per gene giving the connectivity of each gene in the weighted network.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
 </dd></dl>

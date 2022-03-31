@@ -147,7 +147,7 @@
 
 
 <div class="viewcode-block" id="getGeneList"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.utils.getGeneList">[docs]</a><span class="k">def</span> <span class="nf">getGeneList</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">,</span>
-                <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span> <span class="s1">&#39;external_gene_name&#39;</span><span class="p">]):</span>
+                <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span> <span class="s1">&#39;external_gene_name&#39;</span><span class="p">,</span> <span class="s1">&#39;gene_biotype&#39;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get table that map gene ensembl id to gene name from biomart</span>
 <span class="sd">    </span>
@@ -211,17 +211,16 @@
             <span class="s1">&#39;go&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">Goid</span><span class="p">]</span>
         <span class="p">},</span>
         <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="n">attributes</span>
-    <span class="p">},</span> <span class="n">header</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">})</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
 
     <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
     <span class="c1"># Store the data in a dict</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">attributes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">attributes</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                <span class="n">attributes</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                <span class="n">attributes</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">]}</span>
+        <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributes</span><span class="p">)):</span>
+            <span class="nb">dict</span><span class="p">[</span><span class="n">attributes</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">geneInfo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">geneInfo</span></div>

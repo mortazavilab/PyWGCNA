@@ -383,8 +383,8 @@ pyWGCNA_5xFAD.setMetadataColor('Tissue', {'Hippocampus': 'red',
 
 geneList = PyWGCNA.getGeneList(dataset='mmusculus_gene_ensembl',
                                attributes=['ensembl_gene_id', 
-                                           'external_gene_name'])
-
+                                           'external_gene_name', 
+                                           'gene_biotype'])
 
 pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
 ```
@@ -393,19 +393,20 @@ pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
     [96mCalculating module trait relationship ...[0m
     	Done..
     
-    [96mUpdating gene information based on given gene list ...[0m
+    [96mAdding (signed) eigengene-based connectivity (module membership) ...[0m
     	Done..
     
     [96mplotting module heatmap eigengene...[0m
     	Done..
     
+    [96mplotting module barplot eigengene...[0m
+    	Done..
+    
     [96mdoing Go term analysis for each module...[0m
-    [93mGo_term directory does not exist!
-    Creating Go_term directory![0m
 
 
-    2022-03-15 00:55:28,811 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
-    2022-03-15 00:55:50,231 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-03-30 13:21:15,456 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-03-30 13:21:46,193 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
 
 
     	Done..
