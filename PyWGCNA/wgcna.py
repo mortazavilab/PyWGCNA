@@ -353,7 +353,7 @@ class WGCNA(GeneExp):
         # names
         xlabels = []
         for label in self.MEs.columns:
-            xlabels.append(label[2:].capitalize() + '(' + str(sum(pyWGCNA_5xFAD.datExpr.var['moduleColors'] == label[2:])) + ')')
+            xlabels.append(label[2:].capitalize() + '(' + str(sum(self.datExpr.var['moduleColors'] == label[2:])) + ')')
         ylabels = self.datTraits.columns
 
         # Loop over data dimensions and create text annotations.
