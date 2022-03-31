@@ -417,7 +417,7 @@ class WGCNA(GeneExp):
                 else:
                     sys.exit("Given order is not valid!")
             for module in modules:
-                self.barplotModuleEigenGene(module, metadata)
+                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1])
             print("\tDone..\n")
 
         if self.save:
@@ -2790,7 +2790,12 @@ class WGCNA(GeneExp):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            heatmap = scale(self.datExpr[:, self.datExpr.var['moduleColors'] == moduleName].to_df()).T
+            heatmap = self.datExpr[:, self.datExpr.var['moduleColors'] == moduleName].to_df()
+            heatmap = (heatmap-heatmap.min(axis=0))/(heatmap.max(axis=0)-heatmap.min(axis=0))
+            heatmap = heatmap.T
+            tmp = sns.clustermap(heatmap, col_cluster=False)
+            plt.close()
+            heatmap = heatmap.iloc[tmp.dendrogram_row.reordered_ind, :]
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
             ME['sample_name'] = self.datME.index
 
@@ -2831,7 +2836,7 @@ class WGCNA(GeneExp):
             axs[1, 0].set_ylabel('eigengeneExp')
             axs[1, 0].set_facecolor('white')
 
-            cmap = sns.color_palette("dark:salmon_r", as_cmap=True)
+            cmap = sns.color_palette("dark:red", as_cmap=True)
             sns.heatmap(heatmap, cmap=cmap,
                         cbar=False,  # cbar_ax=axs[2,1],
                         yticklabels=False, xticklabels=False,
@@ -2841,7 +2846,7 @@ class WGCNA(GeneExp):
 
         return None
 
-    def barplotModuleEigenGene(self, moduleName, metadata):
+    def barplotModuleEigenGene(self, moduleName, metadata, combine=True, colorBar=None):
         """
         bar plot of module eigen gene figure in given module
 
@@ -2849,6 +2854,10 @@ class WGCNA(GeneExp):
         :type moduleName: str
         :param metadata: list of metadata you want to be plotted
         :type metadata: list
+        :param combine: indicate if you want to combine all metadata to show them together
+        :type combine: bool
+        :praram colorBar: metadata you want to use to color bar plot with
+        :type colorBar: str
         """
         sampleInfo = self.datExpr.obs
 
@@ -2858,16 +2867,96 @@ class WGCNA(GeneExp):
             return None
         else:
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
-            ME['sample_name'] = self.datME.index
 
-            for m in metadata:
+            if combine:
                 df = ME.copy(deep=True)
-                df[m] = sampleInfo[m].values
-                palette = self.metadata_colors[m]
-                sns.barplot(x=m, y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1)
-                plt.tight_layout()
-                plt.savefig(self.outputPath + '/figures/' + moduleName + '_' + m + '.png')
-                plt.close()
+                df['all'] = ''
+                for m in metadata:
+                    df[m] = sampleInfo[m].values
+                    df['all'] = df['all'] + '_' + df[m]
+                df['all'] = df['all'].apply(lambda x: x[1:])
+                cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
+                cat[metadata] = cat['all'].str.split('_', expand=True)
+                ybar = df[['all', 'eigengeneExp']].groupby(['all']).mean()['eigengeneExp']
+                ebar = df[['all', 'eigengeneExp']].groupby(['all']).std()['eigengeneExp']
+                ybar = ybar.loc[cat['all']]
+                ebar = ebar.loc[cat['all']]
+                label = list(ybar.index)
+                dot = df[['all', 'eigengeneExp']].copy()
+                ind = {}
+                for i in range(cat.shape[0]):
+                    ind[cat.loc[i, 'all']] = cat.index[i]
+                dot.replace(ind, inplace=True)
+                xdot = dot['all']
+                ydot = dot['eigengeneExp']
+
+                if colorBar is None:
+                    palette = "lightblue"
+                else:
+                    palette = cat[[colorBar]].copy()
+                    palette.replace(self.metadata_colors[colorBar], inplace=True)
+                    palette = palette[colorBar].values
+
+                fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(26, len(metadata) * 4),
+                                        sharex='col', gridspec_kw={
+                        'height_ratios': [len(metadata) * 0.4, len(metadata) * 0.6],
+                        'width_ratios': [20, 3]})
+
+                gs = axs[0, 1].get_gridspec()
+                # remove the underlying axes
+                for ax in axs[:, 1]:
+                    ax.remove()
+                ax_legend = fig.add_subplot(gs[:, 1])
+                ax_legend.axis('off')
+                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend)
+
+                ind = [i + 0.5 for i in range(cat.shape[0])]
+                for m in metadata:
+                    handles = []
+                    x = ind
+                    y = np.repeat(3000 * metadata.index(m), len(ind))
+                    color = cat[m].values
+                    for n in list(self.metadata_colors[m].keys()):
+                        color = np.where(color == n, self.metadata_colors[m][n], color)
+                        patch = mpatches.Patch(color=self.metadata_colors[m][n], label=n)
+                        handles.append(patch)
+                    if m != colorBar:
+                        axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
+                    ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                    ax_legend.legend(title=m, handles=handles)
+                    ax_legend.axis('off')
+                    fig.add_subplot(ax_legend)
+
+                axs[0, 0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
+                axs[0, 0].set_ylim(-2000, np.max(y) + 2000)
+                axs[0, 0].grid(False)
+                axs[0, 0].axis('off')
+
+                ind = [i for i in range(cat.shape[0])]
+                axs[1, 0].bar(ind, ybar, align='center', color=palette)
+                axs[1, 0].errorbar(ind, ybar, yerr=ebar, fmt="o", color="r")
+                axs[1, 0].scatter(xdot, ydot, c='black', alpha=0.5)
+                axs[1, 0].set_xticks(np.arange(len(ind)))
+                axs[1, 0].set_xticklabels(label, rotation=90)
+                axs[1, 0].set_ylabel('eigengeneExp')
+                fig.subplots_adjust(bottom=0.3)
+                fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
+                plt.close(fig)
+
+            else:
+                fig, axs = plt.subplots(nrows=1, ncols=len(metadata), figsize=(5 * len(metadata), 5))
+
+                for i in range(len(metadata)):
+                    df = ME.copy(deep=True)
+                    df[metadata[i]] = sampleInfo[metadata[i]].values
+                    palette = self.metadata_colors[metadata[i]]
+                    bar = sns.barplot(x=metadata[i], y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1,
+                                      ax=axs[i])
+                    if i != 0:
+                        bar.set(ylabel=None)
+
+                fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
+                plt.close(fig)
 
     def findGoTerm(self, moduleName, GoSets=['GO_Biological_Process_2021']):
         """
@@ -3147,4 +3236,3 @@ class WGCNA(GeneExp):
                              weight=adj[i])
 
         net.show(self.outputPath + '/figures/' + "_".join((module, "_".join(filterCols))) + '.html')
-
