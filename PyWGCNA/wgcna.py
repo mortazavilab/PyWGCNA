@@ -298,6 +298,7 @@ class WGCNA(GeneExp):
         plt.tight_layout()
         if self.save:
             plt.savefig(self.outputPath + '/figures/eigenesgenes.png')
+        if not show:
             plt.close()
 
         # Call an automatic merging function
@@ -330,7 +331,7 @@ class WGCNA(GeneExp):
 
         return self
 
-    def analyseWGCNA(self, order=None, geneList=None):
+    def analyseWGCNA(self, order=None, geneList=None, show=True):
         """
         Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module
         """
@@ -368,13 +369,14 @@ class WGCNA(GeneExp):
         res = sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
                           vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
                           xticklabels=xlabels, yticklabels=ylabels)
-        res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=45)
+        res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=90)
         res.set_yticklabels(res.get_ymajorticklabels(), fontsize=20, fontweight="bold")
         plt.yticks(rotation=0)
         ax.set_title(f"Module-trait Relationships heatmap for {self.name}",
                      fontsize=30, fontweight="bold")
         fig.tight_layout()
-        plt.close(fig)
+        if not show:
+            plt.close(fig)
         if self.save:
             fig.savefig(self.outputPath + '/figures/Module-traitRelationships.png')
         print("\tDone..\n")
@@ -2841,7 +2843,8 @@ class WGCNA(GeneExp):
                         cbar=False,  # cbar_ax=axs[2,1],
                         yticklabels=False, xticklabels=False,
                         ax=axs[2, 0])
-            plt.close(fig)
+            if not show:
+                plt.close(fig)
             fig.savefig(self.outputPath + '/figures/ModuleHeatmapEigengene' + moduleName + '.png')
 
         return None
@@ -2942,7 +2945,8 @@ class WGCNA(GeneExp):
                 axs[1, 0].set_facecolor('white')
                 fig.subplots_adjust(bottom=0.3)
                 fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
-                plt.close(fig)
+                if not show:
+                    plt.close(fig)
 
             else:
                 fig, axs = plt.subplots(nrows=1, ncols=len(metadata), figsize=(5 * len(metadata), 5))
@@ -2957,7 +2961,8 @@ class WGCNA(GeneExp):
                         bar.set(ylabel=None)
 
                 fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
-                plt.close(fig)
+                if not show:
+                    plt.close(fig)
 
     def findGoTerm(self, moduleName, GoSets=['GO_Biological_Process_2021']):
         """
