@@ -334,6 +334,13 @@ class WGCNA(GeneExp):
     def analyseWGCNA(self, order=None, geneList=None, show=True):
         """
         Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module
+
+        :param order: indicate in which order metadata will show up in plots (should same as metadata name in anndata)
+        :type order: list
+        :param geneList: genes information you want to add (keep in mind you can not have multiple row for same gene)
+        :type geneList: pandas dataframe
+        :param show: indicate if you want to see plots in when you run your code
+        :type show: bool
         """
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
