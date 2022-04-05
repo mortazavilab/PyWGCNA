@@ -410,7 +410,7 @@ class WGCNA(GeneExp):
                 else:
                     sys.exit("Given order is not valid!")
             for module in modules:
-                self.plotModuleEigenGene(module, metadata)
+                self.plotModuleEigenGene(module, metadata, show)
             print("\tDone..\n")
 
         if self.save:
@@ -426,7 +426,7 @@ class WGCNA(GeneExp):
                 else:
                     sys.exit("Given order is not valid!")
             for module in modules:
-                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1])
+                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=show)
             print("\tDone..\n")
 
         if self.save:
@@ -2783,7 +2783,7 @@ class WGCNA(GeneExp):
             return None
         self.metadata_colors[col] = cmap
 
-    def plotModuleEigenGene(self, moduleName, metadata):
+    def plotModuleEigenGene(self, moduleName, metadata, show=True):
         """
         plot module eigen gene figure in given module
 
@@ -2791,6 +2791,8 @@ class WGCNA(GeneExp):
         :type moduleName: str
         :param metadata: list of metadata you want to be plotted
         :type metadata: list
+        :param show: indicate if you want to see plots in when you run your code
+        :type show: bool
         """
         sampleInfo = self.datExpr.obs
 
@@ -2856,7 +2858,7 @@ class WGCNA(GeneExp):
 
         return None
 
-    def barplotModuleEigenGene(self, moduleName, metadata, combine=True, colorBar=None):
+    def barplotModuleEigenGene(self, moduleName, metadata, combine=True, colorBar=None, show=True):
         """
         bar plot of module eigen gene figure in given module
 
@@ -2868,6 +2870,8 @@ class WGCNA(GeneExp):
         :type combine: bool
         :praram colorBar: metadata you want to use to color bar plot with
         :type colorBar: str
+        :param show: indicate if you want to see plots in when you run your code
+        :type show: bool
         """
         sampleInfo = self.datExpr.obs
 
@@ -3000,7 +3004,7 @@ class WGCNA(GeneExp):
                     title="Gene ontology in " + moduleName + " module with " + str(
                         sum(self.datExpr.var['moduleColors'] == moduleName)) + " genes",
                     cmap='viridis_r', cutoff=0.5,
-                    ofname=self.outputPath + '/figures/Go_term/' + moduleName + '.pdf')
+                    ofname=self.outputPath + '/figures/Go_term/' + moduleName + '.png')
 
     def updateGeneInfo(self, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
         """
