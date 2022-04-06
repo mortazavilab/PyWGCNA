@@ -235,7 +235,7 @@ class WGCNA(GeneExp):
                                                        MeanCut=self.MeanCut, powerVector=self.powers,
                                                        networkType=self.networkType)
 
-        fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
+        fig, ax = plt.subplots(ncols=2, figsize=(10, 5), facecolor='white')
         ax[0].plot(self.sft['Power'], -1 * np.sign(self.sft['slope']) * self.sft['SFT.R.sq'], 'o')
         for i in range(len(self.powers)):
             ax[0].text(self.sft.loc[i, 'Power'],
@@ -299,8 +299,6 @@ class WGCNA(GeneExp):
         plt.tight_layout()
         if self.save:
             plt.savefig(self.outputPath + '/figures/eigenesgenes.png')
-        if not show:
-            plt.close()
 
         # Call an automatic merging function
         merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
