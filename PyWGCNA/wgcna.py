@@ -410,7 +410,7 @@ class WGCNA(GeneExp):
                 else:
                     sys.exit("Given order is not valid!")
             for module in modules:
-                self.plotModuleEigenGene(module, metadata)
+                self.plotModuleEigenGene(module, metadata, show)
             print("\tDone..\n")
 
         if self.save:
@@ -2783,7 +2783,7 @@ class WGCNA(GeneExp):
             return None
         self.metadata_colors[col] = cmap
 
-    def plotModuleEigenGene(self, moduleName, metadata):
+    def plotModuleEigenGene(self, moduleName, metadata, show=True):
         """
         plot module eigen gene figure in given module
 
@@ -2791,6 +2791,8 @@ class WGCNA(GeneExp):
         :type moduleName: str
         :param metadata: list of metadata you want to be plotted
         :type metadata: list
+        :param show: indicate if you want to see plots in when you run your code
+        :type show: bool
         """
         sampleInfo = self.datExpr.obs
 
