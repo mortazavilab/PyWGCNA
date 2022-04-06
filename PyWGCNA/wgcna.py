@@ -412,7 +412,7 @@ class WGCNA(GeneExp):
                 else:
                     sys.exit("Given order is not valid!")
             for module in modules:
-                self.plotModuleEigenGene(module, metadata, show)
+                self.plotModuleEigenGene(module, metadata, show=False)
             print("\tDone..\n")
 
         if self.save:
@@ -428,7 +428,7 @@ class WGCNA(GeneExp):
                 else:
                     sys.exit("Given order is not valid!")
             for module in modules:
-                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=show)
+                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=True)
             print("\tDone..\n")
 
         if self.save:
