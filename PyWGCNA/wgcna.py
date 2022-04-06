@@ -32,6 +32,7 @@ warnings.filterwarnings("ignore")
 
 plt.rcParams["axes.edgecolor"] = "black"
 plt.rcParams["axes.linewidth"] = 1
+plt.rcParams["axes.facecolor"] = "white"
 
 # public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
@@ -200,7 +201,7 @@ class WGCNA(GeneExp):
         # Clustering
         sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df().T), method="average")
 
-        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1] / 20)), 10))
+        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1] / 20)), 10), facecolor='white')
         dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().T.index, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
@@ -288,7 +289,7 @@ class WGCNA(GeneExp):
         a = squareform(MEDiss, checks=False)
         METree = WGCNA.hclust(a, method="average")
 
-        plt.figure(figsize=(max(20, round(MEDiss.shape[1] / 20)), 10))
+        plt.figure(figsize=(max(20, round(MEDiss.shape[1] / 20)), 10), facecolor='white')
         dendrogram(METree, color_threshold=self.MEDissThres, labels=MEDiss.columns, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.MEDissThres, c='grey', lw=1, linestyle='dashed')
@@ -357,7 +358,7 @@ class WGCNA(GeneExp):
         self.moduleTraitPvalue = WGCNA.corPvalue(self.moduleTraitCor, nSamples)
 
         fig, ax = plt.subplots(figsize=(self.moduleTraitPvalue.shape[0] * 1.5,
-                                        self.moduleTraitPvalue.shape[1] * 1.5))
+                                        self.moduleTraitPvalue.shape[1] * 1.5), facecolor='white')
         # names
         xlabels = []
         for label in self.MEs.columns:
@@ -373,7 +374,6 @@ class WGCNA(GeneExp):
             .reshape(self.moduleTraitCor.T.shape)
 
         sns.set(font_scale=1.5)
-        sns.set_style("white")
         res = sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
                           vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
                           xticklabels=xlabels, yticklabels=ylabels)
@@ -382,6 +382,7 @@ class WGCNA(GeneExp):
         plt.yticks(rotation=0)
         ax.set_title(f"Module-trait Relationships heatmap for {self.name}",
                      fontsize=30, fontweight="bold")
+        ax.set_facecolor('white')
         fig.tight_layout()
         if not show:
             plt.close(fig)
