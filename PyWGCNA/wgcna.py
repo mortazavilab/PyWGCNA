@@ -138,7 +138,7 @@ class WGCNA(GeneExp):
 
         self.datExpr = self.geneExpr.copy()
 
-        self.metadata_colors = {}
+        self.metadataColors = {}
         self.datTraits = None
 
         self.networkType = networkType
@@ -405,7 +405,7 @@ class WGCNA(GeneExp):
             if order is None:
                 metadata.remove('sample_id')
             else:
-                if all(item in order for item in metadata):
+                if all(item in metadata for item in order):
                     metadata = order
                 else:
                     sys.exit("Given order is not valid!")
@@ -2781,7 +2781,7 @@ class WGCNA(GeneExp):
         if col not in self.datExpr.obs.columns.tolist():
             print(f"{WARNING}Metadata column {col} not found!{ENDC}")
             return None
-        self.metadata_colors[col] = cmap
+        self.metadataColors[col] = cmap
 
     def plotModuleEigenGene(self, moduleName, metadata, show=True):
         """
@@ -2795,6 +2795,11 @@ class WGCNA(GeneExp):
         :type show: bool
         """
         sampleInfo = self.datExpr.obs
+
+        height_ratios = []
+        for m in metadata:
+            height_ratios.append(len(list(self.metadataColors[m].keys())))
+        height_ratios.reverse()
 
         modules = np.unique(self.datExpr.var['moduleColors']).tolist()
         if np.all(moduleName not in modules):
@@ -2820,7 +2825,8 @@ class WGCNA(GeneExp):
                 ax.remove()
             ax_legend = fig.add_subplot(gs[:, 1])
             ax_legend.axis('off')
-            axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend)
+            axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend,
+                                                          height_ratios=height_ratios)
 
             ind = [i + 0.5 for i in range(ME.shape[0])]
             for m in metadata:
@@ -2828,9 +2834,9 @@ class WGCNA(GeneExp):
                 x = ind
                 y = np.repeat(3000 * metadata.index(m), len(ind))
                 color = sampleInfo[m].values
-                for n in list(self.metadata_colors[m].keys()):
-                    color = np.where(color == n, self.metadata_colors[m][n], color)
-                    patch = mpatches.Patch(color=self.metadata_colors[m][n], label=n)
+                for n in list(self.metadataColors[m].keys()):
+                    color = np.where(color == n, self.metadataColors[m][n], color)
+                    patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
                     handles.append(patch)
                 axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
                 ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
@@ -2875,6 +2881,11 @@ class WGCNA(GeneExp):
         """
         sampleInfo = self.datExpr.obs
 
+        height_ratios = []
+        for m in metadata:
+            height_ratios.append(len(list(self.metadataColors[m].keys())))
+        height_ratios.reverse()
+
         modules = np.unique(self.datExpr.var['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
@@ -2908,7 +2919,7 @@ class WGCNA(GeneExp):
                     palette = "lightblue"
                 else:
                     palette = cat[[colorBar]].copy()
-                    palette.replace(self.metadata_colors[colorBar], inplace=True)
+                    palette.replace(self.metadataColors[colorBar], inplace=True)
                     palette = palette[colorBar].values
 
                 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(cat.shape[0] + 2, len(metadata) * 4),
@@ -2922,7 +2933,8 @@ class WGCNA(GeneExp):
                     ax.remove()
                 ax_legend = fig.add_subplot(gs[:, 1])
                 ax_legend.axis('off')
-                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend)
+                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend,
+                                                              height_ratios=height_ratios)
 
                 ind = [i for i in range(cat.shape[0])]
                 for m in metadata:
@@ -2930,9 +2942,9 @@ class WGCNA(GeneExp):
                     x = ind
                     y = np.repeat(3000 * metadata.index(m), len(ind))
                     color = cat[m].values
-                    for n in list(self.metadata_colors[m].keys()):
-                        color = np.where(color == n, self.metadata_colors[m][n], color)
-                        patch = mpatches.Patch(color=self.metadata_colors[m][n], label=n)
+                    for n in list(self.metadataColors[m].keys()):
+                        color = np.where(color == n, self.metadataColors[m][n], color)
+                        patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
                         handles.append(patch)
                     if m != colorBar:
                         axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
@@ -2965,7 +2977,7 @@ class WGCNA(GeneExp):
                 for i in range(len(metadata)):
                     df = ME.copy(deep=True)
                     df[metadata[i]] = sampleInfo[metadata[i]].values
-                    palette = self.metadata_colors[metadata[i]]
+                    palette = self.metadataColors[metadata[i]]
                     bar = sns.barplot(x=metadata[i], y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1,
                                       ax=axs[i])
                     if i != 0:
