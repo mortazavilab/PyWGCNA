@@ -3037,7 +3037,7 @@ class WGCNA(GeneExp):
         self.geneExpr = GeneExp.updateGeneInfo(self.geneExpr, geneInfo, path, sep, order, level)
         self.datExpr = GeneExp.updateGeneInfo(self.datExpr.transpose(), geneInfo, path, sep, order, level).transpose()
 
-    def updateMetadata(self, metaData=None, path=None, sep=' '):
+    def updateMetadata(self, metaData=None, path=None, sep=' ', order=True):
         """
         add/update metadata in datExpr and geneExpr anndata
 
@@ -3047,6 +3047,8 @@ class WGCNA(GeneExp):
         :type path: str
         :param sep: separation symbol to use for reading data in path properly
         :type sep: str
+        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
+        :type order: bool
         """
         if path is not None:
             if not os.path.isfile(path):
@@ -3060,8 +3062,8 @@ class WGCNA(GeneExp):
 
         metaData.index = self.geneExpr.var.index
 
-        self.geneExpr = GeneExp.updateMetadata(self.geneExpr, metaData, path, sep)
-        self.datExpr = GeneExp.updateMetadata(self.datExpr.transpose(), metaData, path, sep).transpose()
+        self.geneExpr = GeneExp.updateMetadata(self.geneExpr, metaData, path, sep, order)
+        self.datExpr = GeneExp.updateMetadata(self.datExpr.transpose(), metaData, path, sep, order).transpose()
 
     @staticmethod
     def softConnectivity(datExpr, corOptions=pd.DataFrame(), weights=None, type="unsigned", power=6, blockSize=1500,
