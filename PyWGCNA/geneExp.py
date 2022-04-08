@@ -120,7 +120,7 @@ class GeneExp:
         return expr
 
     @staticmethod
-    def updateMetadata(expr, metaData=None, path=None, sep=' '):
+    def updateMetadata(expr, metaData=None, path=None, sep=' ', order=True):
         """
         add/update metadata in expr anndata
 
@@ -132,6 +132,8 @@ class GeneExp:
         :type path: str
         :param sep: separation symbol to use for reading data in path properly
         :type sep: str
+        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
+        :type order: bool
         """
         if path is not None:
             if not os.path.isfile(path):
@@ -143,8 +145,20 @@ class GeneExp:
         else:
             raise ValueError("path and metaData can not be empty at the same time!")
 
-        metaData.index = expr.var.index
-        expr.var = pd.concat([metaData, expr.var], axis=1)
-        expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
+        if order:
+            metaData.index = expr.var.index
+            expr.var = pd.concat([metaData, expr.var], axis=1)
+            expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
+        else:
+            expr.var['index'] = expr.var.index
+            if 'sample_id' not in metaData.columns:
+                metaData['sample_id'] = range(metaData.shape[0])
+
+            rmv = [x for x in metaData.columns if x in expr.var.columns]
+            rmv.remove('sample_id')
+            expr.var.drop(rmv, axis=1, inplace=True)
+            expr.var = expr.var.merge(geneInfo, on='sample_id', how='left')
+            expr.var.index = expr.var['index']
+            expr.var.drop(['index'], axis=1, inplace=True)
 
         return expr
