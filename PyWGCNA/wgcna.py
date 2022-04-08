@@ -3048,6 +3048,17 @@ class WGCNA(GeneExp):
         :param sep: separation symbol to use for reading data in path properly
         :type sep: str
         """
+        if path is not None:
+            if not os.path.isfile(path):
+                raise ValueError("path does not exist!")
+            metaData = pd.read_csv(path, sep=sep)
+        elif metaData is not None:
+            if not isinstance(metaData, pd.DataFrame):
+                raise ValueError("meta data is not pandas dataframe!")
+        else:
+            raise ValueError("path and metaData can not be empty at the same time!")
+
+        metaData.index = self.geneExpr.var.index
 
         self.geneExpr = GeneExp.updateMetadata(self.geneExpr, metaData, path, sep)
         self.datExpr = GeneExp.updateMetadata(self.datExpr.transpose(), metaData, path, sep).transpose()
