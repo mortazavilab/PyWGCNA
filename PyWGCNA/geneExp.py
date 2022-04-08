@@ -157,7 +157,7 @@ class GeneExp:
             rmv = [x for x in metaData.columns if x in expr.var.columns]
             rmv.remove('sample_id')
             expr.var.drop(rmv, axis=1, inplace=True)
-            expr.var = expr.var.merge(geneInfo, on='sample_id', how='left')
+            expr.var = expr.var.merge(metaData, on='sample_id', how='left')
             expr.var.index = expr.var['index']
             expr.var.drop(['index'], axis=1, inplace=True)
 
