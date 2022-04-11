@@ -2809,7 +2809,9 @@ class WGCNA(GeneExp):
             heatmap = self.datExpr[:, self.datExpr.var['moduleColors'] == moduleName].to_df()
             heatmap = (heatmap-heatmap.min(axis=0))/(heatmap.max(axis=0)-heatmap.min(axis=0))
             heatmap = heatmap.T
-            Z = WGCNA.hclust(pdist(heatmap), method="average")
+            a = pdist(heatmap)
+            a.fillna(0, inplace=True)
+            Z = WGCNA.hclust(a, method="average")
             # Clusterize the data
             labels = fcluster(Z, t=0.8, criterion='distance')
             # Keep the indices to sort labels
