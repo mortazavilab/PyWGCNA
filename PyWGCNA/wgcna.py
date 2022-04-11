@@ -2904,7 +2904,7 @@ class WGCNA(GeneExp):
                 df['all'] = ''
                 for m in metadata:
                     df[m] = sampleInfo[m].values
-                    df['all'] = df['all'] + '_' + df[m]
+                    df['all'] = df['all'] + '_' + str(df[m])
                 df['all'] = df['all'].apply(lambda x: x[1:])
                 cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
                 cat[metadata] = cat['all'].str.split('_', expand=True)
