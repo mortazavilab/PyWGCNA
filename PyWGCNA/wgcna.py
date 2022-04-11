@@ -2810,7 +2810,7 @@ class WGCNA(GeneExp):
             heatmap = (heatmap-heatmap.min(axis=0))/(heatmap.max(axis=0)-heatmap.min(axis=0))
             heatmap = heatmap.T
             a = pdist(heatmap)
-            a.fillna(0, inplace=True)
+            np.nan_to_num(a)
             Z = WGCNA.hclust(a, method="average")
             # Clusterize the data
             labels = fcluster(Z, t=0.8, criterion='distance')
