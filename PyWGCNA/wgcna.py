@@ -7,7 +7,7 @@ import statistics
 import sys
 import warnings
 from scipy.spatial.distance import pdist, squareform
-from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram
+from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram, fcluster
 from scipy.stats import t
 from statsmodels.formula.api import ols
 import resource
@@ -2809,9 +2809,12 @@ class WGCNA(GeneExp):
             heatmap = self.datExpr[:, self.datExpr.var['moduleColors'] == moduleName].to_df()
             heatmap = (heatmap-heatmap.min(axis=0))/(heatmap.max(axis=0)-heatmap.min(axis=0))
             heatmap = heatmap.T
-            tmp = sns.clustermap(heatmap, col_cluster=False)
-            plt.close()
-            heatmap = heatmap.iloc[tmp.dendrogram_row.reordered_ind, :]
+            Z = WGCNA.hclust(pdist(heatmap), method="average")
+            # Clusterize the data
+            labels = fcluster(Z, t=0.8, criterion='distance')
+            # Keep the indices to sort labels
+            labels_order = np.argsort(labels)
+            heatmap = heatmap.iloc[labels_order, :]
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
             ME['sample_name'] = self.datME.index
 
