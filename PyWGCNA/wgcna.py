@@ -2701,6 +2701,7 @@ class WGCNA(GeneExp):
         self.datTraits = pd.DataFrame(tmp.sample_id)
         tmp.drop(['sample_id'], axis=1, inplace=True)
         for i in range(tmp.shape[1]):
+            tmp.iloc[:, i] = tmp.iloc[:, i].astype(str)
             if len(np.unique(tmp.iloc[:, i])) == 2:
                 self.datTraits[tmp.columns[i]] = tmp.iloc[:, i]
                 org = np.unique(tmp.iloc[:, i]).tolist()
