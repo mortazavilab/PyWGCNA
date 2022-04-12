@@ -2811,7 +2811,6 @@ class WGCNA(GeneExp):
             heatmap = heatmap.T
             a = pdist(heatmap)
             np.nan_to_num(a, copy=False)
-            print(a)
             Z = WGCNA.hclust(a, method="average")
             # Clusterize the data
             labels = fcluster(Z, t=0.8, criterion='distance')
@@ -2904,7 +2903,7 @@ class WGCNA(GeneExp):
                 df['all'] = ''
                 for m in metadata:
                     df[m] = sampleInfo[m].values
-                    df['all'] = df['all'] + '_' + str(df[m])
+                    df['all'] = df['all'] + '_' + df[m].astype(str)
                 df['all'] = df['all'].apply(lambda x: x[1:])
                 cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
                 cat[metadata] = cat['all'].str.split('_', expand=True)
