@@ -355,7 +355,7 @@ class WGCNA(GeneExp):
         self.moduleTraitCor = self.moduleTraitCor.iloc[0:self.MEs.shape[1], self.MEs.shape[1]:]
         self.moduleTraitPvalue = WGCNA.corPvalue(self.moduleTraitCor, nSamples)
 
-        fig, ax = plt.subplots(figsize=(self.moduleTraitPvalue.shape[0] * 1.5,
+        fig, ax = plt.subplots(figsize=(max(20, self.moduleTraitPvalue.shape[0] * 1.5),
                                         self.moduleTraitPvalue.shape[1] * 1.5), facecolor='white')
         # names
         xlabels = []
