@@ -4,6 +4,8 @@ from scipy.stats import fisher_exact
 import matplotlib.pyplot as plt
 import pickle
 
+sns.set_style("white")
+
 
 # bcolors
 HEADER = '\033[95m'

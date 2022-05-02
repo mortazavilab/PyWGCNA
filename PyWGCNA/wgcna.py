@@ -34,6 +34,8 @@ plt.rcParams["axes.edgecolor"] = "black"
 plt.rcParams["axes.linewidth"] = 1
 plt.rcParams["axes.facecolor"] = "white"
 
+sns.set_style("white")
+
 # public values
 networkTypes = ["unsigned", "signed", "signed hybrid"]
 adjacencyTypes = ["unsigned", "signed", "signed hybrid"]

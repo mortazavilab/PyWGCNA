@@ -8,6 +8,8 @@ to external sample traits (using eigengene network methodology), and for calcula
 module membership measures. Users can also compare WGCNA from different datasets
 including single cell gene markers.
 
+You can find GitHub pages `here<https://github.com/mortazavilab/PyWGCNA>`_.
+
 .. toctree::
    :maxdepth: 2
 
