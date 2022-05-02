@@ -10,7 +10,7 @@ For this tutorial, we will be analyzing the TPM matrix of 5xFAD mouse from [MODE
 
 ## Setupping up PyWGCNA object
 
-We use the TPM matrix to create a PyWGCNA object. The object serves as a container that contains both data (like the TPM matrix) and analysis (like clustering, or visualizing results) for a Bulk RNA-seq dataset. For a technical discussion of the PyWGCNA object structure, check out our [GitHub Wiki](https://github.com/mortazavilab/PyWGCNA.wiki.git). For example, the raw TPM matrix is stored in `GeneExp` class.
+We use the TPM matrix to create a PyWGCNA object. The object serves as a container that contains expression data (i.e. TPM) and analysis (like clustering, or visualizing results) for a RNA-seq dataset. For a technical discussion of the PyWGCNA object structure, check out our [GitHub Wiki](https://github.com/mortazavilab/PyWGCNA.wiki.git). For example, the raw TPM matrix is stored in `GeneExp` class as a anndata.
 
 
 ```python
@@ -23,8 +23,6 @@ pyWGCNA_5xFAD.geneExpr.to_df().head(5)
 ```
 
     [92mSaving data to be True, checking requirements ...[0m
-    [93mFigure directory does not exist!
-    Creating figure directory![0m
 
 
 
@@ -351,6 +349,12 @@ pyWGCNA_5xFAD.findModules()
     
 
 
+
+    
+![png](Quick_Start_files/Quick_Start_5_2.png)
+    
+
+
 We also can merge two previous steps by calling `runWGCNA()` function.
 
 ## Relating modules to external information and identifying important genes
@@ -386,7 +390,7 @@ geneList = PyWGCNA.getGeneList(dataset='mmusculus_gene_ensembl',
                                            'external_gene_name', 
                                            'gene_biotype'])
 
-pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
+pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
 ```
 
     [1m[94mAnalysing WGCNA...[0m
@@ -394,6 +398,9 @@ pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
     	Done..
     
     [96mAdding (signed) eigengene-based connectivity (module membership) ...[0m
+    	Done..
+    
+    [96mUpdating gene information based on given gene list ...[0m
     	Done..
     
     [96mplotting module heatmap eigengene...[0m
@@ -405,11 +412,197 @@ pyWGCNA_5xFAD = pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
     [96mdoing Go term analysis for each module...[0m
 
 
-    2022-03-30 13:21:15,456 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
-    2022-03-30 13:21:46,193 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-05-02 10:01:28,006 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-05-02 10:02:00,172 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
 
 
     	Done..
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_3.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_4.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_5.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_6.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_7.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_8.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_9.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_10.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_11.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_12.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_13.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_14.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_15.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_16.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_17.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_18.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_19.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_20.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_21.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_22.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_23.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_24.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_25.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_26.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_27.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_28.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_29.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_30.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_31.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_32.png)
+    
+
+
+
+    
+![png](Quick_Start_files/Quick_Start_7_33.png)
     
 
 
