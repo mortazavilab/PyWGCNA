@@ -222,8 +222,6 @@ class WGCNA(GeneExp):
 
         self.datExpr = self.datExpr[index, :]
 
-        self.datExpr = self.datExpr.copy()
-
         print("\tDone pre-processing..\n")
 
     def findModules(self):
