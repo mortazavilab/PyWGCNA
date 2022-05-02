@@ -66,7 +66,7 @@ class GeneExp:
         # drop gene id columns
         expressionList = expressionList.drop([expressionList.columns[0]], axis=1)
 
-        self.geneExpr = ad.AnnData(X=expressionList, obs=geneInfo, var=sampleInfo)
+        self.geneExpr = ad.AnnData(X=expressionList, obs=sampleInfo, var=geneInfo)
 
     @staticmethod
     def updateGeneInfo(expr, geneInfo=None, path=None, sep=' ', order=True, level='gene'):

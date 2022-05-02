@@ -182,29 +182,29 @@ class WGCNA(GeneExp):
 
         # Prepare and clean data
         # Remove rows with less than 1 TPM
-        self.datExpr = self.datExpr[(self.datExpr.X > self.TPMcutoff).any(axis=1)]
+        self.datExpr = self.datExpr[(self.datExpr.X > self.TPMcutoff).any(axis=0)]
 
         # Check that all genes and samples have sufficiently low numbers of missing values.
-        goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.to_df())
+        goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.to_df().T)
         # if not okay
         if not allOK:
             # Optionally, print the gene and sample names that were removed:
             if np.count_nonzero(goodGenes) > 0:
                 print(
                     f"{OKGREEN} {np.size(goodGenes) - np.count_nonzero(goodGenes)} gene(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing genes: {self.datExpr.obs.index[not goodGenes].values}{ENDC}")
+                print(f"{OKGREEN}Removing genes: {self.datExpr.obs.columns[not goodGenes].values}{ENDC}")
             if np.count_nonzero(goodSamples) > 0:
                 print(
                     f"{OKGREEN} {np.size(goodSamples) - np.count_nonzero(goodSamples)} sample(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing samples: {self.datExpr.obs.columns[not goodSamples].values}{ENDC}")
+                print(f"{OKGREEN}Removing samples: {self.datExpr.obs.index[not goodSamples].values}{ENDC}")
             # Remove the offending genes and samples from the data:
-            self.datExpr.X = self.datExpr.X.loc[goodGenes, goodSamples]
+            self.datExpr.X = self.datExpr.X.loc[goodSamples, goodGenes]
 
         # Clustering
-        sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df().T), method="average")
+        sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df()), method="average")
 
-        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1] / 20)), 10), facecolor='white')
-        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().T.index, leaf_rotation=90,
+        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[0] / 20)), 10), facecolor='white')
+        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().index, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
         plt.title('Sample clustering to detect outliers')
@@ -217,12 +217,12 @@ class WGCNA(GeneExp):
         # Determine cluster under the line
         clust = WGCNA.cutree(sampleTree, cutHeight=self.cut)
         # clust 0 contains the samples we want to keep.
-        clust = clust.T.tolist()[0]
+        clust = clust.tolist()[0]
         index = [index for index, element in enumerate(clust) if element == 0]
 
-        self.datExpr = self.datExpr[:, index]
+        self.datExpr = self.datExpr[index, :]
 
-        self.datExpr = self.datExpr.copy().transpose()
+        self.datExpr = self.datExpr.copy()
 
         print("\tDone pre-processing..\n")
 
