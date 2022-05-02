@@ -28,7 +28,7 @@ class GeneExp:
 
     def __init__(self, species=None, level='gene',
                  anndata=None, geneExp=None,
-                 geneExpPath=None, sep=' '):
+                 geneExpPath=None, sep=','):
         self.species = species
         self.level = level
         if geneExpPath is not None:
@@ -56,14 +56,14 @@ class GeneExp:
         elif level == 'transcript':
             column = 'transcript_id'
 
-        geneInfo = pd.DataFrame(expressionList.values[:, 0], columns=[column],
-                                index=expressionList.iloc[:, 0])
+        geneInfo = pd.DataFrame(expressionList.columns[1:], columns=[column],
+                                index=expressionList.columns[1:])
 
-        sampleInfo = pd.DataFrame(range(len(expressionList.columns[1:])), columns=['sample_id'],
-                                  index=expressionList.columns[1:])
+        sampleInfo = pd.DataFrame(range(expressionList.shape[0]), columns=['sample_id'],
+                                  index=expressionList.values[:, 0])
 
-        expressionList.index = expressionList.iloc[:, 0]  # gene_id
-        # drop gene id columns
+        expressionList.index = expressionList.iloc[:, 0]  # sample_id
+        # drop sample id columns
         expressionList = expressionList.drop([expressionList.columns[0]], axis=1)
 
         self.geneExpr = ad.AnnData(X=expressionList, obs=sampleInfo, var=geneInfo)

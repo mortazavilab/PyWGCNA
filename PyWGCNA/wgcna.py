@@ -120,7 +120,7 @@ class WGCNA(GeneExp):
                  minModuleSize=50, naColor="grey", cut=float('inf'),
                  MEDissThres=0.2,
                  species=None, level='gene', anndata=None, geneExp=None,
-                 geneExpPath=None, sep=' ',
+                 geneExpPath=None, sep=',',
                  save=False, outputPath=None):
 
         super().__init__(species=species, level=level, anndata=anndata, geneExp=geneExp,
@@ -181,8 +181,8 @@ class WGCNA(GeneExp):
         print(f"{BOLD}{OKBLUE}Pre-processing...{ENDC}")
 
         # Prepare and clean data
-        # Remove rows with less than 1 TPM
-        self.datExpr = self.datExpr[(self.datExpr.X > self.TPMcutoff).any(axis=0)]
+        # Remove cols with less than 1 TPM
+        self.datExpr = self.datExpr[:, (self.datExpr.X > self.TPMcutoff).any(axis=0)]
 
         # Check that all genes and samples have sufficiently low numbers of missing values.
         goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.to_df().T)
