@@ -217,7 +217,7 @@ class WGCNA(GeneExp):
         # Determine cluster under the line
         clust = WGCNA.cutree(sampleTree, cutHeight=self.cut)
         # clust 0 contains the samples we want to keep.
-        clust = clust.tolist()[0]
+        clust = clust.T.tolist()[0]
         index = [index for index, element in enumerate(clust) if element == 0]
 
         self.datExpr = self.datExpr[index, :]
