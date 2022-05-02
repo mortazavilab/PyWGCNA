@@ -4,8 +4,6 @@ from scipy.stats import fisher_exact
 import matplotlib.pyplot as plt
 import pickle
 
-sns.set_style("white")
-
 
 # bcolors
 HEADER = '\033[95m'
@@ -215,7 +213,8 @@ class Comparison:
             grey.sort_values(by=[name2], inplace=True)
 
         fig, ax = plt.subplots(figsize=(max(7, len(np.unique(result[name1])) / 3),
-                                        max(5, len(np.unique(result[name2])) / 3)))
+                                        max(5, len(np.unique(result[name2])) / 3)),
+                               facecolor='white')
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
                              s=result['fraction(%)'].astype(float)*4,

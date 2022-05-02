@@ -442,7 +442,6 @@ class WGCNA(GeneExp):
                     self.findGoTerm(module)
             print("\tDone..\n")
 
-        return self
 
     @staticmethod
     def replaceMissing(x, replaceWith):
