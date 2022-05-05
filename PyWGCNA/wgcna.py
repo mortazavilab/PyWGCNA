@@ -141,7 +141,6 @@ class WGCNA(GeneExp):
         self.datExpr = self.geneExpr.copy()
 
         self.metadataColors = {}
-        self.datTraits = None
 
         self.networkType = networkType
 
@@ -343,14 +342,14 @@ class WGCNA(GeneExp):
         """
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
-        self.updateDatTraits()
+        datTraits = self.getDatTraits()
 
         print(f"{OKCYAN}Calculating module trait relationship ...{ENDC}")
         # Define numbers of genes and samples
         nGenes = self.datExpr.to_df().shape[1]
         nSamples = self.datExpr.to_df().shape[0]
-        names = np.concatenate((self.MEs.columns, self.datTraits.columns))
-        self.moduleTraitCor = pd.DataFrame(np.corrcoef(self.MEs.T, self.datTraits.T),
+        names = np.concatenate((self.MEs.columns, datTraits.columns))
+        self.moduleTraitCor = pd.DataFrame(np.corrcoef(self.MEs.T, datTraits.T),
                                            index=names, columns=names)
         self.moduleTraitCor = self.moduleTraitCor.iloc[0:self.MEs.shape[1], self.MEs.shape[1]:]
         self.moduleTraitPvalue = WGCNA.corPvalue(self.moduleTraitCor, nSamples)
@@ -361,7 +360,7 @@ class WGCNA(GeneExp):
         xlabels = []
         for label in self.MEs.columns:
             xlabels.append(label[2:].capitalize() + '(' + str(sum(self.datExpr.var['moduleColors'] == label[2:])) + ')')
-        ylabels = self.datTraits.columns
+        ylabels = datTraits.columns
 
         # Loop over data dimensions and create text annotations.
         tmp_cor = self.moduleTraitCor.T.round(decimals=2)
@@ -2691,31 +2690,35 @@ class WGCNA(GeneExp):
         pickle.dump(self, picklefile)
         picklefile.close()
 
-    def updateDatTraits(self):
+    def getDatTraits(self):
         """
-        update data trait module base on samples
+        get data trait module base on samples information
+
+        :return: a dataframe contains information in suitable format for plotting module trait relationship heatmap
+        :rtype: pandas dataframe
         """
-        index = self.geneExpr.var.index.isin(self.datExpr.to_df().index)
-        tmp = self.geneExpr.var[index]
-        self.datTraits = pd.DataFrame(tmp.sample_id)
+        tmp = self.datExpr.obs.copy()
+        datTraits = pd.DataFrame(tmp.sample_id)
         tmp.drop(['sample_id'], axis=1, inplace=True)
         for i in range(tmp.shape[1]):
             tmp.iloc[:, i] = tmp.iloc[:, i].astype(str)
             if len(np.unique(tmp.iloc[:, i])) == 2:
-                self.datTraits[tmp.columns[i]] = tmp.iloc[:, i]
+                datTraits[tmp.columns[i]] = tmp.iloc[:, i]
                 org = np.unique(tmp.iloc[:, i]).tolist()
                 rep = list(range(len(org)))
-                self.datTraits.replace(to_replace=org, value=rep,
+                datTraits.replace(to_replace=org, value=rep,
                                        inplace=True)
             elif len(np.unique(tmp.iloc[:, i])) > 2:
                 for name in np.unique(tmp.iloc[:, i]):
-                    self.datTraits[name] = tmp.iloc[:, i]
+                    datTraits[name] = tmp.iloc[:, i]
                     org = np.unique(tmp.iloc[:, i])
                     rep = np.repeat(0, len(org))
                     rep[np.where(org == name)] = 1
                     org = org.tolist()
                     rep = rep.tolist()
-                    self.datTraits.replace(to_replace=org, value=rep, inplace=True)
+                    datTraits.replace(to_replace=org, value=rep, inplace=True)
+
+        return datTraits
 
     def getModuleName(self):
         """
@@ -3040,7 +3043,7 @@ class WGCNA(GeneExp):
         """
 
         self.geneExpr = GeneExp.updateGeneInfo(self.geneExpr, geneInfo, path, sep, order, level)
-        self.datExpr = GeneExp.updateGeneInfo(self.datExpr.transpose(), geneInfo, path, sep, order, level).transpose()
+        self.datExpr = GeneExp.updateGeneInfo(self.datExpr, geneInfo, path, sep, order, level)
 
     def updateMetadata(self, metaData=None, path=None, sep=' ', order=True):
         """
@@ -3055,20 +3058,9 @@ class WGCNA(GeneExp):
         :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
         :type order: bool
         """
-        if path is not None:
-            if not os.path.isfile(path):
-                raise ValueError("path does not exist!")
-            metaData = pd.read_csv(path, sep=sep)
-        elif metaData is not None:
-            if not isinstance(metaData, pd.DataFrame):
-                raise ValueError("meta data is not pandas dataframe!")
-        else:
-            raise ValueError("path and metaData can not be empty at the same time!")
-
-        metaData.index = self.geneExpr.var.index
 
         self.geneExpr = GeneExp.updateMetadata(self.geneExpr, metaData, path, sep, order)
-        self.datExpr = GeneExp.updateMetadata(self.datExpr.transpose(), metaData, path, sep, order).transpose()
+        self.datExpr = GeneExp.updateMetadata(self.datExpr, metaData, path, sep, order)
 
     @staticmethod
     def softConnectivity(datExpr, corOptions=pd.DataFrame(), weights=None, type="unsigned", power=6, blockSize=1500,
@@ -3149,9 +3141,6 @@ class WGCNA(GeneExp):
         :rtype: pandas dataframe
 
         """
-        if all(ele.isdigit() for ele in colors):
-            ignoreColors = 0
-
         if mat.shape[0] != mat.shape[1]:
             sys.exit("input matrix is not a square matrix.")
 
@@ -3241,6 +3230,11 @@ class WGCNA(GeneExp):
         """
         if self.signedKME is None:
             print("signedKME is empty! call signedKME() to calcuate it")
+
+        if not os.path.exists(self.outputPath + '/figures/network/'):
+            print(f"{WARNING}Network directory does not exist!\nCreating network directory!{ENDC}")
+            os.makedirs(self.outputPath + '/figures/network/')
+
         name = 'gene_id'
         name_biotype = 'gene_biotype'
         if self.level == 'transcript':
@@ -3250,10 +3244,18 @@ class WGCNA(GeneExp):
         if filterCols is not None:
             for i in range(len(filterCols)):
                 gene_id = gene_id.loc[gene_id[filterCols[i]] == keepCats[i], :]
+        gene_id[name] = gene_id[name].str.split('\\.', expand=True)[0]
         gene_id = gene_id[name]
         if len(gene_id) < numGenes:
             numGenes = len(gene_id)
             numConnections = numGenes * (numGenes - 1)
+
+        self.signedKME.index.name = None
+        index = self.signedKME.reset_index(inplace=False)
+        index = index['index'].str.split('\\.', expand=True)[0]
+        self.signedKME.index = index
+        self.signedKME.index.name = None
+
         mat = self.signedKME.loc[gene_id].sort_values(["kME" + module], ascending=False)
         mat = mat.iloc[:numGenes, :]
 
@@ -3270,16 +3272,16 @@ class WGCNA(GeneExp):
         gene_id = list(adj.index.get_level_values(0)) + list(adj.index.get_level_values(1))
         gene_id = np.unique(gene_id)
         nodes = self.datExpr.var.loc[gene_id,]
-        print(nodes)
         title = name + ":" + nodes[name] + "\n" + name_biotype + ":" + nodes[name_biotype]
         net.add_nodes(list(nodes[name]),
                       title=title,
                       label=list(nodes.gene_name),
                       color=[module] * numGenes)
-        for i in range(numConnections):
+
+        for i in range(len(adj)):
             if adj[i] != 0:
                 net.add_edge(adj.index.get_level_values(0)[i],
                              adj.index.get_level_values(1)[i],
                              weight=adj[i])
 
-        net.show(self.outputPath + '/figures/' + "_".join((module, "_".join(filterCols))) + '.html')
+        net.show(self.outputPath + '/figures/network/' + module + '.html')

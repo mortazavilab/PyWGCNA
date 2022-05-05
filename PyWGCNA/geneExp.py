@@ -97,9 +97,9 @@ class GeneExp:
             raise ValueError("path and geneInfo can not be empty at the same time!")
 
         if order:
-            geneInfo.index = expr.obs
-            expr.obs = pd.concat([geneInfo, expr.obs], axis=1)
-            expr.obs = expr.obs.loc[:, ~expr.obs.columns.duplicated()]
+            geneInfo.index = expr.var
+            expr.var = pd.concat([geneInfo, expr.var], axis=1)
+            expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
         else:
             name = 'ensembl_gene_id'
             replace = 'gene_id'
@@ -110,13 +110,13 @@ class GeneExp:
                 geneInfo.rename(columns={'external_gene_name': 'gene_name', name: replace}, inplace=True)
             else:
                 geneInfo.rename(columns={name: replace}, inplace=True)
-            expr.obs.gene_id = expr.obs.gene_id.str.split('\\.', expand=True)[0]
-            expr.obs.index.name = None
-            rmv = [x for x in geneInfo.columns if x in expr.obs.columns]
+            expr.var.gene_id = expr.var.gene_id.str.split('\\.', expand=True)[0]
+            expr.var.index.name = None
+            rmv = [x for x in geneInfo.columns if x in expr.var.columns]
             rmv.remove(replace)
-            expr.obs.drop(rmv, axis=1, inplace=True)
-            expr.obs = expr.obs.merge(geneInfo, on=replace, how='left')
-            expr.obs.index = expr.obs[replace]
+            expr.var.drop(rmv, axis=1, inplace=True)
+            expr.var = expr.var.merge(geneInfo, on=replace, how='left')
+            expr.var.index = expr.var[replace]
         return expr
 
     @staticmethod
@@ -146,19 +146,19 @@ class GeneExp:
             raise ValueError("path and metaData can not be empty at the same time!")
 
         if order:
-            metaData.index = expr.var.index
-            expr.var = pd.concat([metaData, expr.var], axis=1)
-            expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
+            metaData.index = expr.obs.index
+            expr.obs = pd.concat([metaData, expr.obs], axis=1)
+            expr.obs = expr.obs.loc[:, ~expr.obs.columns.duplicated()]
         else:
-            expr.var['index'] = expr.var.index
+            expr.obs['index'] = expr.obs.index
             if 'sample_id' not in metaData.columns:
                 metaData['sample_id'] = range(metaData.shape[0])
 
-            rmv = [x for x in metaData.columns if x in expr.var.columns]
+            rmv = [x for x in metaData.columns if x in expr.obs.columns]
             rmv.remove('sample_id')
-            expr.var.drop(rmv, axis=1, inplace=True)
-            expr.var = expr.var.merge(metaData, on='sample_id', how='left')
-            expr.var.index = expr.var['index']
-            expr.var.drop(['index'], axis=1, inplace=True)
+            expr.obs.drop(rmv, axis=1, inplace=True)
+            expr.obs = expr.obs.merge(metaData, on='sample_id', how='left')
+            expr.obs.index = expr.obs['index']
+            expr.obs.drop(['index'], axis=1, inplace=True)
 
         return expr

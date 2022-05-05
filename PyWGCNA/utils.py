@@ -33,7 +33,7 @@ def readWGCNA(file):
     picklefile = open(file, 'rb')
     wgcna = pickle.load(picklefile)
 
-    print(f"{BOLD}{OKBLUE}Reading WGCNA done!{ENDC}")
+    print(f"{BOLD}{OKBLUE}Reading {wgcna.name} WGCNA done!{ENDC}")
     return wgcna
 
 
@@ -51,7 +51,7 @@ def compareWGCNA(WGCNA1, WGCNA2):
     :rtype: Compare class
     """
     compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
-                         geneModule1=WGCNA1.geneModules, geneModule2=WGCNA2.geneModules)
+                         geneModule1=WGCNA1.datExpr.var, geneModule2=WGCNA2.datExpr.var)
     compare.compareWGCNA()
 
     return compare
@@ -71,7 +71,7 @@ def compareSingleCell(WGCNA, sc):
     :rtype: Compare class
 
     """
-    compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.geneModules,
+    compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.datExpr.var,
                          geneMarker=sc, sc=True)
     compare.compareSingleCell()
 

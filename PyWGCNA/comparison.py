@@ -61,20 +61,22 @@ class Comparison:
         else:
             name1 = self.name1
             name2 = self.name2
-        num = len(self.geneModule1.keys()) * len(self.geneModule2.keys())
+        moduleColors1 = self.geneModule1.moduleColors.unique().tolist()
+        moduleColors2 = self.geneModule2.moduleColors.unique().tolist()
+        num = len(moduleColors1) * len(moduleColors2)
         df = pd.DataFrame(columns=[name1, name2, name1 + "_size", name2 + "_size", "number", "fraction(%)", "P_value"],
                           index=range(num))
 
         genes = []
         count = 0
-        for i in range(len(self.geneModule1.keys())):
-            node1 = self.geneModule1[list(self.geneModule1.keys())[i]].gene_id.tolist()
+        for moduleColor1 in moduleColors1:
+            node1 = self.geneModule1.loc[self.geneModule1.moduleColors == moduleColor1, 'gene_id'].tolist()
             genes = genes + node1
-            for j in range(len(self.geneModule2.keys())):
-                node2 = self.geneModule2[list(self.geneModule2.keys())[j]].gene_id.tolist()
+            for moduleColor2 in moduleColors2:
+                node2 = self.geneModule2.loc[self.geneModule2.moduleColors == moduleColor2, 'gene_id'].tolist()
 
-                df[name1][count] = list(self.geneModule1.keys())[i]
-                df[name2][count] = list(self.geneModule2.keys())[j]
+                df[name1][count] = moduleColor1
+                df[name2][count] = moduleColor2
                 df[name1 + '_size'][count] = len(node1)
                 df[name2 + '_size'][count] = len(node2)
                 num = np.intersect1d(node1, node2)
@@ -88,8 +90,8 @@ class Comparison:
         nGenes = len(genes)
 
         count = 0
-        for i in range(len(self.geneModule1.keys())):
-            for j in range(len(self.geneModule2.keys())):
+        for moduleColor1 in moduleColors1:
+            for moduleColor2 in moduleColors2:
                 table = np.array(
                     [[nGenes - df[name1 + '_size'][count] - df[name2 + '_size'][count] + df['number'][count],
                       df[name1 + '_size'][count] - df['number'][count]],
@@ -185,8 +187,11 @@ class Comparison:
         result.loc[np.where(result['fraction(%)'] == 0)[0].tolist(), 'fraction(%)'] = np.nan
         result.loc[np.where(result['fraction(%)'] == 0)[0].tolist(), 'fraction(%)'] = np.nan
 
-        result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = np.max(
-            result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) + 1
+        if np.max(result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) is np.nan:
+            result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = 100
+        else:
+            result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = np.max(
+                result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) + 1
 
         grey = result.copy(deep=True)
         result.loc[np.where(result['P_value'] > 0.01)[0].tolist(), '-log10(P_value)'] = np.nan
@@ -244,7 +249,6 @@ class Comparison:
         plt.xticks(rotation=90)
         plt.xlabel(name1 + " modules")
         plt.ylabel(name2 + " modules")
-
         plt.tight_layout()
 
         if save:
