@@ -8,7 +8,7 @@ to external sample traits (using eigengene network methodology), and for calcula
 module membership measures. Users can also compare WGCNA from different datasets
 including single cell gene markers.
 
-.. image:: docs/PyWGCNA_overview.png
+.. image:: PyWGCNA_overview.png
    :width: 600
 
 You can find GitHub pages `here<https://github.com/mortazavilab/PyWGCNA>`_.
