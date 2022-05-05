@@ -8,19 +8,28 @@ obvious outlier samples as well as genes and
 samples with excessive numbers of missing entries.
 
 * [Data Input](Data_format.md#data-input)
-    - [Gene Expression](Data_format.md#gene-expression)
-    - [Gene Information](Data_format.md#gene-information)
-    - [Sample Information](Data_format.md#sample-information)
-    - [Other parameters](Data_format.md#other-parameters)
+  * [anndata format](Data_format.md#expression-data-gene-and-sample-information-all-together-in-anndata-format)
+  * [separate format](Data_format.md#expression-data-gene-and-sample-information-separately)
+    * [Gene Expression](Data_format.md#gene-expression)
+    * [Gene Information](Data_format.md#gene-information)
+    * [Sample Information](Data_format.md#sample-information)
+    * [Other parameters](Data_format.md#other-parameters)
 * [Data cleaning and pre-processing](Data_format.md#data-cleaning-and-pre-processing)
 
 ## Data Input
+We store **raw** expression data along information in [anndata](https://anndata.readthedocs.io/en/latest/) format in `geneExpr` variable.
+you can pass your expression data, gene and sample information all together or separately:
 
-### Gene Expression
-The expression data is a table which the rows are 
-genes and columns are samples, the first column is 
-gonna be gene_id or gene name and
-first column should be sample id.
+### expression data, gene and sample information all together in anndata format
+If you already have your expression data in anndata format you can define your pyWGCNA object by passing your variable in `anndata` format. 
+keep in mind X should be expression matrix. var is gene information and obs is sample information.
+
+### expression data, gene and sample information separately
+you can pass the paths that store each information or the table contains them.
+
+#### Gene Expression
+The expression data is a table which the rows are samples and columns are genes.
+the first column is going to be sample id or sample name and first column should be gene id or gene name which both of them which should be unique.
 
 <div>
 <table border="1" class="dataframe">
@@ -52,10 +61,9 @@ first column should be sample id.
 </table>
 </div>
 
-### Gene Information
-The gene information is a table which contains 
-additional information about each genes. It should 
-have a same order as gene expression matrix. 
+#### Gene Information
+The gene information is a table which contains additional information about each genes. 
+It should have a same order as gene expression matrix. 
 
 
 <div>
@@ -82,10 +90,9 @@ have a same order as gene expression matrix.
 </table>
 </div>
 
-### Sample Information
-The sample information is a table which contains 
-additional information about each samples. It should 
-have a same order as gene expression matrix.
+#### Sample Information
+The sample information is a table which contains additional information about each sample. 
+It should have a same order as gene expression matrix.
 
 <div>
 <table border="1" class="dataframe">
@@ -127,35 +134,29 @@ have a same order as gene expression matrix.
 </div>
 
 ### Other parameters
-* **name**: name of the WGCNA we used to visualize
-data (default: 'WGCNA')
-* **save**: define whether you want to save result 
-of important steps or not (If you want to set it 
-TRUE you should have a write access on the output 
-directory)
-* **outputPath**: define where you want to save 
-your data, otherwise it will be store near the 
-code. 
-* **networkType** : Type of networks (Options: 
-"unsigned", "signed" and "signed hybrid")
+These are other parameters we suggest checking them before starting any analysis. 
+* **name**: name of the WGCNA we used to visualize data (default: `WGCNA`)
 
-* **adjacencyType**: Type of adjacency matrix 
-(Options: "unsigned", "signed" and "signed hybrid")
+* **save**: define whether you want to save result of important steps or not (If you want to set it 
+`TRUE` you should have a write access on the output directory)
 
-* **TOMType**: Type of topological overlap matrix
-(TOM) (Options: "NA", "unsigned", "signed")
+* **outputPath**: define where you want to save your data, otherwise it will be store near the code. 
 
+* **TPMcutoff**: cut off for removing genes that expressed under this number along samples
+
+* **networkType** : Type of networks (default: `signed hybrid` and Options: `unsigned`, `signed` and `signed hybrid`)
+
+* **adjacencyType**: Type of adjacency matrix (default: `signed hybrid` and Options: `unsigned`, `signed` and `signed hybrid`)
+
+
+* **TOMType**: Type of topological overlap matrix(TOM) (default: `signed` and Options: `unsigned` and `signed`)
 
 
 ## Data cleaning and pre-processing
 
-PyWGCNA checks data for genes and samples 
-with too many missing values.
-1. Remove genes without any expression more 
-than one (or you can define the number by 
-changing `TPMcutoff` value) across all samples.
-2. `goodSamplesGenes()` function to find 
-genes and samples with too many missing values.
+PyWGCNA checks data for genes and samples with too many missing values.
+1. Remove genes without any expression more than `TPMcutoff` value (default one) across all samples.
+2. `goodSamplesGenes()` function to find genes and samples with too many missing values.
 3. Cluster the samples (use [Hierarchical clustering](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy)
-from [scipy](https://scipy.org/)) to see if 
-there are any obvious outliers.
+from [scipy](https://scipy.org/)) to see if there are any obvious outliers. 
+you can define value the height by `cut` value. By default, we don't remove any sample by hierarchical clustering

@@ -77,22 +77,35 @@ samples with excessive numbers of missing entries.</p>
 <ul class="simple">
 <li><p><span class="xref myst">Data Input</span></p>
 <ul>
+<li><p><span class="xref myst">anndata format</span></p></li>
+<li><p><span class="xref myst">separate format</span></p>
+<ul>
 <li><p><span class="xref myst">Gene Expression</span></p></li>
 <li><p><span class="xref myst">Gene Information</span></p></li>
 <li><p><span class="xref myst">Sample Information</span></p></li>
 <li><p><span class="xref myst">Other parameters</span></p></li>
 </ul>
 </li>
+</ul>
+</li>
 <li><p><span class="xref myst">Data cleaning and pre-processing</span></p></li>
 </ul>
 <section id="data-input">
 <h2>Data Input<a class="headerlink" href="#data-input" title="Permalink to this headline"></a></h2>
+<p>We store <strong>raw</strong> expression data along information in <a class="reference external" href="https://anndata.readthedocs.io/en/latest/">anndata</a> format in <code class="docutils literal notranslate"><span class="pre">geneExpr</span></code> variable.
+you can pass your expression data, gene and sample information all together or separately:</p>
+<section id="expression-data-gene-and-sample-information-all-together-in-anndata-format">
+<h3>expression data, gene and sample information all together in anndata format<a class="headerlink" href="#expression-data-gene-and-sample-information-all-together-in-anndata-format" title="Permalink to this headline"></a></h3>
+<p>If you already have your expression data in anndata format you can define your pyWGCNA object by passing your variable in <code class="docutils literal notranslate"><span class="pre">anndata</span></code> format.
+keep in mind X should be expression matrix. var is gene information and obs is sample information.</p>
+</section>
+<section id="expression-data-gene-and-sample-information-separately">
+<h3>expression data, gene and sample information separately<a class="headerlink" href="#expression-data-gene-and-sample-information-separately" title="Permalink to this headline"></a></h3>
+<p>you can pass the paths that store each information or the table contains them.</p>
 <section id="gene-expression">
-<h3>Gene Expression<a class="headerlink" href="#gene-expression" title="Permalink to this headline"></a></h3>
-<p>The expression data is a table which the rows are
-genes and columns are samples, the first column is
-gonna be gene_id or gene name and
-first column should be sample id.</p>
+<h4>Gene Expression<a class="headerlink" href="#gene-expression" title="Permalink to this headline"></a></h4>
+<p>The expression data is a table which the rows are samples and columns are genes.
+the first column is going to be sample id or sample name and first column should be gene id or gene name which both of them which should be unique.</p>
 <div>
 <table border="1" class="dataframe">
   <thead>
@@ -124,10 +137,9 @@ first column should be sample id.</p>
 </div>
 </section>
 <section id="gene-information">
-<h3>Gene Information<a class="headerlink" href="#gene-information" title="Permalink to this headline"></a></h3>
-<p>The gene information is a table which contains
-additional information about each genes. It should
-have a same order as gene expression matrix.</p>
+<h4>Gene Information<a class="headerlink" href="#gene-information" title="Permalink to this headline"></a></h4>
+<p>The gene information is a table which contains additional information about each genes.
+It should have a same order as gene expression matrix.</p>
 <div>
 <table border="1" class="dataframe">
   <thead>
@@ -153,10 +165,9 @@ have a same order as gene expression matrix.</p>
 </div>
 </section>
 <section id="sample-information">
-<h3>Sample Information<a class="headerlink" href="#sample-information" title="Permalink to this headline"></a></h3>
-<p>The sample information is a table which contains
-additional information about each samples. It should
-have a same order as gene expression matrix.</p>
+<h4>Sample Information<a class="headerlink" href="#sample-information" title="Permalink to this headline"></a></h4>
+<p>The sample information is a table which contains additional information about each sample.
+It should have a same order as gene expression matrix.</p>
 <div>
 <table border="1" class="dataframe">
   <thead>
@@ -196,40 +207,31 @@ have a same order as gene expression matrix.</p>
 </table>
 </div>
 </section>
+</section>
 <section id="other-parameters">
 <h3>Other parameters<a class="headerlink" href="#other-parameters" title="Permalink to this headline"></a></h3>
+<p>These are other parameters we suggest checking them before starting any analysis.</p>
 <ul class="simple">
-<li><p><strong>name</strong>: name of the WGCNA we used to visualize
-data (default: ‘WGCNA’)</p></li>
-<li><p><strong>save</strong>: define whether you want to save result
-of important steps or not (If you want to set it
-TRUE you should have a write access on the output
-directory)</p></li>
-<li><p><strong>outputPath</strong>: define where you want to save
-your data, otherwise it will be store near the
-code.</p></li>
-<li><p><strong>networkType</strong> : Type of networks (Options:
-“unsigned”, “signed” and “signed hybrid”)</p></li>
-<li><p><strong>adjacencyType</strong>: Type of adjacency matrix
-(Options: “unsigned”, “signed” and “signed hybrid”)</p></li>
-<li><p><strong>TOMType</strong>: Type of topological overlap matrix
-(TOM) (Options: “NA”, “unsigned”, “signed”)</p></li>
+<li><p><strong>name</strong>: name of the WGCNA we used to visualize data (default: <code class="docutils literal notranslate"><span class="pre">WGCNA</span></code>)</p></li>
+<li><p><strong>save</strong>: define whether you want to save result of important steps or not (If you want to set it
+<code class="docutils literal notranslate"><span class="pre">TRUE</span></code> you should have a write access on the output directory)</p></li>
+<li><p><strong>outputPath</strong>: define where you want to save your data, otherwise it will be store near the code.</p></li>
+<li><p><strong>TPMcutoff</strong>: cut off for removing genes that expressed under this number along samples</p></li>
+<li><p><strong>networkType</strong> : Type of networks (default: <code class="docutils literal notranslate"><span class="pre">signed</span> <span class="pre">hybrid</span></code> and Options: <code class="docutils literal notranslate"><span class="pre">unsigned</span></code>, <code class="docutils literal notranslate"><span class="pre">signed</span></code> and <code class="docutils literal notranslate"><span class="pre">signed</span> <span class="pre">hybrid</span></code>)</p></li>
+<li><p><strong>adjacencyType</strong>: Type of adjacency matrix (default: <code class="docutils literal notranslate"><span class="pre">signed</span> <span class="pre">hybrid</span></code> and Options: <code class="docutils literal notranslate"><span class="pre">unsigned</span></code>, <code class="docutils literal notranslate"><span class="pre">signed</span></code> and <code class="docutils literal notranslate"><span class="pre">signed</span> <span class="pre">hybrid</span></code>)</p></li>
+<li><p><strong>TOMType</strong>: Type of topological overlap matrix(TOM) (default: <code class="docutils literal notranslate"><span class="pre">signed</span></code> and Options: <code class="docutils literal notranslate"><span class="pre">unsigned</span></code> and <code class="docutils literal notranslate"><span class="pre">signed</span></code>)</p></li>
 </ul>
 </section>
 </section>
 <section id="data-cleaning-and-pre-processing">
 <h2>Data cleaning and pre-processing<a class="headerlink" href="#data-cleaning-and-pre-processing" title="Permalink to this headline"></a></h2>
-<p>PyWGCNA checks data for genes and samples
-with too many missing values.</p>
+<p>PyWGCNA checks data for genes and samples with too many missing values.</p>
 <ol class="arabic simple">
-<li><p>Remove genes without any expression more
-than one (or you can define the number by
-changing <code class="docutils literal notranslate"><span class="pre">TPMcutoff</span></code> value) across all samples.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">goodSamplesGenes()</span></code> function to find
-genes and samples with too many missing values.</p></li>
+<li><p>Remove genes without any expression more than <code class="docutils literal notranslate"><span class="pre">TPMcutoff</span></code> value (default one) across all samples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">goodSamplesGenes()</span></code> function to find genes and samples with too many missing values.</p></li>
 <li><p>Cluster the samples (use <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy">Hierarchical clustering</a>
-from <a class="reference external" href="https://scipy.org/">scipy</a>) to see if
-there are any obvious outliers.</p></li>
+from <a class="reference external" href="https://scipy.org/">scipy</a>) to see if there are any obvious outliers.
+you can define value the height by <code class="docutils literal notranslate"><span class="pre">cut</span></code> value. By default, we don’t remove any sample by hierarchical clustering</p></li>
 </ol>
 </section>
 </section>

@@ -2,7 +2,7 @@
 
 First, make sure to [install PyWGCNA](https://github.com/mortazavilab/PyWGCNA#readme).
 
-We encourage you to look at [Data input, cleaning and pre-processing] tutorial (Data%20format.md).
+I encourage you to look at [Data input, cleaning and pre-processing tutorial](Data%20format.md) before running PyWGCNA.
 
 Then, download the data from [here](https://github.com/mortazavilab/PyWGCNA/raw/fb2cdc6e4fc1d7ec20ee6e9c39930409018c09c0/tutorials/5xFAD_paper.zip) and uncompressed it.
 
@@ -15,10 +15,10 @@ We use the TPM matrix to create a PyWGCNA object. The object serves as a contain
 
 ```python
 import PyWGCNA
-geneExp = '5xFAD_paper/expressionList_sorted'
+geneExp = '5xFAD_paper/expressionList_sorted.csv'
 pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', species='mouse',
                               geneExpPath=geneExp, 
-                              sep='\t', save=True)
+                              save=True)
 pyWGCNA_5xFAD.geneExpr.to_df().head(5)
 ```
 
@@ -46,177 +46,153 @@ pyWGCNA_5xFAD.geneExpr.to_df().head(5)
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>X4mo_cortex_F_5xFADHEMI_430</th>
-      <th>X4mo_cortex_F_5xFADHEMI_431</th>
-      <th>X4mo_cortex_F_5xFADHEMI_433</th>
-      <th>X4mo_cortex_F_5xFADHEMI_434</th>
-      <th>X4mo_cortex_F_5xFADHEMI_511</th>
-      <th>X4mo_cortex_F_5xFADWT_330</th>
-      <th>X4mo_cortex_F_5xFADWT_331</th>
-      <th>X4mo_cortex_F_5xFADWT_432</th>
-      <th>X4mo_cortex_F_5xFADWT_507</th>
-      <th>X4mo_cortex_F_5xFADWT_518</th>
+      <th>ENSMUSG00000000003.15</th>
+      <th>ENSMUSG00000000028.15</th>
+      <th>ENSMUSG00000000031.16</th>
+      <th>ENSMUSG00000000037.16</th>
+      <th>ENSMUSG00000000049.11</th>
+      <th>ENSMUSG00000000056.7</th>
+      <th>ENSMUSG00000000058.6</th>
+      <th>ENSMUSG00000000078.7</th>
+      <th>ENSMUSG00000000085.16</th>
+      <th>ENSMUSG00000000088.7</th>
       <th>...</th>
-      <th>X18mo_hipp_M_5xFADHEMI_567</th>
-      <th>X18mo_hipp_M_5xFADHEMI_617</th>
-      <th>X18mo_hipp_M_5xFADHEMI_627</th>
-      <th>X18mo_hipp_M_5xFADHEMI_640</th>
-      <th>X18mo_hipp_M_5xFADHEMI_786</th>
-      <th>X18mo_hipp_M_5xFADWT_301</th>
-      <th>X18mo_hipp_M_5xFADWT_566</th>
-      <th>X18mo_hipp_M_5xFADWT_641</th>
-      <th>X18mo_hipp_M_5xFADWT_643</th>
-      <th>X18mo_hipp_M_5xFADWT_785</th>
-    </tr>
-    <tr>
-      <th>gene_id</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>ENSMUSG00000118383.1</th>
+      <th>ENSMUSG00000118384.1</th>
+      <th>ENSMUSG00000118385.1</th>
+      <th>ENSMUSG00000118386.1</th>
+      <th>ENSMUSG00000118387.1</th>
+      <th>ENSMUSG00000118388.1</th>
+      <th>ENSMUSG00000118389.1</th>
+      <th>ENSMUSG00000118390.1</th>
+      <th>ENSMUSG00000118391.1</th>
+      <th>ENSMUSG00000118392.1</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>ENSMUSG00000000003.15</th>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>...</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <th>ENSMUSG00000000028.15</th>
+      <th>X4mo_cortex_F_5xFADHEMI_430</th>
+      <td>0.0</td>
       <td>1.90</td>
-      <td>1.10</td>
-      <td>1.18</td>
-      <td>2.18</td>
-      <td>1.50</td>
-      <td>1.75</td>
-      <td>1.15</td>
-      <td>0.78</td>
-      <td>1.26</td>
-      <td>1.05</td>
+      <td>0.00</td>
+      <td>0.13</td>
+      <td>0.43</td>
+      <td>22.370001</td>
+      <td>24.240000</td>
+      <td>19.320000</td>
+      <td>33.410000</td>
+      <td>620.450012</td>
       <td>...</td>
-      <td>2.10</td>
-      <td>2.15</td>
-      <td>1.85</td>
-      <td>1.80</td>
-      <td>1.76</td>
-      <td>1.84</td>
-      <td>1.76</td>
-      <td>1.57</td>
-      <td>1.00</td>
-      <td>0.76</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.04</td>
+      <td>0.0</td>
     </tr>
     <tr>
-      <th>ENSMUSG00000000031.16</th>
-      <td>0.00</td>
+      <th>X4mo_cortex_F_5xFADHEMI_431</th>
+      <td>0.0</td>
+      <td>1.10</td>
       <td>0.06</td>
       <td>0.07</td>
-      <td>0.00</td>
-      <td>0.10</td>
-      <td>0.12</td>
-      <td>0.29</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.04</td>
-      <td>...</td>
-      <td>0.40</td>
-      <td>0.32</td>
-      <td>0.24</td>
-      <td>0.45</td>
-      <td>0.21</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.17</td>
-      <td>0.15</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <th>ENSMUSG00000000037.16</th>
-      <td>0.13</td>
-      <td>0.07</td>
-      <td>0.13</td>
-      <td>0.07</td>
-      <td>0.14</td>
-      <td>0.08</td>
-      <td>0.16</td>
-      <td>0.15</td>
-      <td>0.08</td>
-      <td>0.11</td>
-      <td>...</td>
-      <td>0.00</td>
-      <td>0.07</td>
-      <td>0.09</td>
-      <td>0.10</td>
-      <td>0.04</td>
-      <td>0.12</td>
-      <td>0.04</td>
-      <td>0.09</td>
-      <td>0.13</td>
-      <td>0.15</td>
-    </tr>
-    <tr>
-      <th>ENSMUSG00000000049.11</th>
-      <td>0.43</td>
       <td>0.18</td>
-      <td>1.90</td>
-      <td>0.31</td>
-      <td>0.53</td>
-      <td>0.44</td>
-      <td>1.92</td>
-      <td>0.40</td>
-      <td>0.88</td>
-      <td>0.37</td>
+      <td>16.990000</td>
+      <td>24.690001</td>
+      <td>23.879999</td>
+      <td>31.400000</td>
+      <td>705.729980</td>
       <td>...</td>
-      <td>3.23</td>
-      <td>0.85</td>
-      <td>0.54</td>
-      <td>0.09</td>
-      <td>0.39</td>
-      <td>0.77</td>
+      <td>0.67</td>
+      <td>0.0</td>
+      <td>0.55</td>
+      <td>0.43</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>X4mo_cortex_F_5xFADHEMI_433</th>
+      <td>0.0</td>
+      <td>1.18</td>
+      <td>0.07</td>
+      <td>0.13</td>
+      <td>1.90</td>
+      <td>20.370001</td>
+      <td>28.059999</td>
+      <td>21.330000</td>
+      <td>32.139999</td>
+      <td>699.500000</td>
+      <td>...</td>
+      <td>0.91</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.19</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.02</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>X4mo_cortex_F_5xFADHEMI_434</th>
+      <td>0.0</td>
+      <td>2.18</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.31</td>
+      <td>17.980000</td>
+      <td>21.459999</td>
+      <td>15.060000</td>
+      <td>27.600000</td>
+      <td>639.950012</td>
+      <td>...</td>
+      <td>0.11</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>X4mo_cortex_F_5xFADHEMI_511</th>
+      <td>0.0</td>
       <td>1.50</td>
-      <td>1.69</td>
-      <td>0.48</td>
-      <td>1.15</td>
+      <td>0.10</td>
+      <td>0.14</td>
+      <td>0.53</td>
+      <td>18.350000</td>
+      <td>20.180000</td>
+      <td>18.660000</td>
+      <td>26.430000</td>
+      <td>640.549988</td>
+      <td>...</td>
+      <td>0.64</td>
+      <td>0.0</td>
+      <td>1.38</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.02</td>
+      <td>0.0</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 192 columns</p>
+<p>5 rows × 55448 columns</p>
 </div>
 
 
@@ -301,6 +277,11 @@ pyWGCNA_5xFAD.findModules()
     
     [96mGoing through the merge tree...[0m
     ..cutHeight not given, setting it to 0.996  ===>  99% of the (truncated) height range in dendro.
+
+
+    Trying to set attribute `.var` of view, copying.
+
+
     	Done..
     
     [96mCalculating 34 module eigengenes in given set...[0m
@@ -345,13 +326,13 @@ pyWGCNA_5xFAD.findModules()
 
 
     
-![png](Quick_Start_files/Quick_Start_5_1.png)
+![png](Quick_Start_files/Quick_Start_5_3.png)
     
 
 
 
     
-![png](Quick_Start_files/Quick_Start_5_2.png)
+![png](Quick_Start_files/Quick_Start_5_4.png)
     
 
 
@@ -410,10 +391,12 @@ pyWGCNA_5xFAD.analyseWGCNA(geneList=geneList)
     	Done..
     
     [96mdoing Go term analysis for each module...[0m
+    [93mGo_term directory does not exist!
+    Creating Go_term directory![0m
 
 
-    2022-05-02 10:01:28,006 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
-    2022-05-02 10:02:00,172 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-05-03 15:32:54,782 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+    2022-05-03 15:33:16,098 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
 
 
     	Done..
@@ -621,9 +604,12 @@ you can also load your PyWGCNA object with `readWGCNA()` function.
 
 
 ```python
+import sys
+sys.path.insert(0, '/Users/nargesrezaie/Documents/MortazaviLab/PyWGCNA')
+
 import PyWGCNA
 pyWGCNA_5xFAD = PyWGCNA.readWGCNA("5xFAD.p")
 ```
 
-    [1m[94mReading WGCNA done![0m
+    [1m[94mReading 5xFAD WGCNA done![0m
 

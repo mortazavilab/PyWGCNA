@@ -69,17 +69,17 @@
   <section id="quick-start-initializing-adding-data-runing-and-saving-your-pywgcna">
 <h1>Quick start: initializing, adding data, runing and saving your PyWGCNA<a class="headerlink" href="#quick-start-initializing-adding-data-runing-and-saving-your-pywgcna" title="Permalink to this headline"></a></h1>
 <p>First, make sure to <a class="reference external" href="https://github.com/mortazavilab/PyWGCNA#readme">install PyWGCNA</a>.</p>
-<p>We encourage you to look at [Data input, cleaning and pre-processing] tutorial (Data%20format.md).</p>
+<p>I encourage you to look at <span class="xref myst">Data input, cleaning and pre-processing tutorial</span> before running PyWGCNA.</p>
 <p>Then, download the data from <a class="reference external" href="https://github.com/mortazavilab/PyWGCNA/raw/fb2cdc6e4fc1d7ec20ee6e9c39930409018c09c0/tutorials/5xFAD_paper.zip">here</a> and uncompressed it.</p>
 <p>For this tutorial, we will be analyzing the TPM matrix of 5xFAD mouse from <a class="reference external" href="https://www.model-ad.org/">MODEL-AD</a> portal and <a class="reference external" href="https://www.nature.com/articles/s41597-021-01054-y">this paper</a> in Scientific Data which has 5548 genes and 193 samples in four different time point.</p>
 <section id="setupping-up-pywgcna-object">
 <h2>Setupping up PyWGCNA object<a class="headerlink" href="#setupping-up-pywgcna-object" title="Permalink to this headline"></a></h2>
 <p>We use the TPM matrix to create a PyWGCNA object. The object serves as a container that contains expression data (i.e. TPM) and analysis (like clustering, or visualizing results) for a RNA-seq dataset. For a technical discussion of the PyWGCNA object structure, check out our <a class="reference external" href="https://github.com/mortazavilab/PyWGCNA.wiki.git">GitHub Wiki</a>. For example, the raw TPM matrix is stored in <code class="docutils literal notranslate"><span class="pre">GeneExp</span></code> class as a anndata.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">PyWGCNA</span>
-<span class="n">geneExp</span> <span class="o">=</span> <span class="s1">&#39;5xFAD_paper/expressionList_sorted&#39;</span>
+<span class="n">geneExp</span> <span class="o">=</span> <span class="s1">&#39;5xFAD_paper/expressionList_sorted.csv&#39;</span>
 <span class="n">pyWGCNA_5xFAD</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">WGCNA</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;5xFAD&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s1">&#39;mouse&#39;</span><span class="p">,</span>
                               <span class="n">geneExpPath</span><span class="o">=</span><span class="n">geneExp</span><span class="p">,</span> 
-                              <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                              <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">pyWGCNA_5xFAD</span><span class="o">.</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -105,177 +105,153 @@
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>X4mo_cortex_F_5xFADHEMI_430</th>
-      <th>X4mo_cortex_F_5xFADHEMI_431</th>
-      <th>X4mo_cortex_F_5xFADHEMI_433</th>
-      <th>X4mo_cortex_F_5xFADHEMI_434</th>
-      <th>X4mo_cortex_F_5xFADHEMI_511</th>
-      <th>X4mo_cortex_F_5xFADWT_330</th>
-      <th>X4mo_cortex_F_5xFADWT_331</th>
-      <th>X4mo_cortex_F_5xFADWT_432</th>
-      <th>X4mo_cortex_F_5xFADWT_507</th>
-      <th>X4mo_cortex_F_5xFADWT_518</th>
+      <th>ENSMUSG00000000003.15</th>
+      <th>ENSMUSG00000000028.15</th>
+      <th>ENSMUSG00000000031.16</th>
+      <th>ENSMUSG00000000037.16</th>
+      <th>ENSMUSG00000000049.11</th>
+      <th>ENSMUSG00000000056.7</th>
+      <th>ENSMUSG00000000058.6</th>
+      <th>ENSMUSG00000000078.7</th>
+      <th>ENSMUSG00000000085.16</th>
+      <th>ENSMUSG00000000088.7</th>
       <th>...</th>
-      <th>X18mo_hipp_M_5xFADHEMI_567</th>
-      <th>X18mo_hipp_M_5xFADHEMI_617</th>
-      <th>X18mo_hipp_M_5xFADHEMI_627</th>
-      <th>X18mo_hipp_M_5xFADHEMI_640</th>
-      <th>X18mo_hipp_M_5xFADHEMI_786</th>
-      <th>X18mo_hipp_M_5xFADWT_301</th>
-      <th>X18mo_hipp_M_5xFADWT_566</th>
-      <th>X18mo_hipp_M_5xFADWT_641</th>
-      <th>X18mo_hipp_M_5xFADWT_643</th>
-      <th>X18mo_hipp_M_5xFADWT_785</th>
-    </tr>
-    <tr>
-      <th>gene_id</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>ENSMUSG00000118383.1</th>
+      <th>ENSMUSG00000118384.1</th>
+      <th>ENSMUSG00000118385.1</th>
+      <th>ENSMUSG00000118386.1</th>
+      <th>ENSMUSG00000118387.1</th>
+      <th>ENSMUSG00000118388.1</th>
+      <th>ENSMUSG00000118389.1</th>
+      <th>ENSMUSG00000118390.1</th>
+      <th>ENSMUSG00000118391.1</th>
+      <th>ENSMUSG00000118392.1</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>ENSMUSG00000000003.15</th>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>...</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <th>ENSMUSG00000000028.15</th>
+      <th>X4mo_cortex_F_5xFADHEMI_430</th>
+      <td>0.0</td>
       <td>1.90</td>
-      <td>1.10</td>
-      <td>1.18</td>
-      <td>2.18</td>
-      <td>1.50</td>
-      <td>1.75</td>
-      <td>1.15</td>
-      <td>0.78</td>
-      <td>1.26</td>
-      <td>1.05</td>
+      <td>0.00</td>
+      <td>0.13</td>
+      <td>0.43</td>
+      <td>22.370001</td>
+      <td>24.240000</td>
+      <td>19.320000</td>
+      <td>33.410000</td>
+      <td>620.450012</td>
       <td>...</td>
-      <td>2.10</td>
-      <td>2.15</td>
-      <td>1.85</td>
-      <td>1.80</td>
-      <td>1.76</td>
-      <td>1.84</td>
-      <td>1.76</td>
-      <td>1.57</td>
-      <td>1.00</td>
-      <td>0.76</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.04</td>
+      <td>0.0</td>
     </tr>
     <tr>
-      <th>ENSMUSG00000000031.16</th>
-      <td>0.00</td>
+      <th>X4mo_cortex_F_5xFADHEMI_431</th>
+      <td>0.0</td>
+      <td>1.10</td>
       <td>0.06</td>
       <td>0.07</td>
-      <td>0.00</td>
-      <td>0.10</td>
-      <td>0.12</td>
-      <td>0.29</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.04</td>
-      <td>...</td>
-      <td>0.40</td>
-      <td>0.32</td>
-      <td>0.24</td>
-      <td>0.45</td>
-      <td>0.21</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>0.17</td>
-      <td>0.15</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <th>ENSMUSG00000000037.16</th>
-      <td>0.13</td>
-      <td>0.07</td>
-      <td>0.13</td>
-      <td>0.07</td>
-      <td>0.14</td>
-      <td>0.08</td>
-      <td>0.16</td>
-      <td>0.15</td>
-      <td>0.08</td>
-      <td>0.11</td>
-      <td>...</td>
-      <td>0.00</td>
-      <td>0.07</td>
-      <td>0.09</td>
-      <td>0.10</td>
-      <td>0.04</td>
-      <td>0.12</td>
-      <td>0.04</td>
-      <td>0.09</td>
-      <td>0.13</td>
-      <td>0.15</td>
-    </tr>
-    <tr>
-      <th>ENSMUSG00000000049.11</th>
-      <td>0.43</td>
       <td>0.18</td>
-      <td>1.90</td>
-      <td>0.31</td>
-      <td>0.53</td>
-      <td>0.44</td>
-      <td>1.92</td>
-      <td>0.40</td>
-      <td>0.88</td>
-      <td>0.37</td>
+      <td>16.990000</td>
+      <td>24.690001</td>
+      <td>23.879999</td>
+      <td>31.400000</td>
+      <td>705.729980</td>
       <td>...</td>
-      <td>3.23</td>
-      <td>0.85</td>
-      <td>0.54</td>
-      <td>0.09</td>
-      <td>0.39</td>
-      <td>0.77</td>
+      <td>0.67</td>
+      <td>0.0</td>
+      <td>0.55</td>
+      <td>0.43</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>X4mo_cortex_F_5xFADHEMI_433</th>
+      <td>0.0</td>
+      <td>1.18</td>
+      <td>0.07</td>
+      <td>0.13</td>
+      <td>1.90</td>
+      <td>20.370001</td>
+      <td>28.059999</td>
+      <td>21.330000</td>
+      <td>32.139999</td>
+      <td>699.500000</td>
+      <td>...</td>
+      <td>0.91</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.19</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.02</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>X4mo_cortex_F_5xFADHEMI_434</th>
+      <td>0.0</td>
+      <td>2.18</td>
+      <td>0.00</td>
+      <td>0.07</td>
+      <td>0.31</td>
+      <td>17.980000</td>
+      <td>21.459999</td>
+      <td>15.060000</td>
+      <td>27.600000</td>
+      <td>639.950012</td>
+      <td>...</td>
+      <td>0.11</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>X4mo_cortex_F_5xFADHEMI_511</th>
+      <td>0.0</td>
       <td>1.50</td>
-      <td>1.69</td>
-      <td>0.48</td>
-      <td>1.15</td>
+      <td>0.10</td>
+      <td>0.14</td>
+      <td>0.53</td>
+      <td>18.350000</td>
+      <td>20.180000</td>
+      <td>18.660000</td>
+      <td>26.430000</td>
+      <td>640.549988</td>
+      <td>...</td>
+      <td>0.64</td>
+      <td>0.0</td>
+      <td>1.38</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.02</td>
+      <td>0.0</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 192 columns</p>
+<p>5 rows × 55448 columns</p>
 </div>
 </section>
 <section id="pre-processing-workflow">
@@ -349,6 +325,11 @@ will use block size  1876
 
 [96mGoing through the merge tree...[0m
 ..cutHeight not given, setting it to 0.996  ===&gt;  99% of the (truncated) height range in dendro.
+
+
+Trying to set attribute `.var` of view, copying.
+
+
 	Done..
 
 [96mCalculating 34 module eigengenes in given set...[0m
@@ -390,8 +371,8 @@ orderMEs: order not given, calculating using given set 0
 	Done running WGCNA..
 </pre></div>
 </div>
-<p><img alt="png" src="../_images/Quick_Start_5_1.png" /></p>
-<p><img alt="png" src="../_images/Quick_Start_5_2.png" /></p>
+<p><img alt="png" src="../_images/Quick_Start_5_3.png" /></p>
+<p><img alt="png" src="../_images/Quick_Start_5_4.png" /></p>
 <p>We also can merge two previous steps by calling <code class="docutils literal notranslate"><span class="pre">runWGCNA()</span></code> function.</p>
 </section>
 <section id="relating-modules-to-external-information-and-identifying-important-genes">
@@ -443,10 +424,12 @@ orderMEs: order not given, calculating using given set 0
 	Done..
 
 [96mdoing Go term analysis for each module...[0m
+[93mGo_term directory does not exist!
+Creating Go_term directory![0m
 
 
-2022-05-02 10:01:28,006 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
-2022-05-02 10:02:00,172 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+2022-05-03 15:32:54,782 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
+2022-05-03 15:33:16,098 Warning: No enrich terms using library GO_Biological_Process_2021 when cutoff = 0.5
 
 
 	Done..
@@ -494,11 +477,14 @@ orderMEs: order not given, calculating using given set 0
 </pre></div>
 </div>
 <p>you can also load your PyWGCNA object with <code class="docutils literal notranslate"><span class="pre">readWGCNA()</span></code> function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">PyWGCNA</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;/Users/nargesrezaie/Documents/MortazaviLab/PyWGCNA&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">PyWGCNA</span>
 <span class="n">pyWGCNA_5xFAD</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">readWGCNA</span><span class="p">(</span><span class="s2">&quot;5xFAD.p&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[1m[94mReading WGCNA done![0m
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[1m[94mReading 5xFAD WGCNA done![0m
 </pre></div>
 </div>
 </section>

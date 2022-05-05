@@ -6,13 +6,16 @@ For achieving that, first you need to read your PyWGCNa object by `readWGCNA()` 
 
 
 ```python
+import sys
+sys.path.insert(0, '/Users/nargesrezaie/Documents/MortazaviLab/PyWGCNA')
+
 import PyWGCNA
 pyWGCNA_5xFAD = PyWGCNA.readWGCNA("5xFAD.p")
 pyWGCNA_3xTgAD = PyWGCNA.readWGCNA("3xTgAD_paper/3xTgAD.p")
 ```
 
-    [1m[94mReading WGCNA done![0m
-    [1m[94mReading WGCNA done![0m
+    [1m[94mReading 5xFAD WGCNA done![0m
+    [1m[94mReading 3xTgAD WGCNA done![0m
 
 
 ## Comparing two PyWGCNA objects
@@ -59,6 +62,16 @@ modelAD_5xFAD_3xTgAD.comparison
     <tr>
       <th>0</th>
       <td>black</td>
+      <td>dimgray</td>
+      <td>6746</td>
+      <td>5060</td>
+      <td>97</td>
+      <td>1.916996</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>black</td>
       <td>black</td>
       <td>6746</td>
       <td>8157</td>
@@ -67,23 +80,13 @@ modelAD_5xFAD_3xTgAD.comparison
       <td>0.0</td>
     </tr>
     <tr>
-      <th>1</th>
-      <td>black</td>
-      <td>brown</td>
-      <td>6746</td>
-      <td>113</td>
-      <td>24</td>
-      <td>21.238938</td>
-      <td>0.168742</td>
-    </tr>
-    <tr>
       <th>2</th>
       <td>black</td>
-      <td>darkgray</td>
+      <td>dimgrey</td>
       <td>6746</td>
-      <td>507</td>
-      <td>40</td>
-      <td>7.889546</td>
+      <td>2966</td>
+      <td>160</td>
+      <td>5.394471</td>
       <td>0.0</td>
     </tr>
     <tr>
@@ -99,11 +102,11 @@ modelAD_5xFAD_3xTgAD.comparison
     <tr>
       <th>4</th>
       <td>black</td>
-      <td>darkred</td>
+      <td>darkgray</td>
       <td>6746</td>
-      <td>76</td>
-      <td>54</td>
-      <td>71.052632</td>
+      <td>507</td>
+      <td>40</td>
+      <td>7.889546</td>
       <td>0.0</td>
     </tr>
     <tr>
@@ -118,53 +121,53 @@ modelAD_5xFAD_3xTgAD.comparison
     </tr>
     <tr>
       <th>685</th>
-      <td>whitesmoke</td>
-      <td>salmon</td>
-      <td>613</td>
-      <td>63</td>
-      <td>2</td>
-      <td>3.174603</td>
-      <td>0.670583</td>
-    </tr>
-    <tr>
-      <th>686</th>
-      <td>whitesmoke</td>
-      <td>silver</td>
-      <td>613</td>
-      <td>431</td>
-      <td>4</td>
-      <td>0.928074</td>
-      <td>0.039735</td>
-    </tr>
-    <tr>
-      <th>687</th>
-      <td>whitesmoke</td>
-      <td>snow</td>
-      <td>613</td>
-      <td>156</td>
-      <td>1</td>
-      <td>0.641026</td>
-      <td>0.192283</td>
-    </tr>
-    <tr>
-      <th>688</th>
-      <td>whitesmoke</td>
+      <td>peachpuff</td>
       <td>white</td>
-      <td>613</td>
+      <td>54</td>
       <td>162</td>
       <td>1</td>
       <td>0.617284</td>
-      <td>0.19613</td>
+      <td>0.29925</td>
+    </tr>
+    <tr>
+      <th>686</th>
+      <td>peachpuff</td>
+      <td>mistyrose</td>
+      <td>54</td>
+      <td>67</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>687</th>
+      <td>peachpuff</td>
+      <td>darkred</td>
+      <td>54</td>
+      <td>76</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>688</th>
+      <td>peachpuff</td>
+      <td>maroon</td>
+      <td>54</td>
+      <td>81</td>
+      <td>1</td>
+      <td>1.234568</td>
+      <td>0.162647</td>
     </tr>
     <tr>
       <th>689</th>
-      <td>whitesmoke</td>
-      <td>whitesmoke</td>
-      <td>613</td>
-      <td>166</td>
+      <td>peachpuff</td>
+      <td>red</td>
+      <td>54</td>
+      <td>70</td>
       <td>0</td>
       <td>0.0</td>
-      <td>0.038305</td>
+      <td>1.0</td>
     </tr>
   </tbody>
 </table>
@@ -178,7 +181,7 @@ You can also plot the comparison result as a confusion matrix by using `plotComp
 
 
 ```python
-modelAD_5xFAD_3xTgAD.plotCompareWGCA(save=True, order1=None, order2=None)
+modelAD_5xFAD_3xTgAD.plotCompareWGCA(save=True)
 ```
 
 
