@@ -11,7 +11,7 @@ including single cell gene markers.
 .. image:: PyWGCNA_overview.png
    :width: 600
 
-You can find GitHub pages `here<https://github.com/mortazavilab/PyWGCNA>`_.
+You can find GitHub pages `here <https://github.com/mortazavilab/PyWGCNA>`_.
 
 .. toctree::
    :maxdepth: 2
