@@ -14,7 +14,7 @@ setup(
     keywords=['PyWGCNA', 'WGCNA', 'bulk', 'gene clustering', 'network analysis'],  #
     install_requires=[  # these can also include >, <, == to enforce version compatibility
         'pandas',  # make sure the packages you put here are those NOT included in the
-        'numpy',  # base python distro
+        'numpy',  # base python distribution
         'scipy',
         'scikit-learn>=0.24.2',
         'statsmodels',
@@ -23,7 +23,10 @@ setup(
         'biomart',
         'gseapy',
         'pytest',
-        'pyvis'
+        'pyvis',
+        'anndata',
+        'biomart',
+        'statsmodels'
     ],
     classifiers=[  # choose from here: https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha',
