@@ -248,13 +248,15 @@ class Comparison:
         ax.add_artist(legend1)
 
         if grey.shape[0] != 0:
-            # produce a legend with the unique colors from the scatter
-            kw = dict(prop="colors", color='grey',
-                      fmt="x < 2")
+            kw = dict(prop="sizes",
+                      num=1,
+                      color='grey',
+                      fmt="< 2")
             legend2 = ax.legend(*geyplot.legend_elements(**kw),
-                                bbox_to_anchor=(1.05, 0),
-                                loc="lower left",
-                                title="non significant")
+                                bbox_to_anchor=(1.05, 0.75),
+                                loc="upper left",
+                                title="-log10(P_value)",
+                                frameon=False)
             ax.add_artist(legend2)
 
         plt.xticks(rotation=90)

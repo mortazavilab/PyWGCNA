@@ -33,6 +33,7 @@ warnings.filterwarnings("ignore")
 plt.rcParams["axes.edgecolor"] = "black"
 plt.rcParams["axes.linewidth"] = 1
 plt.rcParams["axes.facecolor"] = "white"
+plt.rcParams['legend.title_fontsize'] = 15
 
 sns.set_style("white")
 
