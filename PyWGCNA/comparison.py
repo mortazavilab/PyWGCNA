@@ -231,7 +231,7 @@ class Comparison:
         # Add a colorbar
         fig.colorbar(scatter, shrink=0.25, label='-log10(P_value)')
 
-        ax.scatter(x=grey[name1],
+        geyplot = ax.scatter(x=grey[name1],
                    y=grey[name2],
                    s=grey['fraction(%)'].astype(float)*4,
                    c='grey',
@@ -242,9 +242,20 @@ class Comparison:
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=4, color='black', fmt="{x:.1f} %",
                   func=lambda s: s/4)
-        legend2 = ax.legend(*scatter.legend_elements(**kw),
+        legend1 = ax.legend(*scatter.legend_elements(**kw),
                             bbox_to_anchor=(1.05, 0.98), loc="upper left",
                             title="fraction(%)")
+        ax.add_artist(legend1)
+
+        if grey.shape[0] != 0:
+            # produce a legend with the unique colors from the scatter
+            kw = dict(prop="colors", color='grey',
+                      fmt="x < 2")
+            legend2 = ax.legend(*geyplot.legend_elements(**kw),
+                                bbox_to_anchor=(1.05, 0),
+                                loc="lower left",
+                                title="non significant")
+            ax.add_artist(legend2)
 
         plt.xticks(rotation=90)
         plt.xlabel(name1 + " modules")
