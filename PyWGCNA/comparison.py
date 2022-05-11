@@ -217,7 +217,7 @@ class Comparison:
             grey[name2] = pd.Categorical(grey[name2], order2)
             grey.sort_values(by=[name2], inplace=True)
 
-        fig, ax = plt.subplots(figsize=(max(7, len(np.unique(result[name1])) / 3),
+        fig, ax = plt.subplots(figsize=(max(5, len(np.unique(result[name1])) / 3)+3,
                                         max(5, len(np.unique(result[name2])) / 3)),
                                facecolor='white')
         scatter = ax.scatter(x=result[name1],
@@ -225,7 +225,7 @@ class Comparison:
                              s=result['fraction(%)'].astype(float)*4,
                              c=result['-log10(P_value)'],
                              alpha=0.8,
-                             cmap='viridis_r',
+                             cmap='viridis',
                              vmin=np.min(result['fraction(%)']),
                              vmax=np.max(result['fraction(%)']))
         # Add a colorbar
@@ -243,8 +243,10 @@ class Comparison:
         kw = dict(prop="sizes", num=4, color='black', fmt="{x:.1f} %",
                   func=lambda s: s/4)
         legend1 = ax.legend(*scatter.legend_elements(**kw),
-                            bbox_to_anchor=(1.05, 0.98), loc="upper left",
-                            title="fraction(%)")
+                            bbox_to_anchor=(1.05, 0.98),
+                            loc="upper left",
+                            title="Fraction(%)",
+                            frameon=False)
         ax.add_artist(legend1)
 
         if grey.shape[0] != 0:
@@ -262,10 +264,9 @@ class Comparison:
         plt.xticks(rotation=90)
         plt.xlabel(name1 + " modules")
         plt.ylabel(name2 + " modules")
-        plt.tight_layout()
 
         if save:
-            plt.savefig('comparison_' + name1 + '_' + name2 + '.png')
+            plt.savefig('comparison_' + name1 + '_' + name2 + '.png')#'.pdf', format='pdf')
         plt.show()
 
     def saveComparison(self):
