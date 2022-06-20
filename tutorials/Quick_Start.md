@@ -10,15 +10,13 @@ For this tutorial, we will be analyzing the TPM matrix of 5xFAD mouse from [MODE
 
 ## Setupping up PyWGCNA object
 
-We use the TPM matrix to create a PyWGCNA object. The object serves as a container that contains expression data (i.e. TPM) and analysis (like clustering, or visualizing results) for a RNA-seq dataset. For a technical discussion of the PyWGCNA object structure, check out our [GitHub Wiki](https://github.com/mortazavilab/PyWGCNA.wiki.git). For example, the raw TPM matrix is stored in `GeneExp` class as a anndata.
+We use the TPM matrix to create a PyWGCNA object. The object serves as a container that contains expression data (i.e. TPM) and analysis (like clustering, or visualizing results) for a RNA-seq dataset. For a technical discussion of the PyWGCNA object structure, check out our [GitHub Wiki](https://github.com/mortazavilab/PyWGCNA/wiki). For example, the raw TPM matrix is stored in `GeneExp` class as a anndata.
 
 
 ```python
 import PyWGCNA
 geneExp = '5xFAD_paper/expressionList_sorted.csv'
-pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', species='mouse',
-                              geneExpPath=geneExp, 
-                              save=True)
+pyWGCNA_5xFAD = PyWGCNA.WGCNA(name='5xFAD', species='mouse', geneExpPath=geneExp, save=True)
 pyWGCNA_5xFAD.geneExpr.to_df().head(5)
 ```
 
@@ -352,8 +350,7 @@ You also can select which data Trait in which order you wish to show in module e
 
 
 ```python
-pyWGCNA_5xFAD.updateMetadata(path='5xFAD_paper/metaData', 
-                             sep='\t')
+pyWGCNA_5xFAD.updateMetadata(path='5xFAD_paper/metaData', sep='\t')
 # add color for metadata
 pyWGCNA_5xFAD.setMetadataColor('Sex', {'Female': 'green',
                                        'Male': 'yellow'})
@@ -600,13 +597,10 @@ pyWGCNA_5xFAD.saveWGCNA()
     [1m[94mSaving WGCNA as 5xFAD.p[0m
 
 
-you can also load your PyWGCNA object with `readWGCNA()` function.
+you can also load your PyWGCNA object with `readWGCNA()` function. you can download `5xFAD.p` from [Zendo](https://zenodo.org/record/6672453#.YrDS4LnMJhE).
 
 
 ```python
-import sys
-sys.path.insert(0, '/Users/nargesrezaie/Documents/MortazaviLab/PyWGCNA')
-
 import PyWGCNA
 pyWGCNA_5xFAD = PyWGCNA.readWGCNA("5xFAD.p")
 ```
