@@ -181,7 +181,7 @@ class WGCNA(GeneExp):
 
         # Prepare and clean data
         # Remove cols with less than 1 TPM
-        self.datExpr = self.datExpr[(self.datExpr.X > self.TPMcutoff).any(axis=1), :]
+        self.datExpr = self.datExpr[:, (self.datExpr.X > self.TPMcutoff).any(axis=0)]
 
         # Check that all genes and samples have sufficiently low numbers of missing values.
         goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.to_df().T)
@@ -200,15 +200,16 @@ class WGCNA(GeneExp):
             self.datExpr.X = self.datExpr.X.loc[goodSamples, goodGenes]
 
         # Clustering
-        sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df().T), method="average")
+        sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df()), method="average")
 
-        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[1] / 20)), 10), facecolor='white')
-        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().columns, leaf_rotation=90,
+        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[0] / 20)), 10), facecolor='white')
+        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().index, leaf_rotation=90,
                    leaf_font_size=8)
         plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
         plt.title('Sample clustering to detect outliers')
         plt.xlabel('Samples')
         plt.ylabel('Distances')
+        plt.tight_layout()
         if self.save:
             plt.savefig(self.outputPath + '/figures/sampleClusteringCleaning.png')
 
@@ -218,7 +219,7 @@ class WGCNA(GeneExp):
         clust = clust.T.tolist()[0]
         index = [index for index, element in enumerate(clust) if element == 0]
 
-        self.datExpr = self.datExpr[:, index]
+        self.datExpr = self.datExpr[index, :]
 
         print("\tDone pre-processing..\n")
 
@@ -227,8 +228,6 @@ class WGCNA(GeneExp):
         Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically
         """
         print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
-
-        self.datExpr = self.datExpr.transpose()
 
         # Call the network topology analysis function
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.to_df(), RsquaredCut=self.RsquaredCut,
@@ -317,8 +316,6 @@ class WGCNA(GeneExp):
         if 'MEgrey' in self.datME.columns:
             self.datME.drop(['MEgrey'], axis=1, inplace=True)
         self.MEs = WGCNA.orderMEs(self.datME)
-
-        self.datExpr = self.datExpr.transpose()
 
         print("\tDone running WGCNA..\n")
 
