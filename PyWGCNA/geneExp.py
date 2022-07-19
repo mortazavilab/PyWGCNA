@@ -56,17 +56,17 @@ class GeneExp:
         elif level == 'transcript':
             column = 'transcript_id'
 
-        sampleInfo = pd.DataFrame(expressionList.columns[1:], columns=['sample_id'],
-                                  index=expressionList.columns[1:])
+        sampleInfo = pd.DataFrame(range(expressionList.shape[1]-1), columns=['sample_id'],
+                                  index=expressionList.columns.tolist())
 
-        geneInfo = pd.DataFrame(range(expressionList.shape[0]), columns=[column],
+        geneInfo = pd.DataFrame(expressionList.values[:, 0], columns=[column],
                                 index=expressionList.values[:, 0])
 
         expressionList.index = expressionList.iloc[:, 0]  # sample_id
         # drop sample id columns
         expressionList = expressionList.drop([expressionList.columns[0]], axis=1)
 
-        self.geneExpr = ad.AnnData(X=expressionList, obs=sampleInfo, var=geneInfo)
+        self.geneExpr = ad.AnnData(X=expressionList, var=sampleInfo, obs=geneInfo)
 
     @staticmethod
     def updateGeneInfo(expr, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
