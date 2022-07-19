@@ -228,6 +228,8 @@ class WGCNA(GeneExp):
         """
         print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
 
+        self.datExpr = self.datExpr.transpose()
+
         # Call the network topology analysis function
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.to_df(), RsquaredCut=self.RsquaredCut,
                                                        MeanCut=self.MeanCut, powerVector=self.powers,
@@ -315,6 +317,8 @@ class WGCNA(GeneExp):
         if 'MEgrey' in self.datME.columns:
             self.datME.drop(['MEgrey'], axis=1, inplace=True)
         self.MEs = WGCNA.orderMEs(self.datME)
+
+        self.datExpr = self.datExpr.transpose()
 
         print("\tDone running WGCNA..\n")
 
