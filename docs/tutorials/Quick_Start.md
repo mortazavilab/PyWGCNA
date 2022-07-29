@@ -4,7 +4,7 @@ First, make sure to [install PyWGCNA](https://github.com/mortazavilab/PyWGCNA#re
 
 I encourage you to look at [Data input, cleaning and pre-processing tutorial](Data%20format.md) before running PyWGCNA.
 
-Then, download the data from [here](https://github.com/mortazavilab/PyWGCNA/raw/fb2cdc6e4fc1d7ec20ee6e9c39930409018c09c0/tutorials/5xFAD_paper.zip) and uncompressed it.
+Then, download the data from [here](https://github.com/mortazavilab/PyWGCNA/raw/main/tutorials/5xFAD_paper.zip) and uncompressed it.
 
 For this tutorial, we will be analyzing the TPM matrix of 5xFAD mouse from [MODEL-AD](https://www.model-ad.org/) portal and [this paper](https://www.nature.com/articles/s41597-021-01054-y) in Scientific Data which has 5548 genes and 193 samples in four different time point.
 

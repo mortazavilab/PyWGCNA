@@ -29,6 +29,6 @@ git cloning the [PyWGCNA repository](https://github.com/mortazavilab/PyWGCNA), g
 ## Tutorials
 
 - [Data input, cleaning and pre-processing](tutorials/Data_format.md): How data format look like
-- [Quick Start](tutorials/Quick_Start.ipynb): How to load data into PyWGCNA and find modules and analyse them
-- [Compare two PyWGCNA objects](tutorials/Comparison.ipynb): How to compare two PyWGCNA objects
+- [Quick Start](tutorials/Quick_Start.md): How to load data into PyWGCNA and find modules and analyse them
+- [Compare two PyWGCNA objects](tutorials/Comparison.md): How to compare two PyWGCNA objects
 
