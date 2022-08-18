@@ -924,7 +924,7 @@ class WGCNA(GeneExp):
         if dim is None or len(dim) != 2:
             sys.exit("adjacency is not two-dimensional")
 
-        if not (all(np.array_equal(corrs[ele], corrs[ele].astype(float)) for ele in adjMat)):
+        if not (all(np.array_equal(adjMat[ele], adjMat[ele].astype(float)) for ele in adjMat)):
             sys.exit("adjacency is not numeric")
 
         if dim[1] != dim[2]:
