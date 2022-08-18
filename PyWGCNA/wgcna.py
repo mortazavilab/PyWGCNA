@@ -844,7 +844,7 @@ class WGCNA(GeneExp):
                     print(
                         f"{WARNING}Some correlations are NA in block {str(startG)} : {str(endG)}.{ENDC}")
             else:
-                corx = data.iloc[:, useGenes]
+                corx = data.iloc[:, useGenes].to_numpy()
 
             corx[useGenes, list(range(len(useGenes)))] = 1
             datk_local = np.empty((nGenes1, nPowers))
