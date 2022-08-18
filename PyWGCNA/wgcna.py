@@ -907,7 +907,7 @@ class WGCNA(GeneExp):
         return powerEstimate, datout
 
     @staticmethod
-    def checkSimilarity(adjMat, min=0, max=1):
+    def checkSimilarity(adjMat, min=-1, max=1):
         """
         check similarity matrix format is correct
 
@@ -930,10 +930,10 @@ class WGCNA(GeneExp):
         if dim[0] != dim[1]:
             sys.exit("adjacency is not square")
 
-        if np.max(np.abs(adjMat - adjMat.transpose())) > 1e-12:
+        if all(np.max(np.abs(adjMat - adjMat.transpose())) > 1e-12):
             sys.exit("adjacency is not symmetric")
 
-        if np.min(adjMat) < min or np.max(adjMat) > max:
+        if all(np.min(adjMat) < min) or all(np.max(adjMat) > max):
             sys.exit(("some entries are not between", min, "and", max))
 
     @staticmethod
