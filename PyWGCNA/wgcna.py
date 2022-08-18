@@ -927,7 +927,7 @@ class WGCNA(GeneExp):
         if not (all(np.array_equal(adjMat[ele], adjMat[ele].astype(float)) for ele in adjMat)):
             sys.exit("adjacency is not numeric")
 
-        if dim[1] != dim[2]:
+        if dim[0] != dim[1]:
             sys.exit("adjacency is not square")
 
         if np.max(np.abs(adjMat - adjMat.transpose())) > 1e-12:
