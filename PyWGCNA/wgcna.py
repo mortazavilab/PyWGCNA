@@ -134,6 +134,8 @@ class WGCNA(GeneExp):
         self.save = save
         if outputPath is None:
             self.outputPath = os.getcwd()
+        else:
+            self.outputPath = outputPath
 
         self.TPMcutoff = TPMcutoff
         self.cut = cut

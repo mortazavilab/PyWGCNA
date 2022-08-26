@@ -60,7 +60,7 @@ class GeneExp:
                                 index=expressionList.columns[1:])
 
         sampleInfo = pd.DataFrame(range(expressionList.shape[0]), columns=['sample_id'],
-                                  index=expressionList.values[:, 0])
+                                  index=expressionList.iloc[:, 0])
 
         expressionList.index = expressionList.iloc[:, 0]  # sample_id
         # drop sample id columns
