@@ -1819,6 +1819,7 @@ class WGCNA(GeneExp):
                             for name, color in colors.items())
             colorSeq = [name for hsv, name in by_hsv]
             colorSeq.remove(naColor)
+            colorSeq.remove("Gray")
 
         if all(isinstance(x, int) for x in labels.Value):
             if zeroIsGrey:
