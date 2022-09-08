@@ -32,6 +32,12 @@ git cloning the [PyWGCNA repository](https://github.com/mortazavilab/PyWGCNA), g
 - [Quick Start](tutorials/Quick_Start.md): How to load data into PyWGCNA and find modules and analyse them
 - [Compare two PyWGCNA objects](tutorials/Comparison.md): How to compare two PyWGCNA objects
 
+## Suggested Reading
+
+If you are unfamiliar with R refrence WGCNA, we suggest reading the original WGCNA publication:
+
+-[WGCNA: an R package for weighted correlation network analysis](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559)
+-[Describe various features of the WGCNA package for the R programming language](https://peterlangfelder.com/)
 
 ## Cite
 
