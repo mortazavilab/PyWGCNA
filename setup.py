@@ -26,7 +26,8 @@ setup(
         'pyvis',
         'anndata',
         'biomart',
-        'statsmodels'
+        'statsmodels',
+        'pingouin',
     ],
     classifiers=[  # choose from here: https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha',

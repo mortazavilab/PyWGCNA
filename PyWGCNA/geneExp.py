@@ -5,7 +5,7 @@ import anndata as ad
 
 
 # remove runtime warning (divided by zero)
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 
 
 class GeneExp:
@@ -26,9 +26,15 @@ class GeneExp:
     :type sep: str
     """
 
-    def __init__(self, species=None, level='gene',
-                 anndata=None, geneExp=None,
-                 geneExpPath=None, sep=','):
+    def __init__(
+        self,
+        species=None,
+        level="gene",
+        anndata=None,
+        geneExp=None,
+        geneExpPath=None,
+        sep=",",
+    ):
         self.species = species
         self.level = level
         if geneExpPath is not None:
@@ -42,25 +48,30 @@ class GeneExp:
             else:
                 raise ValueError("geneExp is not data frame!")
         elif anndata is not None:
-            if isinstance(anndata, ad.AnnData):
-                self.geneExpr = anndata
-                return
-            else:
+            if not isinstance(anndata, ad.AnnData):
                 raise ValueError("geneExp is not data frame!")
+            self.geneExpr = anndata
+            return
         else:
             raise ValueError("all type of input can not be empty at the same time!")
 
-        column = 'id'
-        if level == 'gene':
-            column = 'gene_id'
-        elif level == 'transcript':
-            column = 'transcript_id'
+        column = "id"
+        if level == "gene":
+            column = "gene_id"
+        elif level == "transcript":
+            column = "transcript_id"
 
-        geneInfo = pd.DataFrame(expressionList.columns[1:], columns=[column],
-                                index=expressionList.columns[1:])
+        geneInfo = pd.DataFrame(
+            expressionList.columns[1:],
+            columns=[column],
+            index=expressionList.columns[1:],
+        )
 
-        sampleInfo = pd.DataFrame(range(expressionList.shape[0]), columns=['sample_id'],
-                                  index=expressionList.iloc[:, 0])
+        sampleInfo = pd.DataFrame(
+            range(expressionList.shape[0]),
+            columns=["sample_id"],
+            index=expressionList.iloc[:, 0],
+        )
 
         expressionList.index = expressionList.iloc[:, 0]  # sample_id
         # drop sample id columns
@@ -69,7 +80,9 @@ class GeneExp:
         self.geneExpr = ad.AnnData(X=expressionList, obs=sampleInfo, var=geneInfo)
 
     @staticmethod
-    def updateGeneInfo(expr, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
+    def updateGeneInfo(
+        expr, geneInfo=None, path=None, sep=" ", order=True, level="gene"
+    ):
         """
         add/update genes info in expr anndata
 
@@ -101,26 +114,29 @@ class GeneExp:
             expr.var = pd.concat([geneInfo, expr.var], axis=1)
             expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
         else:
-            name = 'ensembl_gene_id'
-            replace = 'gene_id'
-            if level == 'transcript':
-                name = 'ensembl_transcript_id'
-                replace = 'transcript_id'
-            if 'external_gene_name' in geneInfo.columns:
-                geneInfo.rename(columns={'external_gene_name': 'gene_name', name: replace}, inplace=True)
+            name = "ensembl_gene_id"
+            replace = "gene_id"
+            if level == "transcript":
+                name = "ensembl_transcript_id"
+                replace = "transcript_id"
+            if "external_gene_name" in geneInfo.columns:
+                geneInfo.rename(
+                    columns={"external_gene_name": "gene_name", name: replace},
+                    inplace=True,
+                )
             else:
                 geneInfo.rename(columns={name: replace}, inplace=True)
-            expr.var.gene_id = expr.var.gene_id.str.split('\\.', expand=True)[0]
+            expr.var.gene_id = expr.var.gene_id.str.split("\\.", expand=True)[0]
             expr.var.index.name = None
             rmv = [x for x in geneInfo.columns if x in expr.var.columns]
             rmv.remove(replace)
             expr.var.drop(rmv, axis=1, inplace=True)
-            expr.var = expr.var.merge(geneInfo, on=replace, how='left')
+            expr.var = expr.var.merge(geneInfo, on=replace, how="left")
             expr.var.index = expr.var[replace]
         return expr
 
     @staticmethod
-    def updateMetadata(expr, metaData=None, path=None, sep=' ', order=True):
+    def updateMetadata(expr, metaData=None, path=None, sep=" ", order=True):
         """
         add/update metadata in expr anndata
 
@@ -150,15 +166,15 @@ class GeneExp:
             expr.obs = pd.concat([metaData, expr.obs], axis=1)
             expr.obs = expr.obs.loc[:, ~expr.obs.columns.duplicated()]
         else:
-            expr.obs['index'] = expr.obs.index
-            if 'sample_id' not in metaData.columns:
-                metaData['sample_id'] = range(metaData.shape[0])
+            expr.obs["index"] = expr.obs.index
+            if "sample_id" not in metaData.columns:
+                metaData["sample_id"] = range(metaData.shape[0])
 
             rmv = [x for x in metaData.columns if x in expr.obs.columns]
-            rmv.remove('sample_id')
+            rmv.remove("sample_id")
             expr.obs.drop(rmv, axis=1, inplace=True)
-            expr.obs = expr.obs.merge(metaData, on='sample_id', how='left')
-            expr.obs.index = expr.obs['index']
-            expr.obs.drop(['index'], axis=1, inplace=True)
+            expr.obs = expr.obs.merge(metaData, on="sample_id", how="left")
+            expr.obs.index = expr.obs["index"]
+            expr.obs.drop(["index"], axis=1, inplace=True)
 
         return expr

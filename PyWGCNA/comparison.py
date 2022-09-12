@@ -6,15 +6,15 @@ import pickle
 
 
 # bcolors
-HEADER = '\033[95m'
-OKBLUE = '\033[94m'
-OKCYAN = '\033[96m'
-OKGREEN = '\033[92m'
-WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
-BOLD = '\033[1m'
-UNDERLINE = '\033[4m'
+HEADER = "\033[95m"
+OKBLUE = "\033[94m"
+OKCYAN = "\033[96m"
+OKGREEN = "\033[92m"
+WARNING = "\033[93m"
+FAIL = "\033[91m"
+ENDC = "\033[0m"
+BOLD = "\033[1m"
+UNDERLINE = "\033[4m"
 
 
 class Comparison:
@@ -38,7 +38,15 @@ class Comparison:
 
     """
 
-    def __init__(self, name1="name1", name2="name2", geneModule1=None, geneModule2=None, geneMarker=None, sc=False):
+    def __init__(
+        self,
+        name1="name1",
+        name2="name2",
+        geneModule1=None,
+        geneModule2=None,
+        geneMarker=None,
+        sc=False,
+    ):
         self.name1 = name1
         self.name2 = name2
         self.geneModule1 = geneModule1
@@ -64,24 +72,38 @@ class Comparison:
         moduleColors1 = self.geneModule1.moduleColors.unique().tolist()
         moduleColors2 = self.geneModule2.moduleColors.unique().tolist()
         num = len(moduleColors1) * len(moduleColors2)
-        df = pd.DataFrame(columns=[name1, name2, name1 + "_size", name2 + "_size", "number", "fraction(%)", "P_value"],
-                          index=range(num))
+        df = pd.DataFrame(
+            columns=[
+                name1,
+                name2,
+                name1 + "_size",
+                name2 + "_size",
+                "number",
+                "fraction(%)",
+                "P_value",
+            ],
+            index=range(num),
+        )
 
         genes = []
         count = 0
         for moduleColor1 in moduleColors1:
-            node1 = self.geneModule1.loc[self.geneModule1.moduleColors == moduleColor1, 'gene_id'].tolist()
+            node1 = self.geneModule1.loc[
+                self.geneModule1.moduleColors == moduleColor1, "gene_id"
+            ].tolist()
             genes = genes + node1
             for moduleColor2 in moduleColors2:
-                node2 = self.geneModule2.loc[self.geneModule2.moduleColors == moduleColor2, 'gene_id'].tolist()
+                node2 = self.geneModule2.loc[
+                    self.geneModule2.moduleColors == moduleColor2, "gene_id"
+                ].tolist()
 
                 df[name1][count] = moduleColor1
                 df[name2][count] = moduleColor2
-                df[name1 + '_size'][count] = len(node1)
-                df[name2 + '_size'][count] = len(node2)
+                df[name1 + "_size"][count] = len(node1)
+                df[name2 + "_size"][count] = len(node2)
                 num = np.intersect1d(node1, node2)
-                df['number'][count] = len(num)
-                df['fraction(%)'][count] = len(num) / len(node2) * 100
+                df["number"][count] = len(num)
+                df["fraction(%)"][count] = len(num) / len(node2) * 100
                 count = count + 1
 
                 genes = genes + node2
@@ -93,12 +115,22 @@ class Comparison:
         for moduleColor1 in moduleColors1:
             for moduleColor2 in moduleColors2:
                 table = np.array(
-                    [[nGenes - df[name1 + '_size'][count] - df[name2 + '_size'][count] + df['number'][count],
-                      df[name1 + '_size'][count] - df['number'][count]],
-                     [df[name2 + '_size'][count] - df['number'][count],
-                      df['number'][count]]])
-                oddsr, p = fisher_exact(table, alternative='two-sided')
-                df['P_value'][count] = p
+                    [
+                        [
+                            nGenes
+                            - df[name1 + "_size"][count]
+                            - df[name2 + "_size"][count]
+                            + df["number"][count],
+                            df[name1 + "_size"][count] - df["number"][count],
+                        ],
+                        [
+                            df[name2 + "_size"][count] - df["number"][count],
+                            df["number"][count],
+                        ],
+                    ]
+                )
+                oddsr, p = fisher_exact(table, alternative="two-sided")
+                df["P_value"][count] = p
                 count = count + 1
 
         self.comparison = df
@@ -110,11 +142,21 @@ class Comparison:
         :return: update compare class that replace automatically
         :rtype: compare class
         """
-        list_sn = np.unique(self.geneMarker['cluster'])
+        list_sn = np.unique(self.geneMarker["cluster"])
         num = len(self.geneModule1.keys()) * len(list_sn)
         df = pd.DataFrame(
-            columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"],
-            index=range(num))
+            columns=[
+                "WGCNA",
+                "sc",
+                "WGCNA_size",
+                "sc_size",
+                "number",
+                "fraction(%)",
+                "P_value",
+                "cellType",
+            ],
+            index=range(num),
+        )
 
         genes = []
         count = 0
@@ -122,17 +164,18 @@ class Comparison:
             node1 = self.geneModule1[self.geneModule1.keys()[i]]
             genes = genes + node1
             for j in range(len(list_sn)):
-                node2 = self.geneMarker[self.geneMarker['cluster'] == list_sn[j], :]
+                node2 = self.geneMarker[self.geneMarker["cluster"] == list_sn[j], :]
 
-                df['WGCNA'][count] = self.geneModule1.keys()[i]
-                df['sc'][count] = "N" + str(list_sn[j])
-                df['WGCNA_size'][count] = len(node1)
-                df['sc_size'][count] = len(node2)
+                df["WGCNA"][count] = self.geneModule1.keys()[i]
+                df["sc"][count] = "N" + str(list_sn[j])
+                df["WGCNA_size"][count] = len(node1)
+                df["sc_size"][count] = len(node2)
                 num = np.intersect1d(node1, node2)
-                df['number'][count] = len(num)
-                df['fraction(%)'][count] = len(num) / len(node2) * 100
-                df['cellType'][count] = self.geneMarker['cellType'][
-                    np.where(self.geneMarker['cluster'] == list_sn[j]).tolist()[0]]
+                df["number"][count] = len(num)
+                df["fraction(%)"][count] = len(num) / len(node2) * 100
+                df["cellType"][count] = self.geneMarker["cellType"][
+                    np.where(self.geneMarker["cluster"] == list_sn[j]).tolist()[0]
+                ]
                 count = count + 1
 
                 genes = genes + node2
@@ -143,12 +186,20 @@ class Comparison:
         count = 0
         for i in range(len(self.geneModule1.keys())):
             for j in range(len(list_sn)):
-                table = np.array([[nGenes - df['WGCNA'][count] - df['sc'][count] + df['number'][count],
-                                   df['WGCNA'][count] - df['number'][count]],
-                                  [df['sc'][count] - df['number'][count],
-                                   df['number'][count]]])
-                oddsr, p = fisher_exact(table, alternative='two-sided')
-                df['P_value'][count] = p
+                table = np.array(
+                    [
+                        [
+                            nGenes
+                            - df["WGCNA"][count]
+                            - df["sc"][count]
+                            + df["number"][count],
+                            df["WGCNA"][count] - df["number"][count],
+                        ],
+                        [df["sc"][count] - df["number"][count], df["number"][count]],
+                    ]
+                )
+                oddsr, p = fisher_exact(table, alternative="two-sided")
+                df["P_value"][count] = p
                 count = count + 1
 
         self.comparison = df
@@ -166,7 +217,7 @@ class Comparison:
 
         """
         result = self.comparison.copy(deep=True)
-        result['-log10(P_value)'] = -1 * np.log10(result['P_value'].astype(np.float64))
+        result["-log10(P_value)"] = -1 * np.log10(result["P_value"].astype(np.float64))
 
         if self.name1 == self.name2:
             name1 = self.name1 + "1"
@@ -175,31 +226,46 @@ class Comparison:
             name1 = self.name1
             name2 = self.name2
 
-        result.drop(labels=np.where(result[name1] == 'grey')[0].tolist(),
-                    axis=0,
-                    inplace=True)
+        result.drop(
+            labels=np.where(result[name1] == "grey")[0].tolist(), axis=0, inplace=True
+        )
         result.reset_index(drop=True, inplace=True)
-        result.drop(labels=np.where(result[name2] == 'grey')[0].tolist(),
-                    axis=0,
-                    inplace=True)
+        result.drop(
+            labels=np.where(result[name2] == "grey")[0].tolist(), axis=0, inplace=True
+        )
         result.reset_index(drop=True, inplace=True)
 
-        result.loc[np.where(result['fraction(%)'] == 0)[0].tolist(), 'fraction(%)'] = np.nan
-        result.loc[np.where(result['fraction(%)'] == 0)[0].tolist(), 'fraction(%)'] = np.nan
+        result.loc[
+            np.where(result["fraction(%)"] == 0)[0].tolist(), "fraction(%)"
+        ] = np.nan
+        result.loc[
+            np.where(result["fraction(%)"] == 0)[0].tolist(), "fraction(%)"
+        ] = np.nan
 
-        if np.max(result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) is np.nan:
-            result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = 100
+        if (
+            np.max(result["-log10(P_value)"][np.isfinite(result["-log10(P_value)"])])
+            is np.nan
+        ):
+            result.loc[np.isinf(result["-log10(P_value)"]), "-log10(P_value)"] = 100
         else:
-            result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = np.max(
-                result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) + 1
+            result.loc[np.isinf(result["-log10(P_value)"]), "-log10(P_value)"] = (
+                np.max(
+                    result["-log10(P_value)"][np.isfinite(result["-log10(P_value)"])]
+                )
+                + 1
+            )
 
         grey = result.copy(deep=True)
-        result.loc[np.where(result['P_value'] > 0.01)[0].tolist(), '-log10(P_value)'] = np.nan
+        result.loc[
+            np.where(result["P_value"] > 0.01)[0].tolist(), "-log10(P_value)"
+        ] = np.nan
 
         result.dropna(axis=0, inplace=True)
         result.reset_index(drop=True, inplace=True)
 
-        grey.loc[np.where(grey['P_value'] <= 0.01)[0].tolist(), '-log10(P_value)'] = np.nan
+        grey.loc[
+            np.where(grey["P_value"] <= 0.01)[0].tolist(), "-log10(P_value)"
+        ] = np.nan
         grey.dropna(axis=0, inplace=True)
         grey.reset_index(drop=True, inplace=True)
 
@@ -217,48 +283,58 @@ class Comparison:
             grey[name2] = pd.Categorical(grey[name2], order2)
             grey.sort_values(by=[name2], inplace=True)
 
-        fig, ax = plt.subplots(figsize=(max(5, len(np.unique(result[name1])) / 3)+3,
-                                        max(5, len(np.unique(result[name2])) / 3)),
-                               facecolor='white')
-        scatter = ax.scatter(x=result[name1],
-                             y=result[name2],
-                             s=result['fraction(%)'].astype(float)*4,
-                             c=result['-log10(P_value)'],
-                             alpha=0.8,
-                             cmap='viridis',
-                             vmin=np.min(result['fraction(%)']),
-                             vmax=np.max(result['fraction(%)']))
+        fig, ax = plt.subplots(
+            figsize=(
+                max(5, len(np.unique(result[name1])) / 3) + 3,
+                max(5, len(np.unique(result[name2])) / 3),
+            ),
+            facecolor="white",
+        )
+        scatter = ax.scatter(
+            x=result[name1],
+            y=result[name2],
+            s=result["fraction(%)"].astype(float) * 4,
+            c=result["-log10(P_value)"],
+            alpha=0.8,
+            cmap="viridis",
+            vmin=np.min(result["fraction(%)"]),
+            vmax=np.max(result["fraction(%)"]),
+        )
         # Add a colorbar
-        fig.colorbar(scatter, shrink=0.25, label='-log10(P_value)')
+        fig.colorbar(scatter, shrink=0.25, label="-log10(P_value)")
 
-        geyplot = ax.scatter(x=grey[name1],
-                   y=grey[name2],
-                   s=grey['fraction(%)'].astype(float)*4,
-                   c='grey',
-                   alpha=0.8,
-                   vmin=np.min(grey['fraction(%)']),
-                   vmax=np.max(grey['fraction(%)']))
+        geyplot = ax.scatter(
+            x=grey[name1],
+            y=grey[name2],
+            s=grey["fraction(%)"].astype(float) * 4,
+            c="grey",
+            alpha=0.8,
+            vmin=np.min(grey["fraction(%)"]),
+            vmax=np.max(grey["fraction(%)"]),
+        )
 
         # produce a legend with the unique colors from the scatter
-        kw = dict(prop="sizes", num=4, color='black', fmt="{x:.1f} %",
-                  func=lambda s: s/4)
-        legend1 = ax.legend(*scatter.legend_elements(**kw),
-                            bbox_to_anchor=(1.05, 0.98),
-                            loc="upper left",
-                            title="Fraction(%)",
-                            frameon=False)
+        kw = dict(
+            prop="sizes", num=4, color="black", fmt="{x:.1f} %", func=lambda s: s / 4
+        )
+        legend1 = ax.legend(
+            *scatter.legend_elements(**kw),
+            bbox_to_anchor=(1.05, 0.98),
+            loc="upper left",
+            title="Fraction(%)",
+            frameon=False,
+        )
         ax.add_artist(legend1)
 
         if grey.shape[0] != 0:
-            kw = dict(prop="sizes",
-                      num=1,
-                      color='grey',
-                      fmt="< 2")
-            legend2 = ax.legend(*geyplot.legend_elements(**kw),
-                                bbox_to_anchor=(1.05, 0.75),
-                                loc="upper left",
-                                title="-log10(P_value)",
-                                frameon=False)
+            kw = dict(prop="sizes", num=1, color="grey", fmt="< 2")
+            legend2 = ax.legend(
+                *geyplot.legend_elements(**kw),
+                bbox_to_anchor=(1.05, 0.75),
+                loc="upper left",
+                title="-log10(P_value)",
+                frameon=False,
+            )
             ax.add_artist(legend2)
 
         plt.xticks(rotation=90)
@@ -266,17 +342,18 @@ class Comparison:
         plt.ylabel(name2 + " modules")
 
         if save:
-            plt.savefig('comparison_' + name1 + '_' + name2 + '.png')#'.pdf', format='pdf')
+            plt.savefig(
+                "comparison_" + name1 + "_" + name2 + ".png"
+            )  #'.pdf', format='pdf')
         plt.show()
 
     def saveComparison(self):
         """
         save comparison object as comparison.p near to the script
-        
+
         """
         print(f"{BOLD}{OKBLUE}Saving comparison as comparison.p{ENDC}")
 
-        picklefile = open('comparison.p', 'wb')
+        picklefile = open("comparison.p", "wb")
         pickle.dump(self, picklefile)
         picklefile.close()
-
