@@ -1786,7 +1786,7 @@ class WGCNA(GeneExp):
             for i in range(len(NumLabs)):
                 OrdNumLabs.Value[i] = SizeRank[NumLabs[i]]
         else:
-            SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
+            SizeRank = stats.rankdata(-1 * Sizes, method='ordinal')+1
             for i in range(len(NumLabs)):
                 OrdNumLabs.Value[i] = SizeRank[NumLabs[i]]
 
