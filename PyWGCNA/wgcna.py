@@ -2710,7 +2710,7 @@ class WGCNA(GeneExp):
                 org = np.unique(tmp.iloc[:, i]).tolist()
                 rep = list(range(len(org)))
                 datTraits.replace(to_replace=org, value=rep,
-                                       inplace=True)
+                                  inplace=True)
             elif len(np.unique(tmp.iloc[:, i])) > 2:
                 for name in np.unique(tmp.iloc[:, i]):
                     datTraits[name] = tmp.iloc[:, i]
@@ -3020,7 +3020,6 @@ class WGCNA(GeneExp):
             enr = gp.enrichr(gene_list=geneModule.fillna("").values.tolist(),
                              gene_sets=GoSets,
                              organism=self.species,
-                             description='',
                              outdir=self.outputPath + '/figures/Go_term/' + moduleName,
                              cutoff=0.5)
             dotplot(enr.res2d,
