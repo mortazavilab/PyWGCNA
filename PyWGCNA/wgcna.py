@@ -43,15 +43,15 @@ TOMTypes = ["unsigned", "signed"]
 TOMDenoms = ["min", "mean"]
 
 # bcolors
-HEADER = '\033[95m'
-OKBLUE = '\033[94m'
-OKCYAN = '\033[96m'
-OKGREEN = '\033[92m'
-WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
-BOLD = '\033[1m'
-UNDERLINE = '\033[4m'
+HEADER = "\033[95m"
+OKBLUE = "\033[94m"
+OKCYAN = "\033[96m"
+OKGREEN = "\033[92m"
+WARNING = "\033[93m"
+FAIL = "\033[91m"
+ENDC = "\033[0m"
+BOLD = "\033[1m"
+UNDERLINE = "\033[4m"
 
 
 class WGCNA(GeneExp):
@@ -110,7 +110,7 @@ class WGCNA(GeneExp):
     :type moduleTraitCor: pandas dataframe
     :param moduleTraitPvalue: p-value of correlation between each module and metadata
     :type moduleTraitPvalue: pandas dataframe
-
+    :param figureType: extension of figure (default: "pdf")
     """
 
     def __init__(self, name='WGCNA',
@@ -121,7 +121,7 @@ class WGCNA(GeneExp):
                  MEDissThres=0.2,
                  species=None, level='gene', anndata=None, geneExp=None,
                  geneExpPath=None, sep=',',
-                 save=False, outputPath=None):
+                 save=False, outputPath=None, figureType='pdf'):
 
         super().__init__(species=species, level=level, anndata=anndata, geneExp=geneExp,
                          geneExpPath=geneExpPath, sep=sep)
@@ -132,10 +132,7 @@ class WGCNA(GeneExp):
         self.name = name
 
         self.save = save
-        if outputPath is None:
-            self.outputPath = os.getcwd()
-        else:
-            self.outputPath = outputPath
+        self.outputPath = os.getcwd() if outputPath is None else outputPath
 
         self.TPMcutoff = TPMcutoff
         self.cut = cut
@@ -175,6 +172,8 @@ class WGCNA(GeneExp):
                 print(f"{WARNING}Figure directory does not exist!\nCreating figure directory!{ENDC}")
                 os.makedirs(self.outputPath + '/figures/')
 
+        self.figureType = figureType
+
     def preprocess(self):
         """
         Preprocessing PyWGCNA object including removing obvious outlier on genes and samples
@@ -213,7 +212,7 @@ class WGCNA(GeneExp):
         plt.ylabel('Distances')
         plt.tight_layout()
         if self.save:
-            plt.savefig(self.outputPath + '/figures/sampleClusteringCleaning.png')
+            plt.savefig(f"{self.outputPath}/figures/sample_clustering_cleaning.{self.figureType}")
 
         # Determine cluster under the line
         clust = WGCNA.cutree(sampleTree, cutHeight=self.cut)
@@ -257,7 +256,7 @@ class WGCNA(GeneExp):
 
         fig.tight_layout()
         if self.save:
-            fig.savefig(self.outputPath + '/figures/summarypower.png')
+            fig.savefig(f"{self.outputPath}/figures/summary_power.{self.figureType}")
 
         # Set Power
         self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType)
@@ -299,7 +298,7 @@ class WGCNA(GeneExp):
         plt.ylabel('')
         plt.tight_layout()
         if self.save:
-            plt.savefig(self.outputPath + '/figures/eigenesgenes.png')
+            plt.savefig(f"{self.outputPath}/figures/eigenesgenes.{self.figureType}")
 
         # Call an automatic merging function
         merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
@@ -386,7 +385,7 @@ class WGCNA(GeneExp):
         if not show:
             plt.close(fig)
         if self.save:
-            fig.savefig(self.outputPath + '/figures/Module-traitRelationships.png')
+            fig.savefig(f"{self.outputPath}/figures/Module_trait_relationships.{self.figureType}")
         print("\tDone..\n")
 
         print(f"{OKCYAN}Adding (signed) eigengene-based connectivity (module membership) ...{ENDC}")
@@ -2871,7 +2870,7 @@ class WGCNA(GeneExp):
                         ax=axs[2, 0])
             if not show:
                 plt.close(fig)
-            fig.savefig(self.outputPath + '/figures/ModuleHeatmapEigengene' + moduleName + '.png')
+            fig.savefig(f"{self.outputPath}figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
 
         return None
 
@@ -2978,7 +2977,7 @@ class WGCNA(GeneExp):
                 axs[1, 0].set_ylabel('eigengeneExp')
                 axs[1, 0].set_facecolor('white')
                 fig.subplots_adjust(bottom=0.3)
-                fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
+                fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
                 if not show:
                     plt.close(fig)
 
@@ -2994,7 +2993,7 @@ class WGCNA(GeneExp):
                     if i != 0:
                         bar.set(ylabel=None)
 
-                fig.savefig(self.outputPath + '/figures/barplot_' + moduleName + '.png')
+                fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
                 if not show:
                     plt.close(fig)
 
@@ -3004,7 +3003,7 @@ class WGCNA(GeneExp):
 
         :param moduleName: module name
         :type moduleName: str
-        :param GoSets: sets of datasets of GO term you want to consider
+        :param GoSets: sets of datasets of GO term you want to consider (you can add any Enrichr Libraries from here: https://maayanlab.cloud/Enrichr/#stats)
         :type GoSets: list of str
         """
         if not os.path.exists(self.outputPath + '/figures/Go_term/'):
@@ -3027,7 +3026,7 @@ class WGCNA(GeneExp):
                     title="Gene ontology in " + moduleName + " module with " + str(
                         sum(self.datExpr.var['moduleColors'] == moduleName)) + " genes",
                     cmap='viridis_r', cutoff=0.5,
-                    ofname=self.outputPath + '/figures/Go_term/' + moduleName + '.png')
+                    ofname=f"{self.outputPath}/figures/Go_term/{moduleName}.{self.figureType}")
 
     def updateGeneInfo(self, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
         """

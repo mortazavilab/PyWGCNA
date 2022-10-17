@@ -26,7 +26,7 @@ setup(
         'pyvis',
         'anndata',
         'biomart',
-        'statsmodels'
+        'reactome2py'
     ],
     classifiers=[  # choose from here: https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha',
