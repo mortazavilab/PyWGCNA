@@ -21,6 +21,7 @@ import matplotlib.gridspec as gridspec
 import gseapy as gp
 from gseapy.plot import dotplot
 from pyvis.network import Network
+from reactome2py import analysis
 
 from PyWGCNA.geneExp import *
 
@@ -430,16 +431,16 @@ class WGCNA(GeneExp):
             print("\tDone..\n")
 
         if self.save:
-            print(f"{OKCYAN}doing Go term analysis for each module...{ENDC}")
+            print(f"{OKCYAN}doing Enrichr GO analysis for each module...{ENDC}")
             modules = np.unique(self.datExpr.var['moduleColors']).tolist()
             if 'gene_name' not in self.datExpr.var.columns:
                 print(
                     f"{WARNING}\tgene name didn't found in gene information!\n\t Go term analysis can not be done{ENDC}")
             else:
                 for module in modules:
-                    self.findGoTerm(module)
+                    self.functional_enrichment_analysis(type="GO",
+                                                        moduleName=module)
             print("\tDone..\n")
-
 
     @staticmethod
     def replaceMissing(x, replaceWith):
@@ -1203,7 +1204,6 @@ class WGCNA(GeneExp):
         :param minAbsSplitHeight: Minimum split height given as an absolute height. Branches merging below this height will automatically be merged. If not given (default), will be determined from minSplitHeight above.
         :type minAbsSplitHeight: int
         :param externalBranchSplitFnc: Optional function to evaluate split (dissimilarity) between two branches. Either a single function or a list in which each component is a function.
-
         :param minExternalSplit: Thresholds to decide whether two branches should be merged. It should be a numeric list of the same length as the number of functions in externalBranchSplitFnc above.
         :type minExternalSplit: list
         :param externalSplitOptions: Further arguments to function externalBranchSplitFnc. If only one external function is specified in externalBranchSplitFnc above, externalSplitOptions can be a named list of arguments or a list with one component.
@@ -2997,36 +2997,61 @@ class WGCNA(GeneExp):
                 if not show:
                     plt.close(fig)
 
-    def findGoTerm(self, moduleName, GoSets=['GO_Biological_Process_2021']):
+    def functional_enrichment_analysis(self, type, moduleName, sets=None, p_value=0.05):
         """
-        find and plot gene ontology(GO) for given module
+        Doing functional enrichment analysis including GO, KEGG and REACTOME
 
+        :param type: indicate the type of databases which it should be one of "GO", "KEGG", "REACTOME"
+        :type type: str
         :param moduleName: module name
         :type moduleName: str
-        :param GoSets: sets of datasets of GO term you want to consider (you can add any Enrichr Libraries from here: https://maayanlab.cloud/Enrichr/#stats)
-        :type GoSets: list of str
+        :param sets: str, list, tuple of Enrichr Library name(s). or custom defined gene_sets (dict, or gmt file) (you can add any Enrichr Libraries from here: https://maayanlab.cloud/Enrichr/#stats) only need to fill if the type is GO or KEGG
+        :type sets: str, list, tuple
+        :param p_value: Defines the pValue threshold. (default: 0.05)
+        :type p_value: float
         """
-        if not os.path.exists(self.outputPath + '/figures/Go_term/'):
-            print(f"{WARNING}Go_term directory does not exist!\nCreating Go_term directory!{ENDC}")
-            os.makedirs(self.outputPath + '/figures/Go_term/')
+        if type not in ["GO", "KEGG", "REACTOME"]:
+            sys.exit("Type is not valid! it should be one of them GO, KEGG, REACTOME")
 
         modules = np.unique(self.datExpr.var['moduleColors']).tolist()
         if np.all(moduleName not in modules):
             print(f"{WARNING}Module name does not exist in {ENDC}")
-            return None
-        else:
-            geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]
-            enr = gp.enrichr(gene_list=geneModule.fillna("").values.tolist(),
-                             gene_sets=GoSets,
+            return
+
+        if not os.path.exists(f"{self.outputPath}/figures/{type}"):
+            print(f"{WARNING}{type} directory does not exist!\nCreating {type} directory!{ENDC}")
+            os.makedirs(f"{self.outputPath}/figures/{type}")
+
+        if type == "GO":
+            sets = ["GO_Biological_Process_2021"]
+        elif type == "KEGG":
+            sets = ["KEGG_2016"]
+
+        geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]
+        geneModule = geneModule.fillna("").values.tolist()
+        if type in ["GO", "KEGG"]:
+            enr = gp.enrichr(gene_list=geneModule,
+                             gene_sets=sets,
                              organism=self.species,
                              description='',
-                             outdir=self.outputPath + '/figures/Go_term/' + moduleName,
-                             cutoff=0.5)
+                             outdir=f"{self.outputPath}/figures/{type}/{moduleName}",
+                             cutoff=p_value)
             dotplot(enr.res2d,
-                    title="Gene ontology in " + moduleName + " module with " + str(
-                        sum(self.datExpr.var['moduleColors'] == moduleName)) + " genes",
-                    cmap='viridis_r', cutoff=0.5,
-                    ofname=f"{self.outputPath}/figures/Go_term/{moduleName}.{self.figureType}")
+                    title=f"Gene ontology in {moduleName} module with {sum(self.datExpr.var['moduleColors'] == moduleName)} genes",
+                    cmap='viridis_r',
+                    cutoff=p_value,
+                    ofname=f"{self.outputPath}/figures/{type}/{moduleName}.{self.figureType}")
+        else:
+            geneModule = ",".join(geneModule)
+            result = analysis.identifiers(ids=geneModule,
+                                          species=self.species,
+                                          p_value=p_value)
+            token = result['summary']['token']
+            analysis.report(token,
+                            path=f"{self.outputPath}/figures/{type}",
+                            file=f"{moduleName}.{self.figureType}",
+                            number='50',
+                            species=self.species)
 
     def updateGeneInfo(self, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
         """
@@ -3215,7 +3240,7 @@ class WGCNA(GeneExp):
         self.signedKME = pd.DataFrame(output[0:datExpr.shape[1], datExpr.shape[1]:],
                                       index=datExpr.columns, columns=col)
 
-    def CoexpressionModulePlot(self, module, numGenes=10, numConnections=100, minTOM=0, filterCols=None, keepCats=None):
+    def CoexpressionModulePlot(self, module, numGenes=10, numConnections=100, minTOM=0):
         """
         plot Coexpression for given module
 

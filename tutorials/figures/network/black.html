@@ -1,0 +1,108 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 500px;
+            height: 500px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"color": "black", "id": "ENSMUSG00000064338", "label": "mt-Tv", "shape": "dot", "title": "gene_id:ENSMUSG00000064338\ngene_biotype:Mt_tRNA"}, {"color": "black", "id": "ENSMUSG00000064344", "label": "mt-Tm", "shape": "dot", "title": "gene_id:ENSMUSG00000064344\ngene_biotype:Mt_tRNA"}, {"color": "black", "id": "ENSMUSG00000064352", "label": "mt-Ts1", "shape": "dot", "title": "gene_id:ENSMUSG00000064352\ngene_biotype:Mt_tRNA"}, {"color": "black", "id": "ENSMUSG00000078126", "label": "Rpl23a-ps3", "shape": "dot", "title": "gene_id:ENSMUSG00000078126\ngene_biotype:processed_pseudogene"}, {"color": "black", "id": "ENSMUSG00000080859", "label": "Rpl10-ps1", "shape": "dot", "title": "gene_id:ENSMUSG00000080859\ngene_biotype:transcribed_processed_pseudogene"}, {"color": "black", "id": "ENSMUSG00000082536", "label": "Gm13456", "shape": "dot", "title": "gene_id:ENSMUSG00000082536\ngene_biotype:processed_pseudogene"}, {"color": "black", "id": "ENSMUSG00000086324", "label": "Gm15564", "shape": "dot", "title": "gene_id:ENSMUSG00000086324\ngene_biotype:lncRNA"}, {"color": "black", "id": "ENSMUSG00000114046", "label": "Snapc1l", "shape": "dot", "title": "gene_id:ENSMUSG00000114046\ngene_biotype:protein_coding"}, {"color": "black", "id": "ENSMUSG00000118246", "label": "Gm6052", "shape": "dot", "title": "gene_id:ENSMUSG00000118246\ngene_biotype:processed_pseudogene"}, {"color": "black", "id": "ENSMUSG00000118264", "label": "Rps15-ps3", "shape": "dot", "title": "gene_id:ENSMUSG00000118264\ngene_biotype:transcribed_processed_pseudogene"}]);
+        edges = new vis.DataSet([{"from": "ENSMUSG00000064338", "to": "ENSMUSG00000064344", "weight": 0.3250514820616298}, {"from": "ENSMUSG00000064352", "to": "ENSMUSG00000064344", "weight": 0.14645073981354023}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000064338", "weight": 0.09840553182164437}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000064344", "weight": 0.09154186889622452}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000064352", "weight": 0.07991769421993512}, {"from": "ENSMUSG00000078126", "to": "ENSMUSG00000086324", "weight": 0.06307331697016845}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000082536", "weight": 0.06223663038349748}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000114046", "weight": 0.0555143451680024}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000064352", "weight": 0.04707134223627078}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000118246", "weight": 0.04360180630442615}, {"from": "ENSMUSG00000064352", "to": "ENSMUSG00000114046", "weight": 0.04072628256398324}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000114046", "weight": 0.039395096634415656}, {"from": "ENSMUSG00000064338", "to": "ENSMUSG00000082536", "weight": 0.03442800798492851}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000064338", "weight": 0.033164507811718584}, {"from": "ENSMUSG00000082536", "to": "ENSMUSG00000064344", "weight": 0.03256539425145729}, {"from": "ENSMUSG00000114046", "to": "ENSMUSG00000064338", "weight": 0.028096788033987297}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000082536", "weight": 0.026676276721495605}, {"from": "ENSMUSG00000114046", "to": "ENSMUSG00000064344", "weight": 0.026492240811914022}, {"from": "ENSMUSG00000064352", "to": "ENSMUSG00000082536", "weight": 0.02603351361599749}, {"from": "ENSMUSG00000064338", "to": "ENSMUSG00000086324", "weight": 0.021727081812935263}, {"from": "ENSMUSG00000078126", "to": "ENSMUSG00000118264", "weight": 0.021122226425854283}, {"from": "ENSMUSG00000064344", "to": "ENSMUSG00000086324", "weight": 0.02036956339551905}, {"from": "ENSMUSG00000114046", "to": "ENSMUSG00000082536", "weight": 0.020154519798825894}, {"from": "ENSMUSG00000118264", "to": "ENSMUSG00000086324", "weight": 0.01689503039160031}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000118264", "weight": 0.016762151464440274}, {"from": "ENSMUSG00000082536", "to": "ENSMUSG00000086324", "weight": 0.01576657441096095}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000078126", "weight": 0.0155698075735524}, {"from": "ENSMUSG00000080859", "to": "ENSMUSG00000118264", "weight": 0.01543204899177233}, {"from": "ENSMUSG00000118264", "to": "ENSMUSG00000082536", "weight": 0.011180372769521775}, {"from": "ENSMUSG00000114046", "to": "ENSMUSG00000086324", "weight": 0.009066539771141791}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000086324", "weight": 0.008941909809027008}, {"from": "ENSMUSG00000064352", "to": "ENSMUSG00000086324", "weight": 0.008123719756938314}, {"from": "ENSMUSG00000118264", "to": "ENSMUSG00000064338", "weight": 0.007830046350949225}, {"from": "ENSMUSG00000118264", "to": "ENSMUSG00000064344", "weight": 0.007262453308613522}, {"from": "ENSMUSG00000078126", "to": "ENSMUSG00000064338", "weight": 0.006736568713070022}, {"from": "ENSMUSG00000064352", "to": "ENSMUSG00000118264", "weight": 0.00565941161513424}, {"from": "ENSMUSG00000078126", "to": "ENSMUSG00000064344", "weight": 0.005649654126646054}, {"from": "ENSMUSG00000118246", "to": "ENSMUSG00000078126", "weight": 0.005140341534245648}, {"from": "ENSMUSG00000078126", "to": "ENSMUSG00000114046", "weight": 0.004050766614123459}, {"from": "ENSMUSG00000078126", "to": "ENSMUSG00000064352", "weight": 0.00267774064346726}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>

@@ -82,8 +82,7 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
                 attributes=['ensembl_gene_id', 'external_gene_name', 'gene_biotype']):
     """
     get table that map gene ensembl id to gene name from biomart
-    
-    
+
     :param dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
         you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset
     :type dataset: string
@@ -118,7 +117,6 @@ def getGeneListGOid(dataset='mmusculus_gene_ensembl',
                     Goid='GO:0003700'):
     """
     get table that find gene id and gene name to specific Go term from biomart
-
 
     :param dataset: name of the dataset we used from biomart; mouse: mmusculus_gene_ensembl and human: hsapiens_gene_ensembl
         you can find more information here: https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset

@@ -6,15 +6,15 @@ import pickle
 
 
 # bcolors
-HEADER = '\033[95m'
-OKBLUE = '\033[94m'
-OKCYAN = '\033[96m'
-OKGREEN = '\033[92m'
-WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
-BOLD = '\033[1m'
-UNDERLINE = '\033[4m'
+HEADER = "\033[95m"
+OKBLUE = "\033[94m"
+OKCYAN = "\033[96m"
+OKGREEN = "\033[92m"
+WARNING = "\033[93m"
+FAIL = "\033[91m"
+ENDC = "\033[0m"
+BOLD = "\033[1m"
+UNDERLINE = "\033[4m"
 
 
 class Comparison:
@@ -38,7 +38,9 @@ class Comparison:
 
     """
 
-    def __init__(self, name1="name1", name2="name2", geneModule1=None, geneModule2=None, geneMarker=None, sc=False):
+    def __init__(self, name1="name1", name2="name2",
+                 geneModule1=None, geneModule2=None,
+                 geneMarker=None, sc=False):
         self.name1 = name1
         self.name2 = name2
         self.geneModule1 = geneModule1
@@ -110,24 +112,26 @@ class Comparison:
         :return: update compare class that replace automatically
         :rtype: compare class
         """
+        moduleColors1 = self.geneModule1.moduleColors.unique().tolist()
         list_sn = np.unique(self.geneMarker['cluster'])
-        num = len(self.geneModule1.keys()) * len(list_sn)
+        num = len(moduleColors1) * len(list_sn)
         df = pd.DataFrame(
             columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"],
             index=range(num))
 
         genes = []
         count = 0
-        for i in range(len(self.geneModule1.keys())):
-            node1 = self.geneModule1[self.geneModule1.keys()[i]]
+        for moduleColor1 in moduleColors1:
+            node1 = self.geneModule1.loc[self.geneModule1.moduleColors == moduleColor1, 'gene_id'].tolist()
             genes = genes + node1
             for j in range(len(list_sn)):
-                node2 = self.geneMarker[self.geneMarker['cluster'] == list_sn[j], :]
+                node2 = self.geneMarker[self.geneMarker['cluster'] == list_sn[j]]
 
-                df['WGCNA'][count] = self.geneModule1.keys()[i]
+                df['WGCNA'][count] = moduleColor1
                 df['sc'][count] = "N" + str(list_sn[j])
                 df['WGCNA_size'][count] = len(node1)
                 df['sc_size'][count] = len(node2)
+                print(node1, node2)
                 num = np.intersect1d(node1, node2)
                 df['number'][count] = len(num)
                 df['fraction(%)'][count] = len(num) / len(node2) * 100

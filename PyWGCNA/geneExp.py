@@ -24,11 +24,21 @@ class GeneExp:
     :type geneExpPath: str
     :param sep: separation symbol to use for reading data in geneExpPath properly
     :type sep: str
+    :param geneInfo: dataframe that contains genes information it should have a same index as gene expression column names (gene/transcript ID)
+    :type geneInfo: pandas dataframe
+    :param sampleInfo: dataframe that contains samples information it should have a same index as gene expression index (sample ID)
+    :type sampleInfo: pandas dataframe
     """
 
-    def __init__(self, species=None, level='gene',
-                 anndata=None, geneExp=None,
-                 geneExpPath=None, sep=','):
+    def __init__(self, 
+                 species=None, 
+                 level='gene',
+                 anndata=None, 
+                 geneExp=None,
+                 geneExpPath=None, 
+                 sep=',',
+                 geneInfo=None,
+                 sampleInfo=None):
         self.species = species
         self.level = level
         if geneExpPath is not None:
@@ -50,17 +60,11 @@ class GeneExp:
         else:
             raise ValueError("all type of input can not be empty at the same time!")
 
-        column = 'id'
-        if level == 'gene':
-            column = 'gene_id'
-        elif level == 'transcript':
-            column = 'transcript_id'
+        if geneInfo is None:
+            geneInfo = pd.DataFrame(index=expressionList.columns[1:])
 
-        geneInfo = pd.DataFrame(expressionList.columns[1:], columns=[column],
-                                index=expressionList.columns[1:])
-
-        sampleInfo = pd.DataFrame(range(expressionList.shape[0]), columns=['sample_id'],
-                                  index=expressionList.iloc[:, 0])
+        if sampleInfo is None:
+            sampleInfo = pd.DataFrame(index=expressionList.iloc[:, 0])
 
         expressionList.index = expressionList.iloc[:, 0]  # sample_id
         # drop sample id columns
@@ -68,23 +72,16 @@ class GeneExp:
 
         self.geneExpr = ad.AnnData(X=expressionList, obs=sampleInfo, var=geneInfo)
 
-    @staticmethod
-    def updateGeneInfo(expr, geneInfo=None, path=None, sep=' ', order=True, level='gene'):
+    def updateGeneInfo(self, geneInfo=None, path=None, sep=','):
         """
         add/update genes info in expr anndata
 
-        :param expr: expression data
-        :type expr: anndata
         :param geneInfo: gene information table you want to add to your data
         :type geneInfo: pandas dataframe
         :param path: path of geneInfo
         :type path: str
-        :param sep: separation symbol to use for reading data in path properly
+        :param sep: separation symbol to use for reading data in path properly (default: ',')
         :type sep: str
-        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
-        :type order: bool
-        :param level: indicated the expression data is at gene level or transcript level
-        :type level: str
         """
         if path is not None:
             if not os.path.isfile(path):
@@ -96,69 +93,31 @@ class GeneExp:
         else:
             raise ValueError("path and geneInfo can not be empty at the same time!")
 
-        if order:
-            geneInfo.index = expr.var
-            expr.var = pd.concat([geneInfo, expr.var], axis=1)
-            expr.var = expr.var.loc[:, ~expr.var.columns.duplicated()]
-        else:
-            name = 'ensembl_gene_id'
-            replace = 'gene_id'
-            if level == 'transcript':
-                name = 'ensembl_transcript_id'
-                replace = 'transcript_id'
-            if 'external_gene_name' in geneInfo.columns:
-                geneInfo.rename(columns={'external_gene_name': 'gene_name', name: replace}, inplace=True)
-            else:
-                geneInfo.rename(columns={name: replace}, inplace=True)
-            expr.var.gene_id = expr.var.gene_id.str.split('\\.', expand=True)[0]
-            expr.var.index.name = None
-            rmv = [x for x in geneInfo.columns if x in expr.var.columns]
-            rmv.remove(replace)
-            expr.var.drop(rmv, axis=1, inplace=True)
-            expr.var = expr.var.merge(geneInfo, on=replace, how='left')
-            expr.var.index = expr.var[replace]
-        return expr
+        same_columns = self.geneExpr.var.columns.intersection(geneInfo.index)
+        self.geneExpr.var.drop(same_columns, axis=1, inplace=True)
+        self.geneExpr.var = pd.concat([self.geneExpr.var, geneInfo], axis=1)
 
-    @staticmethod
-    def updateMetadata(expr, metaData=None, path=None, sep=' ', order=True):
+    def updateSampleInfo(self, sampleInfo=None, path=None, sep=','):
         """
         add/update metadata in expr anndata
 
-        :param expr: expression data
-        :type expr: anndata
-        :param metaData: Sample information table you want to add to your data
-        :type metaData: pandas dataframe
+        :param sampleInfo: Sample information table you want to add to your data
+        :type sampleInfo: pandas dataframe
         :param path: path of metaData
         :type path: str
-        :param sep: separation symbol to use for reading data in path properly
+        :param sep: separation symbol to use for reading data in path properly (default: ',')
         :type sep: str
-        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)
-        :type order: bool
         """
         if path is not None:
             if not os.path.isfile(path):
                 raise ValueError("path does not exist!")
-            metaData = pd.read_csv(path, sep=sep)
-        elif metaData is not None:
-            if not isinstance(metaData, pd.DataFrame):
+            sampleInfo = pd.read_csv(path, sep=sep)
+        elif sampleInfo is not None:
+            if not isinstance(sampleInfo, pd.DataFrame):
                 raise ValueError("meta data is not pandas dataframe!")
         else:
             raise ValueError("path and metaData can not be empty at the same time!")
 
-        if order:
-            metaData.index = expr.obs.index
-            expr.obs = pd.concat([metaData, expr.obs], axis=1)
-            expr.obs = expr.obs.loc[:, ~expr.obs.columns.duplicated()]
-        else:
-            expr.obs['index'] = expr.obs.index
-            if 'sample_id' not in metaData.columns:
-                metaData['sample_id'] = range(metaData.shape[0])
-
-            rmv = [x for x in metaData.columns if x in expr.obs.columns]
-            rmv.remove('sample_id')
-            expr.obs.drop(rmv, axis=1, inplace=True)
-            expr.obs = expr.obs.merge(metaData, on='sample_id', how='left')
-            expr.obs.index = expr.obs['index']
-            expr.obs.drop(['index'], axis=1, inplace=True)
-
-        return expr
+        same_columns = self.geneExpr.obs.columns.intersection(sampleInfo.index)
+        self.geneExpr.obs.drop(same_columns, axis=1, inplace=True)
+        self.geneExpr.obs = pd.concat([self.geneExpr.var, sampleInfo], axis=1)

@@ -13,20 +13,22 @@ setup(
     download_url='https://github.com/mortazavilab/PyWGCNA/archive/refs/tags/v1.0.0.tar.gz',  # link to the tar.gz file associated with this release
     keywords=['PyWGCNA', 'WGCNA', 'bulk', 'gene clustering', 'network analysis'],  #
     install_requires=[  # these can also include >, <, == to enforce version compatibility
-        'pandas',  # make sure the packages you put here are those NOT included in the
-        'numpy',  # base python distribution
-        'scipy',
-        'scikit-learn>=0.24.2',
-        'statsmodels',
-        'matplotlib',
-        'seaborn',
-        'biomart',
-        'gseapy',
+        'pandas>=1.5.0',  # make sure the packages you put here are those NOT included in the
+        'numpy>=1.21.2',  # base python distribution
+        'scipy>=1.9.1',
+        'scikit-learn>=1.1.2',
+        'statsmodels>=0.12.2',
+        'matplotlib>=3.4.2',
+        'seaborn>=0.11.1',
+        'biomart>=0.9.2',
+        'gseapy>=0.10.5',
         'pytest',
-        'pyvis',
-        'anndata',
+        'pyvis>=0.1.9',
+        'setuptools>=58.0.4',
         'biomart',
-        'reactome2py'
+        'reactome2py>=3.0.0',
+        'anndata>=0.8.0',
+        'resources>=0.0.1',
     ],
     classifiers=[  # choose from here: https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha',
