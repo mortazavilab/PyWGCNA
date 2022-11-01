@@ -3240,7 +3240,7 @@ class WGCNA(GeneExp):
         self.signedKME = pd.DataFrame(output[0:datExpr.shape[1], datExpr.shape[1]:],
                                       index=datExpr.columns, columns=col)
 
-    def CoexpressionModulePlot(self, module, numGenes=10, numConnections=100, minTOM=0):
+    def CoexpressionModulePlot(self, module, numGenes=10, numConnections=100, minTOM=0, filters=None):
         """
         plot Coexpression for given module
 
@@ -3252,6 +3252,8 @@ class WGCNA(GeneExp):
         :type numConnections: int
         :param minTOM: minimum TOM to keep connections
         :type minTOM: float
+        :param filters: Dictionary which keys are columns names of datExpr.var that you want to filter the genes based on it and values are determining which rows you want to keep
+        :type filters: dict
 
         :return: save a html file with name of modules in figures directory
         """
@@ -3268,9 +3270,9 @@ class WGCNA(GeneExp):
             name = 'transcript_id'
             name_biotype = 'transcript_biotype'
         gene_id = self.datExpr.var.loc[self.datExpr.var.moduleColors == module, :]
-        if filterCols is not None:
-            for i in range(len(filterCols)):
-                gene_id = gene_id.loc[gene_id[filterCols[i]] == keepCats[i], :]
+        if filters is not None:
+            for key in filters.keys():
+                gene_id = gene_id.loc[gene_id[key].isin(filters[key]), :]
         gene_id[name] = gene_id[name].str.split('\\.', expand=True)[0]
         gene_id = gene_id[name]
         if len(gene_id) < numGenes:

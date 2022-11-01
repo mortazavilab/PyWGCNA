@@ -38,7 +38,7 @@ def readWGCNA(file):
 
 
 # compare two WGCNA
-def compareWGCNA(WGCNA1, WGCNA2):
+def comparePyWGCNAs(WGCNA1, WGCNA2):
     """
     Compare two WGCNAs
                 
@@ -52,7 +52,7 @@ def compareWGCNA(WGCNA1, WGCNA2):
     """
     compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
                          geneModule1=WGCNA1.datExpr.var, geneModule2=WGCNA2.datExpr.var)
-    compare.compareWGCNA()
+    compare.compareNetworks()
 
     return compare
 
@@ -71,9 +71,9 @@ def compareSingleCell(WGCNA, sc):
     :rtype: Compare class
 
     """
-    compare = Comparison(name1=WGCNA.name, geneModule1=WGCNA.datExpr.var,
+    compare = Comparison(name1=WGCNA.name, name2="single_cell", geneModule1=WGCNA.datExpr.var,
                          geneMarker=sc, sc=True)
-    compare.compareSingleCell()
+    compare.compareNetworks()
 
     return compare
 

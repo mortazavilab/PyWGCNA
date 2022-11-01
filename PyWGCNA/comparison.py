@@ -4,7 +4,6 @@ from scipy.stats import fisher_exact
 import matplotlib.pyplot as plt
 import pickle
 
-
 # bcolors
 HEADER = "\033[95m"
 OKBLUE = "\033[94m"
@@ -50,7 +49,7 @@ class Comparison:
 
         self.comparison = None
 
-    def compareWGCNA(self):
+    def compareNetworks(self):
         """
         Compare two list of modules from two bulk gene expression data set
 
@@ -64,9 +63,12 @@ class Comparison:
             name1 = self.name1
             name2 = self.name2
         moduleColors1 = self.geneModule1.moduleColors.unique().tolist()
-        moduleColors2 = self.geneModule2.moduleColors.unique().tolist()
+        if self.sc:
+            moduleColors2 = np.unique(self.geneMarker['cluster'])
+        else:
+            moduleColors2 = self.geneModule2.moduleColors.unique().tolist()
         num = len(moduleColors1) * len(moduleColors2)
-        df = pd.DataFrame(columns=[name1, name2, name1 + "_size", name2 + "_size", "number", "fraction(%)", "P_value"],
+        df = pd.DataFrame(columns=[name1, name2, f"{name1}_size", f"{name2}_size", "number", "fraction(%)", "P_value"],
                           index=range(num))
 
         genes = []
@@ -75,12 +77,15 @@ class Comparison:
             node1 = self.geneModule1.loc[self.geneModule1.moduleColors == moduleColor1, 'gene_id'].tolist()
             genes = genes + node1
             for moduleColor2 in moduleColors2:
-                node2 = self.geneModule2.loc[self.geneModule2.moduleColors == moduleColor2, 'gene_id'].tolist()
+                if self.sc:
+                    node2 = self.geneMarker[self.geneMarker['cluster'] == moduleColor2].index.tolist()
+                else:
+                    node2 = self.geneModule2.loc[self.geneModule2.moduleColors == moduleColor2, 'gene_id'].tolist()
 
                 df[name1][count] = moduleColor1
                 df[name2][count] = moduleColor2
-                df[name1 + '_size'][count] = len(node1)
-                df[name2 + '_size'][count] = len(node2)
+                df[f"{name1}_size"][count] = len(node1)
+                df[f"{name2}_size"][count] = len(node2)
                 num = np.intersect1d(node1, node2)
                 df['number'][count] = len(num)
                 df['fraction(%)'][count] = len(num) / len(node2) * 100
@@ -95,9 +100,9 @@ class Comparison:
         for moduleColor1 in moduleColors1:
             for moduleColor2 in moduleColors2:
                 table = np.array(
-                    [[nGenes - df[name1 + '_size'][count] - df[name2 + '_size'][count] + df['number'][count],
-                      df[name1 + '_size'][count] - df['number'][count]],
-                     [df[name2 + '_size'][count] - df['number'][count],
+                    [[nGenes - df[f"{name1}_size"][count] - df[f"{name2}_size"][count] + df['number'][count],
+                      df[f"{name1}_size"][count] - df['number'][count]],
+                     [df[f"{name2}_size"][count] - df['number'][count],
                       df['number'][count]]])
                 oddsr, p = fisher_exact(table, alternative='two-sided')
                 df['P_value'][count] = p
@@ -105,59 +110,7 @@ class Comparison:
 
         self.comparison = df
 
-    def compareSingleCell(self):
-        """
-        Compare PyWGCNA object to single cell gene expression data
-
-        :return: update compare class that replace automatically
-        :rtype: compare class
-        """
-        moduleColors1 = self.geneModule1.moduleColors.unique().tolist()
-        list_sn = np.unique(self.geneMarker['cluster'])
-        num = len(moduleColors1) * len(list_sn)
-        df = pd.DataFrame(
-            columns=["WGCNA", "sc", "WGCNA_size", "sc_size", "number", "fraction(%)", "P_value", "cellType"],
-            index=range(num))
-
-        genes = []
-        count = 0
-        for moduleColor1 in moduleColors1:
-            node1 = self.geneModule1.loc[self.geneModule1.moduleColors == moduleColor1, 'gene_id'].tolist()
-            genes = genes + node1
-            for j in range(len(list_sn)):
-                node2 = self.geneMarker[self.geneMarker['cluster'] == list_sn[j]]
-
-                df['WGCNA'][count] = moduleColor1
-                df['sc'][count] = "N" + str(list_sn[j])
-                df['WGCNA_size'][count] = len(node1)
-                df['sc_size'][count] = len(node2)
-                print(node1, node2)
-                num = np.intersect1d(node1, node2)
-                df['number'][count] = len(num)
-                df['fraction(%)'][count] = len(num) / len(node2) * 100
-                df['cellType'][count] = self.geneMarker['cellType'][
-                    np.where(self.geneMarker['cluster'] == list_sn[j]).tolist()[0]]
-                count = count + 1
-
-                genes = genes + node2
-
-        genes = list(set(genes))
-        nGenes = len(genes)
-
-        count = 0
-        for i in range(len(self.geneModule1.keys())):
-            for j in range(len(list_sn)):
-                table = np.array([[nGenes - df['WGCNA'][count] - df['sc'][count] + df['number'][count],
-                                   df['WGCNA'][count] - df['number'][count]],
-                                  [df['sc'][count] - df['number'][count],
-                                   df['number'][count]]])
-                oddsr, p = fisher_exact(table, alternative='two-sided')
-                df['P_value'][count] = p
-                count = count + 1
-
-        self.comparison = df
-
-    def plotCompareWGCA(self, order1=None, order2=None, save=False):
+    def plotComparison(self, order1=None, order2=None, save=False, file_format="pdf"):
         """
         plot comparison
 
@@ -167,6 +120,8 @@ class Comparison:
         :type order2: list of str
         :param save: if you want to save plot as comparison.png near to your script
         :type save: bool
+        :param file_format: indicate the format of plot (default: pdf)
+        :type file_format: str
 
         """
         result = self.comparison.copy(deep=True)
@@ -221,12 +176,12 @@ class Comparison:
             grey[name2] = pd.Categorical(grey[name2], order2)
             grey.sort_values(by=[name2], inplace=True)
 
-        fig, ax = plt.subplots(figsize=(max(5, len(np.unique(result[name1])) / 3)+3,
+        fig, ax = plt.subplots(figsize=(max(5, len(np.unique(result[name1])) / 3) + 3,
                                         max(5, len(np.unique(result[name2])) / 3)),
                                facecolor='white')
         scatter = ax.scatter(x=result[name1],
                              y=result[name2],
-                             s=result['fraction(%)'].astype(float)*4,
+                             s=result['fraction(%)'].astype(float) * 4,
                              c=result['-log10(P_value)'],
                              alpha=0.8,
                              cmap='viridis',
@@ -236,16 +191,16 @@ class Comparison:
         fig.colorbar(scatter, shrink=0.25, label='-log10(P_value)')
 
         geyplot = ax.scatter(x=grey[name1],
-                   y=grey[name2],
-                   s=grey['fraction(%)'].astype(float)*4,
-                   c='grey',
-                   alpha=0.8,
-                   vmin=np.min(grey['fraction(%)']),
-                   vmax=np.max(grey['fraction(%)']))
+                             y=grey[name2],
+                             s=grey['fraction(%)'].astype(float) * 4,
+                             c='grey',
+                             alpha=0.8,
+                             vmin=np.min(grey['fraction(%)']),
+                             vmax=np.max(grey['fraction(%)']))
 
         # produce a legend with the unique colors from the scatter
         kw = dict(prop="sizes", num=4, color='black', fmt="{x:.1f} %",
-                  func=lambda s: s/4)
+                  func=lambda s: s / 4)
         legend1 = ax.legend(*scatter.legend_elements(**kw),
                             bbox_to_anchor=(1.05, 0.98),
                             loc="upper left",
@@ -266,21 +221,27 @@ class Comparison:
             ax.add_artist(legend2)
 
         plt.xticks(rotation=90)
-        plt.xlabel(name1 + " modules")
-        plt.ylabel(name2 + " modules")
+        if self.sc:
+            plt.xlabel(f"{name1} modules")
+            plt.ylabel(f"{name2} clusters")
+        else:
+            plt.xlabel(f"{name1} modules")
+            plt.ylabel(f"{name2} modules")
 
         if save:
-            plt.savefig('comparison_' + name1 + '_' + name2 + '.png')#'.pdf', format='pdf')
+            plt.savefig(f"comparison_{name1}_{name2}.{file_format}")
         plt.show()
 
-    def saveComparison(self):
+    def saveComparison(self, name="comparison"):
         """
         save comparison object as comparison.p near to the script
+
+        :param name: name of the pickle file (default: comparison.p)
+        :type name: str
         
         """
-        print(f"{BOLD}{OKBLUE}Saving comparison as comparison.p{ENDC}")
+        print(f"{BOLD}{OKBLUE}Saving comparison as {name}.p{ENDC}")
 
-        picklefile = open('comparison.p', 'wb')
+        picklefile = open(f"{name}.p", 'wb')
         pickle.dump(self, picklefile)
         picklefile.close()
-
