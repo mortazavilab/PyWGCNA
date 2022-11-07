@@ -12,8 +12,10 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../PyWGCNA'))
+import sphinx_bootstrap_theme
 
+sys.path.append(os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../PyWGCNA'))
 
 # -- Project information -----------------------------------------------------
 
@@ -21,18 +23,25 @@ project = 'PyWGCNA'
 copyright = '2022, Narges Rezaie'
 author = 'Narges Rezaie'
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
-              'sphinx.ext.intersphinx', 'sphinx.ext.todo',
-              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode',
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.doctest',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.coverage',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
               'sphinx.ext.inheritance_diagram',
-              'sphinx.ext.autosummary', 
-	      'myst_parser']
+              'sphinx.ext.autosummary',
+              'sphinx.ext.duration',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.githubpages',
+              'myst_parser',
+              ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -48,20 +57,13 @@ source_suffix = {
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 
+exclude_patterns = ['_build',
                     'dist', 'PyWGCNA.egg-info', 'setup.py', 'test',
-		    '__pycache__', '.DS_Store']
-
+                    '__pycache__', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'sphinx_rtd_theme'
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
+html_theme = 'bootstrap'
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 html_static_path = ['_static']
-

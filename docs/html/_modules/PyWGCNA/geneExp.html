@@ -1,70 +1,109 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PyWGCNA.geneExp &mdash; PyWGCNA  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PyWGCNA.geneExp &#8212; PyWGCNA  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
-</head>
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> PyWGCNA
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../README.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../README.html#tutorials">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API Documentation</a></li>
-</ul>
+  </head><body>
 
-        </div>
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          PyWGCNA</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
-    </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">PyWGCNA</a>
-      </nav>
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cite.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Documentation</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>PyWGCNA.geneExp</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
   <h1>Source code for PyWGCNA.geneExp</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -76,7 +115,7 @@
 <span class="n">np</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GeneExp"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp">[docs]</a><span class="k">class</span> <span class="nc">GeneExp</span><span class="p">:</span>
+<div class="viewcode-block" id="GeneExp"><a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp">[docs]</a><span class="k">class</span> <span class="nc">GeneExp</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class used to creat gene expression anndata along data trait including both genes and samples information.</span>
 
@@ -92,18 +131,28 @@
 <span class="sd">    :type geneExpPath: str</span>
 <span class="sd">    :param sep: separation symbol to use for reading data in geneExpPath properly</span>
 <span class="sd">    :type sep: str</span>
+<span class="sd">    :param geneInfo: dataframe that contains genes information it should have a same index as gene expression column names (gene/transcript ID)</span>
+<span class="sd">    :type geneInfo: pandas dataframe</span>
+<span class="sd">    :param sampleInfo: dataframe that contains samples information it should have a same index as gene expression index (sample ID)</span>
+<span class="sd">    :type sampleInfo: pandas dataframe</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;gene&#39;</span><span class="p">,</span>
-                 <span class="n">anndata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneExp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">geneExpPath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">level</span><span class="o">=</span><span class="s1">&#39;gene&#39;</span><span class="p">,</span>
+                 <span class="n">anndata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">geneExp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">geneExpPath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span>
+                 <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sampleInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="n">species</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span>
         <span class="k">if</span> <span class="n">geneExpPath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">geneExpPath</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;file does not exist!&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">expressionList</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">geneExpPath</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+                <span class="n">expressionList</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">geneExpPath</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">geneExp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geneExp</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
                 <span class="n">expressionList</span> <span class="o">=</span> <span class="n">geneExp</span>
@@ -118,145 +167,96 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;all type of input can not be empty at the same time!&quot;</span><span class="p">)</span>
 
-        <span class="n">column</span> <span class="o">=</span> <span class="s1">&#39;id&#39;</span>
-        <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="s1">&#39;gene&#39;</span><span class="p">:</span>
-            <span class="n">column</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span>
-        <span class="k">elif</span> <span class="n">level</span> <span class="o">==</span> <span class="s1">&#39;transcript&#39;</span><span class="p">:</span>
-            <span class="n">column</span> <span class="o">=</span> <span class="s1">&#39;transcript_id&#39;</span>
+        <span class="k">if</span> <span class="n">geneInfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">expressionList</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 
-        <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">expressionList</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
-                                <span class="n">index</span><span class="o">=</span><span class="n">expressionList</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-
-        <span class="n">sampleInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">expressionList</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sample_id&#39;</span><span class="p">],</span>
-                                  <span class="n">index</span><span class="o">=</span><span class="n">expressionList</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
-
-        <span class="n">expressionList</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">expressionList</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># sample_id</span>
-        <span class="c1"># drop sample id columns</span>
-        <span class="n">expressionList</span> <span class="o">=</span> <span class="n">expressionList</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="n">expressionList</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sampleInfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sampleInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">expressionList</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">expressionList</span><span class="p">,</span> <span class="n">obs</span><span class="o">=</span><span class="n">sampleInfo</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">geneInfo</span><span class="p">)</span>
 
-<div class="viewcode-block" id="GeneExp.updateGeneInfo"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp.updateGeneInfo">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">updateGeneInfo</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;gene&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="GeneExp.updateGeneInfo"><a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp.updateGeneInfo">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">updateGeneInfo</span><span class="p">(</span><span class="n">geneExpr</span><span class="p">,</span> <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add/update genes info in expr anndata</span>
 
-<span class="sd">        :param expr: expression data</span>
-<span class="sd">        :type expr: anndata</span>
+<span class="sd">        :param geneExpr: gene expression data along with sample and genes/transcript information</span>
+<span class="sd">        :type geneExpr: anndata</span>
 <span class="sd">        :param geneInfo: gene information table you want to add to your data</span>
 <span class="sd">        :type geneInfo: pandas dataframe</span>
 <span class="sd">        :param path: path of geneInfo</span>
 <span class="sd">        :type path: str</span>
-<span class="sd">        :param sep: separation symbol to use for reading data in path properly</span>
+<span class="sd">        :param sep: separation symbol to use for reading data in path properly (default: &#39;,&#39;)</span>
 <span class="sd">        :type sep: str</span>
-<span class="sd">        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)</span>
-<span class="sd">        :type order: bool</span>
-<span class="sd">        :param level: indicated the expression data is at gene level or transcript level</span>
-<span class="sd">        :type level: str</span>
+
+<span class="sd">        :return: updated gene expression data along with sample and genes/transcript information</span>
+<span class="sd">        :rtype: anndata</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path does not exist!&quot;</span><span class="p">)</span>
-            <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
+            <span class="n">geneInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">geneInfo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geneInfo</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;geneInfo is not pandas dataframe!&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path and geneInfo can not be empty at the same time!&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">order</span><span class="p">:</span>
-            <span class="n">geneInfo</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">geneInfo</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ensembl_gene_id&#39;</span>
-            <span class="n">replace</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span>
-            <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="s1">&#39;transcript&#39;</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ensembl_transcript_id&#39;</span>
-                <span class="n">replace</span> <span class="o">=</span> <span class="s1">&#39;transcript_id&#39;</span>
-            <span class="k">if</span> <span class="s1">&#39;external_gene_name&#39;</span> <span class="ow">in</span> <span class="n">geneInfo</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="n">geneInfo</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;external_gene_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gene_name&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">replace</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">geneInfo</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">replace</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">gene_id</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">gene_id</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">rmv</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">geneInfo</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
-            <span class="n">rmv</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">replace</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">rmv</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">geneInfo</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">replace</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="n">replace</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">expr</span></div>
+        <span class="n">same_columns</span> <span class="o">=</span> <span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">geneInfo</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">same_columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="p">,</span> <span class="n">geneInfo</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
 
-<div class="viewcode-block" id="GeneExp.updateMetadata"><a class="viewcode-back" href="../../PyWGCNA.html#PyWGCNA.geneExp.GeneExp.updateMetadata">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">updateMetadata</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">metaData</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">geneExpr</span></div>
+
+<div class="viewcode-block" id="GeneExp.updateSampleInfo"><a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp.updateSampleInfo">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">updateSampleInfo</span><span class="p">(</span><span class="n">geneExpr</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add/update metadata in expr anndata</span>
 
-<span class="sd">        :param expr: expression data</span>
-<span class="sd">        :type expr: anndata</span>
-<span class="sd">        :param metaData: Sample information table you want to add to your data</span>
-<span class="sd">        :type metaData: pandas dataframe</span>
+<span class="sd">        :param geneExpr: gene expression data along with sample and genes/transcript information</span>
+<span class="sd">        :type geneExpr: anndata</span>
+<span class="sd">        :param sampleInfo: Sample information table you want to add to your data</span>
+<span class="sd">        :type sampleInfo: pandas dataframe</span>
 <span class="sd">        :param path: path of metaData</span>
 <span class="sd">        :type path: str</span>
-<span class="sd">        :param sep: separation symbol to use for reading data in path properly</span>
+<span class="sd">        :param sep: separation symbol to use for reading data in path properly (default: &#39;,&#39;)</span>
 <span class="sd">        :type sep: str</span>
-<span class="sd">        :param order: if you want to update/add gene information by keeping the order as the same as data. if you want to add gene infor from biomart you should set this to be false. (default: TRUE)</span>
-<span class="sd">        :type order: bool</span>
+
+<span class="sd">        :return: updated gene expression data along with sample and genes/transcript information</span>
+<span class="sd">        :rtype: anndata</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path does not exist!&quot;</span><span class="p">)</span>
-            <span class="n">metaData</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">metaData</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metaData</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">sampleInfo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sampleInfo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampleInfo</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;meta data is not pandas dataframe!&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;path and metaData can not be empty at the same time!&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">order</span><span class="p">:</span>
-            <span class="n">metaData</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">metaData</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span>
-            <span class="k">if</span> <span class="s1">&#39;sample_id&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metaData</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="n">metaData</span><span class="p">[</span><span class="s1">&#39;sample_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">metaData</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">same_columns</span> <span class="o">=</span> <span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">sampleInfo</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">same_columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
 
-            <span class="n">rmv</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">metaData</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
-            <span class="n">rmv</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;sample_id&#39;</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">rmv</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">metaData</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;index&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">expr</span></div></div>
+        <span class="k">return</span> <span class="n">geneExpr</span></div></div>
 </pre></div>
 
-           </div>
-          </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, Narges Rezaie.</p>
+    </div>
+      
   </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2022, Narges Rezaie.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br/>
+    </p>
+  </div>
 </footer>
-        </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+  </body>
 </html>

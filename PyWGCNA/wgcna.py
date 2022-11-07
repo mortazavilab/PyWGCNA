@@ -649,8 +649,6 @@ class WGCNA(GeneExp):
         :type minNSamples: int
         :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)
         :type minNGenes: int
-        :param tol: An optional 'small' number to compare the variance against
-        :type tol: float
         :param minRelativeWeight: observations whose relative weight is below this threshold will be considered missing. Here relative weight is weight divided by the maximum weight in the column (gene). (default = 0.1)
         :type minRelativeWeight: float
 

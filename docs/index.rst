@@ -16,11 +16,15 @@ You can find GitHub pages `here <https://github.com/mortazavilab/PyWGCNA>`_.
 .. toctree::
    :maxdepth: 2
 
-   README.md
-   modules
+   installation
+   tutorials
+   cite
+   api
+
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
+* :ref:`search`
