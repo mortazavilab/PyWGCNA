@@ -29,7 +29,7 @@ you can pass the paths that store each information or the table contains them.
 
 #### Gene Expression
 The expression data is a table which the rows are samples and columns are genes.
-the first column is going to be sample id or sample name and first column should be gene id or gene name which both of them should be unique.
+The first column (index of dataframe) is going to be sample id or sample name and first column (column of dataframe) should be gene id or gene name which both of them should be unique.
 
 <div>
 <table border="1" class="dataframe">
@@ -63,7 +63,7 @@ the first column is going to be sample id or sample name and first column should
 
 #### Gene Information
 The gene information is a table which contains additional information about each genes. 
-It should have a same order as gene expression matrix or set `order=False`.
+First column should be your index which should be the same name as first column of gene expression data (gene ID).
 
 
 <div>
@@ -102,7 +102,7 @@ It should have a same order as gene expression matrix or set `order=False`.
 
 #### Sample Information
 The sample information is a table which contains additional information about each sample. 
-It should have a same order as gene expression matrix or set `order=False`.
+First column should be your index which should be the same name as first row of gene expression data (sample ID).
 
 <div>
 <table border="1" class="dataframe">

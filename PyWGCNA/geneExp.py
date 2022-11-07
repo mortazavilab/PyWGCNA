@@ -45,7 +45,7 @@ class GeneExp:
             if not os.path.isfile(geneExpPath):
                 raise ValueError("file does not exist!")
             else:
-                expressionList = pd.read_csv(geneExpPath, sep=sep)
+                expressionList = pd.read_csv(geneExpPath, sep=sep, index_col=0)
         elif geneExp is not None:
             if isinstance(geneExp, pd.DataFrame):
                 expressionList = geneExp
@@ -61,63 +61,75 @@ class GeneExp:
             raise ValueError("all type of input can not be empty at the same time!")
 
         if geneInfo is None:
-            geneInfo = pd.DataFrame(index=expressionList.columns[1:])
+            geneInfo = pd.DataFrame(index=expressionList.columns)
 
         if sampleInfo is None:
-            sampleInfo = pd.DataFrame(index=expressionList.iloc[:, 0])
-
-        expressionList.index = expressionList.iloc[:, 0]  # sample_id
-        # drop sample id columns
-        expressionList = expressionList.drop([expressionList.columns[0]], axis=1)
+            sampleInfo = pd.DataFrame(index=expressionList.index)
 
         self.geneExpr = ad.AnnData(X=expressionList, obs=sampleInfo, var=geneInfo)
 
-    def updateGeneInfo(self, geneInfo=None, path=None, sep=','):
+    @staticmethod
+    def updateGeneInfo(geneExpr, geneInfo=None, path=None, sep=','):
         """
         add/update genes info in expr anndata
 
+        :param geneExpr: gene expression data along with sample and genes/transcript information
+        :type geneExpr: anndata
         :param geneInfo: gene information table you want to add to your data
         :type geneInfo: pandas dataframe
         :param path: path of geneInfo
         :type path: str
         :param sep: separation symbol to use for reading data in path properly (default: ',')
         :type sep: str
+
+        :return: updated gene expression data along with sample and genes/transcript information
+        :rtype: anndata
         """
         if path is not None:
             if not os.path.isfile(path):
                 raise ValueError("path does not exist!")
-            geneInfo = pd.read_csv(path, sep=sep)
+            geneInfo = pd.read_csv(path, sep=sep, index_col=0)
         elif geneInfo is not None:
             if not isinstance(geneInfo, pd.DataFrame):
                 raise ValueError("geneInfo is not pandas dataframe!")
         else:
             raise ValueError("path and geneInfo can not be empty at the same time!")
 
-        same_columns = self.geneExpr.var.columns.intersection(geneInfo.index)
-        self.geneExpr.var.drop(same_columns, axis=1, inplace=True)
-        self.geneExpr.var = pd.concat([self.geneExpr.var, geneInfo], axis=1)
+        same_columns = geneExpr.var.columns.intersection(geneInfo.columns)
+        geneExpr.var.drop(same_columns, axis=1, inplace=True)
+        geneExpr.var = pd.concat([geneExpr.var, geneInfo], axis=1).loc[geneExpr.var.index, :]
 
-    def updateSampleInfo(self, sampleInfo=None, path=None, sep=','):
+        return geneExpr
+
+    @staticmethod
+    def updateSampleInfo(geneExpr, sampleInfo=None, path=None, sep=','):
         """
         add/update metadata in expr anndata
 
+        :param geneExpr: gene expression data along with sample and genes/transcript information
+        :type geneExpr: anndata
         :param sampleInfo: Sample information table you want to add to your data
         :type sampleInfo: pandas dataframe
         :param path: path of metaData
         :type path: str
         :param sep: separation symbol to use for reading data in path properly (default: ',')
         :type sep: str
+
+        :return: updated gene expression data along with sample and genes/transcript information
+        :rtype: anndata
         """
         if path is not None:
             if not os.path.isfile(path):
                 raise ValueError("path does not exist!")
-            sampleInfo = pd.read_csv(path, sep=sep)
+            sampleInfo = pd.read_csv(path, sep=sep, index_col=0)
         elif sampleInfo is not None:
             if not isinstance(sampleInfo, pd.DataFrame):
                 raise ValueError("meta data is not pandas dataframe!")
         else:
             raise ValueError("path and metaData can not be empty at the same time!")
 
-        same_columns = self.geneExpr.obs.columns.intersection(sampleInfo.index)
-        self.geneExpr.obs.drop(same_columns, axis=1, inplace=True)
-        self.geneExpr.obs = pd.concat([self.geneExpr.var, sampleInfo], axis=1)
+        same_columns = geneExpr.obs.columns.intersection(sampleInfo.columns)
+        geneExpr.obs.drop(same_columns, axis=1, inplace=True)
+        geneExpr.obs = pd.concat([geneExpr.obs, sampleInfo], axis=1).loc[geneExpr.obs.index, :]
+
+        return geneExpr

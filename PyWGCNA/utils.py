@@ -79,7 +79,8 @@ def compareSingleCell(WGCNA, sc):
 
 
 def getGeneList(dataset='mmusculus_gene_ensembl',
-                attributes=['ensembl_gene_id', 'external_gene_name', 'gene_biotype']):
+                attributes=['ensembl_gene_id', 'external_gene_name', 'gene_biotype'],
+                maps=['gene_id', 'gene_name', 'go_id']):
     """
     get table that map gene ensembl id to gene name from biomart
 
@@ -88,6 +89,8 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
     :type dataset: string
     :param attributes: List the types of data we want
     :type attributes: list
+    :param maps: mapping between attributes and column names of gene information you want to show
+    :type maps: list
     
     :return: table extracted from biomart related to the datasets including information from attributes
     :rtype: pandas dataframe
@@ -108,6 +111,12 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
         for i in range(len(attributes)):
             dict[attributes[i]] = line[i]
         geneInfo = geneInfo.append(dict, ignore_index=True)
+
+    geneInfo.index = geneInfo[attributes[0]]
+    geneInfo.drop(attributes[0], axis=1, inplace=True)
+
+    if maps is not None:
+        geneInfo.columns = maps[1:]
 
     return geneInfo
 
