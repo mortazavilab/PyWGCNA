@@ -1781,13 +1781,13 @@ class WGCNA(GeneExp):
             if len(Sizes) > 1:
                 SizeRank = np.insert(stats.rankdata(-1 * Sizes[1:len(Sizes)], method='ordinal') + 1, 0, 1)
             else:
-                SizeRank = 1
+                SizeRank = [1]
             for i in range(len(NumLabs)):
-                OrdNumLabs.Value[i] = SizeRank[NumLabs[i]]
+                OrdNumLabs.Value[i] = SizeRank[NumLabs[i] - 1]
         else:
-            SizeRank = stats.rankdata(-1 * Sizes[0:len(Sizes)], method='ordinal')
+            SizeRank = stats.rankdata(-1 * Sizes, method='ordinal')
             for i in range(len(NumLabs)):
-                OrdNumLabs.Value[i] = SizeRank[NumLabs[i]]
+                OrdNumLabs.Value[i] = SizeRank[NumLabs[i]-1]
 
         print("\tDone..\n")
 
