@@ -185,7 +185,7 @@ class WGCNA(GeneExp):
 
         # Prepare and clean data
         # Remove cols with less than 1 TPM
-        self.datExpr = self.datExpr[:, (self.datExpr.X > self.TPMcutoff).any(axis=0)]
+        self.datExpr = self.datExpr[:, (self.datExpr.to_df() > self.TPMcutoff).any(axis=0)]
 
         # Check that all genes and samples have sufficiently low numbers of missing values.
         goodGenes, goodSamples, allOK = WGCNA.goodSamplesGenes(self.datExpr.to_df().T)
