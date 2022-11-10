@@ -3019,9 +3019,9 @@ class WGCNA(GeneExp):
             print(f"{WARNING}{type} directory does not exist!\nCreating {type} directory!{ENDC}")
             os.makedirs(f"{self.outputPath}/figures/{type}")
 
-        if type == "GO":
+        if type == "GO" and sets is None:
             sets = ["GO_Biological_Process_2021"]
-        elif type == "KEGG":
+        elif type == "KEGG" and sets is None:
             sets = ["KEGG_2016"]
 
         geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]

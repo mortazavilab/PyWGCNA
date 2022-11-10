@@ -22,3 +22,5 @@ PyWGCNA.egg-info/
 
 #debug
 test/
+
+runtime/
