@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='PyWGCNA',  # the name of your package
     packages=['PyWGCNA'],  # same as above
-    version='v1.15.1',  # version number
+    version='1.15.3',  # version number
     license='MIT',  # license type
     description='PyWGCNA is a Python package designed to do Weighted correlation network analysis (WGCNA)',
     # short description
@@ -21,7 +21,7 @@ setup(
         'matplotlib>=3.4.2',
         'seaborn>=0.11.1',
         'biomart>=0.9.2',
-        'gseapy>=0.10.5',
+        'gseapy>=0.14.5',
         'pytest',
         'pyvis>=0.1.9',
         'setuptools>=59.8.0',

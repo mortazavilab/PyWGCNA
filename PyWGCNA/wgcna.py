@@ -3033,7 +3033,7 @@ class WGCNA(GeneExp):
                              outdir=f"{self.outputPath}/figures/{type}/{file_name}",
                              cutoff=p_value)
             dotplot(enr.res2d,
-                    title=f"Gene ontology in {moduleName} module with {sum(self.datExpr.var['moduleColors'] == moduleName)} genes",
+                    title=f"Gene ontology in {moduleName} module",
                     cmap='viridis_r',
                     cutoff=p_value,
                     ofname=f"{self.outputPath}/figures/{type}/{file_name}.{self.figureType}")
