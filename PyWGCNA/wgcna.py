@@ -3030,7 +3030,6 @@ class WGCNA(GeneExp):
             enr = gp.enrichr(gene_list=geneModule,
                              gene_sets=sets,
                              organism=self.species,
-                             description='',
                              outdir=f"{self.outputPath}/figures/{type}/{file_name}",
                              cutoff=p_value)
             dotplot(enr.res2d,
@@ -3054,8 +3053,8 @@ class WGCNA(GeneExp):
                                           species=self.species,
                                           p_value=str(p_value))
 
-            print(f"{numGeneModule - token_result['identifiersNotFound']} out of {numGeneModule} identifiers in the sample were found in Reactome.")
-            print(f"{token_result['resourceSummary'][0]['pathways']} pathways were hit by at least one of them, which {len(token_result['pathways'])} of them have p-value more than {p_value}.")
+            print(f"{numGeneModule - token_result['identifiersNotFound']} out of {numGeneModule} genes (identifiers) in the sample were found in Reactome.")
+            print(f"{token_result['resourceSummary'][0]['pathways']} pathways were hit by at least one of them, which {len(token_result['pathways'])} of them have p-value less than {p_value}.")
             print(f"Report was saved {self.outputPath}/figures/{type}/{file_name}.{self.figureType}!")
             print(f"For more information please visit https://reactome.org/PathwayBrowser/#/DTAB=AN&ANALYSIS={token}")
 
