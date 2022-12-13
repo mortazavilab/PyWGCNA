@@ -3036,7 +3036,6 @@ class WGCNA(GeneExp):
                     title=f"Gene ontology in {moduleName} module",
                     cmap='viridis_r',
                     cutoff=p_value,
-                    column = 'P-value',
                     ofname=f"{self.outputPath}/figures/{type}/{file_name}.{self.figureType}")
         else:
             numGeneModule = len(geneModule)
