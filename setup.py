@@ -21,7 +21,7 @@ setup(
         'matplotlib>=3.4.2',
         'seaborn>=0.11.1',
         'biomart>=0.9.2',
-        'gseapy>=0.14.5',
+        'gseapy>=1.0.1',
         'pytest',
         'pyvis>=0.1.9',
         'setuptools>=59.8.0',
