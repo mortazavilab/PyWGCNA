@@ -1,0 +1,54 @@
+Gene_set	Term	Overlap	P-value	Adjusted P-value	Old P-value	Old Adjusted P-value	Odds Ratio	Combined Score	Genes
+GO_Biological_Process_2021	dorsal/ventral axis specification (GO:0009950)	1/5	1.169596e-02	2.393235e-01	0	0	1.084185e+02	4.823009e+02	SMAD6
+GO_Biological_Process_2021	mitral valve development (GO:0003174)	1/7	1.633678e-02	2.393235e-01	0	0	7.227174e+01	2.973502e+02	SMAD6
+GO_Biological_Process_2021	negative regulation of pathway-restricted SMAD protein phosphorylation (GO:0060394)	1/9	2.095627e-02	2.393235e-01	0	0	5.419837e+01	2.094939e+02	SMAD6
+GO_Biological_Process_2021	mitral valve morphogenesis (GO:0003183)	1/9	2.095627e-02	2.393235e-01	0	0	5.419837e+01	2.094939e+02	SMAD6
+GO_Biological_Process_2021	response to laminar fluid shear stress (GO:0034616)	1/10	2.325805e-02	2.393235e-01	0	0	4.817391e+01	1.811871e+02	SMAD6
+GO_Biological_Process_2021	pulmonary valve morphogenesis (GO:0003184)	1/17	3.922288e-02	2.393235e-01	0	0	2.708832e+01	8.772538e+01	SMAD6
+GO_Biological_Process_2021	embryonic axis specification (GO:0000578)	1/18	4.148262e-02	2.393235e-01	0	0	2.549361e+01	8.113291e+01	SMAD6
+GO_Biological_Process_2021	pulmonary valve development (GO:0003177)	1/18	4.148262e-02	2.393235e-01	0	0	2.549361e+01	8.113291e+01	SMAD6
+GO_Biological_Process_2021	atrioventricular valve morphogenesis (GO:0003181)	1/19	4.373716e-02	2.393235e-01	0	0	2.407609e+01	7.534749e+01	SMAD6
+GO_Biological_Process_2021	negative regulation of ossification (GO:0030279)	1/24	5.493223e-02	2.393235e-01	0	0	1.883743e+01	5.465972e+01	SMAD6
+GO_Biological_Process_2021	outflow tract septum morphogenesis (GO:0003148)	1/25	5.715580e-02	2.393235e-01	0	0	1.805163e+01	5.166330e+01	SMAD6
+GO_Biological_Process_2021	regulation of sodium ion transmembrane transport (GO:1902305)	1/28	6.379585e-02	2.393235e-01	0	0	1.604348e+01	4.415273e+01	BPIFA1
+GO_Biological_Process_2021	regulation of cation transmembrane transport (GO:1904062)	1/30	6.819709e-02	2.393235e-01	0	0	1.493553e+01	4.010718e+01	BPIFA1
+GO_Biological_Process_2021	negative regulation of osteoblast differentiation (GO:0045668)	1/31	7.039011e-02	2.393235e-01	0	0	1.443696e+01	3.831139e+01	SMAD6
+GO_Biological_Process_2021	aortic valve morphogenesis (GO:0003180)	1/32	7.257808e-02	2.393235e-01	0	0	1.397055e+01	3.664603e+01	SMAD6
+GO_Biological_Process_2021	regulation of ossification (GO:0030278)	1/36	8.127967e-02	2.393235e-01	0	0	1.237143e+01	3.105055e+01	SMAD6
+GO_Biological_Process_2021	aortic valve development (GO:0003176)	1/36	8.127967e-02	2.393235e-01	0	0	1.237143e+01	3.105055e+01	SMAD6
+GO_Biological_Process_2021	regulation of sodium ion transport (GO:0002028)	1/36	8.127967e-02	2.393235e-01	0	0	1.237143e+01	3.105055e+01	BPIFA1
+GO_Biological_Process_2021	antibacterial humoral response (GO:0019731)	1/44	9.844381e-02	2.746064e-01	0	0	1.006572e+01	2.333506e+01	BPIFA1
+GO_Biological_Process_2021	negative regulation of BMP signaling pathway (GO:0030514)	1/52	1.152940e-01	2.909800e-01	0	0	8.483376e+00	1.832638e+01	SMAD6
+GO_Biological_Process_2021	negative regulation of protein-containing complex assembly (GO:0031333)	1/52	1.152940e-01	2.909800e-01	0	0	8.483376e+00	1.832638e+01	SMAD6
+GO_Biological_Process_2021	regulation of pathway-restricted SMAD protein phosphorylation (GO:0060393)	1/58	1.277289e-01	2.943319e-01	0	0	7.588101e+00	1.561513e+01	SMAD6
+GO_Biological_Process_2021	fat cell differentiation (GO:0045444)	1/58	1.277289e-01	2.943319e-01	0	0	7.588101e+00	1.561513e+01	SMAD6
+GO_Biological_Process_2021	antimicrobial humoral immune response mediated by antimicrobial peptide (GO:0061844)	1/64	1.399928e-01	2.992092e-01	0	0	6.863354e+00	1.349448e+01	BPIFA1
+GO_Biological_Process_2021	BMP signaling pathway (GO:0030509)	1/65	1.420203e-01	2.992092e-01	0	0	6.755774e+00	1.318582e+01	SMAD6
+GO_Biological_Process_2021	negative regulation of transforming growth factor beta receptor signaling pathway (GO:0030512)	1/68	1.480748e-01	2.992092e-01	0	0	6.452304e+00	1.232414e+01	SMAD6
+GO_Biological_Process_2021	cellular response to BMP stimulus (GO:0071773)	1/71	1.540874e-01	2.992092e-01	0	0	6.174845e+00	1.154841e+01	SMAD6
+GO_Biological_Process_2021	response to molecule of bacterial origin (GO:0002237)	1/73	1.580728e-01	2.992092e-01	0	0	6.002717e+00	1.107321e+01	SMAD6
+GO_Biological_Process_2021	regulation of BMP signaling pathway (GO:0030510)	1/76	1.640164e-01	2.997540e-01	0	0	5.761739e+00	1.041601e+01	SMAD6
+GO_Biological_Process_2021	negative regulation of cellular response to growth factor stimulus (GO:0090288)	1/80	1.718773e-01	3.036499e-01	0	0	5.468905e+00	9.630602e+00	SMAD6
+GO_Biological_Process_2021	regulation of osteoblast differentiation (GO:0045667)	1/83	1.777255e-01	3.038532e-01	0	0	5.268028e+00	9.100598e+00	SMAD6
+GO_Biological_Process_2021	transforming growth factor beta receptor signaling pathway (GO:0007179)	1/89	1.893008e-01	3.135295e-01	0	0	4.907362e+00	8.167901e+00	SMAD6
+GO_Biological_Process_2021	regulation of transforming growth factor beta receptor signaling pathway (GO:0017015)	1/100	2.101095e-01	3.374486e-01	0	0	4.359684e+00	6.801658e+00	SMAD6
+GO_Biological_Process_2021	negative regulation of transmembrane receptor protein serine/threonine kinase signaling pathway (GO:0090101)	1/108	2.249138e-01	3.472067e-01	0	0	4.032101e+00	6.016047e+00	SMAD6
+GO_Biological_Process_2021	response to lipid (GO:0033993)	1/114	2.358385e-01	3.472067e-01	0	0	3.816853e+00	5.513856e+00	SMAD6
+GO_Biological_Process_2021	cellular response to transforming growth factor beta stimulus (GO:0071560)	1/114	2.358385e-01	3.472067e-01	0	0	3.816853e+00	5.513856e+00	SMAD6
+GO_Biological_Process_2021	defense response to symbiont (GO:0140546)	1/124	2.537124e-01	3.634258e-01	0	0	3.504772e+00	4.806984e+00	BPIFA1
+GO_Biological_Process_2021	defense response to virus (GO:0051607)	1/133	2.694485e-01	3.661736e-01	0	0	3.264328e+00	4.280768e+00	BPIFA1
+GO_Biological_Process_2021	transmembrane receptor protein serine/threonine kinase signaling pathway (GO:0007178)	1/133	2.694485e-01	3.661736e-01	0	0	3.264328e+00	4.280768e+00	SMAD6
+GO_Biological_Process_2021	negative regulation of protein phosphorylation (GO:0001933)	1/152	3.016104e-01	3.996337e-01	0	0	2.850849e+00	3.417083e+00	SMAD6
+GO_Biological_Process_2021	response to lipopolysaccharide (GO:0032496)	1/159	3.131066e-01	4.047476e-01	0	0	2.723583e+00	3.162656e+00	SMAD6
+GO_Biological_Process_2021	defense response to bacterium (GO:0042742)	1/176	3.402606e-01	4.293765e-01	0	0	2.456894e+00	2.648639e+00	BPIFA1
+GO_Biological_Process_2021	negative regulation of cell differentiation (GO:0045596)	1/191	3.633455e-01	4.478444e-01	0	0	2.261213e+00	2.289255e+00	SMAD6
+GO_Biological_Process_2021	negative regulation of multicellular organismal process (GO:0051241)	1/214	3.972148e-01	4.784633e-01	0	0	2.014697e+00	1.860125e+00	SMAD6
+GO_Biological_Process_2021	innate immune response (GO:0045087)	1/302	5.112682e-01	6.021603e-01	0	0	1.419327e+00	9.521711e-01	BPIFA1
+GO_Biological_Process_2021	negative regulation of cell population proliferation (GO:0008285)	1/379	5.935282e-01	6.714911e-01	0	0	1.125776e+00	5.872843e-01	SMAD6
+GO_Biological_Process_2021	negative regulation of programmed cell death (GO:0043069)	1/381	5.954733e-01	6.714911e-01	0	0	1.119737e+00	5.804702e-01	SMAD6
+GO_Biological_Process_2021	negative regulation of apoptotic process (GO:0043066)	1/485	6.849864e-01	7.563392e-01	0	0	8.744610e-01	3.308578e-01	SMAD6
+GO_Biological_Process_2021	negative regulation of cellular process (GO:0048523)	1/566	7.409817e-01	8.014700e-01	0	0	7.459792e-01	2.236292e-01	SMAD6
+GO_Biological_Process_2021	regulation of apoptotic process (GO:0042981)	1/742	8.311843e-01	8.729665e-01	0	0	5.636332e-01	1.042179e-01	SMAD6
+GO_Biological_Process_2021	regulation of cell population proliferation (GO:0042127)	1/764	8.400244e-01	8.729665e-01	0	0	5.467548e-01	9.531268e-02	SMAD6
+GO_Biological_Process_2021	regulation of transcription by RNA polymerase II (GO:0006357)	1/2206	9.959094e-01	9.963006e-01	0	0	1.749778e-01	7.172366e-04	SMAD6
+GO_Biological_Process_2021	regulation of transcription, DNA-templated (GO:0006355)	1/2244	9.963006e-01	9.963006e-01	0	0	1.716451e-01	6.361528e-04	SMAD6

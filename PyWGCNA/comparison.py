@@ -1,10 +1,20 @@
+import math
+import sys
+
 import pandas as pd
 import numpy as np
 from scipy.stats import fisher_exact
 import matplotlib.pyplot as plt
 import pickle
+import seaborn as sns
+import networkx as nx
+from matplotlib import cm
+from matplotlib.colors import ListedColormap
+from matplotlib.lines import Line2D
 
 # bcolors
+import PyWGCNA
+
 HEADER = "\033[95m"
 OKBLUE = "\033[94m"
 OKCYAN = "\033[96m"
@@ -20,217 +30,466 @@ class Comparison:
     """
     A class used to compare PyWGCNA to another PyWGCNA or any gene marker table
 
-    :param name1: name of first WGCNA
-    :type name1: str
-    :param name2: name of second WGCNA
-    :type name2: str
-    :param geneModule1: gene modules of first WGCNA
-    :type geneModule1: dict
-    :param geneModule2: gene modules of second WGCNA
-    :type geneModule2: dict
-    :param geneMarker: gene marker of single cell data
-    :type geneMarker: pandas dataframe
-    :param sc: indicate if object is WGCNA or single cell
-    :type sc: bool
-    :param comparison: Summary of comparison results
-    :type comparison: pandas dataframe
+    :param geneModules: gene modules of networks
+    :type geneModules: dict
+    :param jaccard_similarity: jaccard similarity of common genes between each modules
+    :type jaccard_similarity: pandas dataframe
+    :param P_value: P value of common genes between each modules
+    :type P_value: pandas dataframe
+    :param fraction: fraction of common genes between each modules
+    :type fraction: pandas dataframe
 
     """
 
-    def __init__(self, name1="name1", name2="name2",
-                 geneModule1=None, geneModule2=None,
-                 geneMarker=None, sc=False):
-        self.name1 = name1
-        self.name2 = name2
-        self.geneModule1 = geneModule1
-        self.geneModule2 = geneModule2
-        self.geneMarker = geneMarker
-        self.sc = sc
+    def __init__(self, geneModules=None):
+        self.geneModules = geneModules
 
-        self.comparison = None
+        self.jaccard_similarity = None
+        self.P_value = None
+        self.fraction = None
 
-    def compareNetworks(self):
+    def calculateJaccardSimilarity(self):
         """
-        Compare two list of modules from two bulk gene expression data set
+        Calculate jaccard similarity matrix along multiple networks
 
-        :return: update compare class that replace automatically
-        :rtype: compare class
+        :return: dataframe containing jaccard similarity between all modules in all PyWGCNA objects
+        :rtype: pandas dataframe
         """
-        if self.name1 == self.name2:
-            name1 = self.name1 + "1"
-            name2 = self.name2 + "2"
-        else:
-            name1 = self.name1
-            name2 = self.name2
-        moduleColors1 = self.geneModule1.moduleColors.unique().tolist()
-        if self.sc:
-            moduleColors2 = np.unique(self.geneMarker['cluster'])
-        else:
-            moduleColors2 = self.geneModule2.moduleColors.unique().tolist()
-        num = len(moduleColors1) * len(moduleColors2)
-        df = pd.DataFrame(columns=[name1, name2, f"{name1}_size", f"{name2}_size", "number", "fraction(%)", "P_value"],
-                          index=range(num))
+        num = 0
+        names = []
+        for network in self.geneModules.keys():
+            num = num + len(self.geneModules[network].moduleColors.unique())
+            tmp = [f"{network}:" + s for s in self.geneModules[network].moduleColors.unique().tolist()]
+            names = names + tmp
+        jaccard_similarity = pd.DataFrame(0.0, columns=names, index=names)
+        jaccard_similarity.values[[np.arange(jaccard_similarity.shape[0])] * 2] = 1.0
+
+        for network1 in self.geneModules.keys():
+            for network2 in self.geneModules.keys():
+                if network1 != network2:
+                    modules1 = self.geneModules[network1].moduleColors.unique().tolist()
+                    modules2 = self.geneModules[network2].moduleColors.unique().tolist()
+                    for module1 in modules1:
+                        for module2 in modules2:
+                            list1 = self.geneModules[network1].index[
+                                self.geneModules[network1].moduleColors == module1].tolist()
+                            list2 = self.geneModules[network2].index[
+                                self.geneModules[network2].moduleColors == module2].tolist()
+                            jaccard_similarity.loc[
+                                f"{network1}:{module1}", f"{network2}:{module2}"] = PyWGCNA.Comparison.jaccard(list1,
+                                                                                                               list2)
+
+        self.jaccard_similarity = jaccard_similarity
+
+        return jaccard_similarity
+
+    def calculateFraction(self):
+        """
+        Calculate common fraction along multiple networks
+
+        :return: dataframe containing fraction between all modules in all netwroks
+        :rtype: pandas dataframe
+        """
+
+        num = 0
+        names = []
+        for network in self.geneModules.keys():
+            num = num + len(self.geneModules[network].moduleColors.unique())
+            tmp = [f"{network}:" + s for s in self.geneModules[network].moduleColors.unique().tolist()]
+            names = names + tmp
+        fraction = pd.DataFrame(0, columns=names, index=names)
+        fraction.values[[np.arange(fraction.shape[0])] * 2] = 1
+
+        for network1 in self.geneModules.keys():
+            for network2 in self.geneModules.keys():
+                if network1 != network2:
+                    modules1 = self.geneModules[network1].moduleColors.unique().tolist()
+                    modules2 = self.geneModules[network2].moduleColors.unique().tolist()
+                    for module1 in modules1:
+                        for module2 in modules2:
+                            list1 = self.geneModules[network1].index[
+                                self.geneModules[network1].moduleColors == module1].tolist()
+                            list2 = self.geneModules[network2].index[
+                                self.geneModules[network2].moduleColors == module2].tolist()
+                            num = np.intersect1d(list1, list2)
+                            fraction.loc[f"{network1}:{module1}", f"{network2}:{module2}"] = len(num) / len(list2) * 100
+        self.fraction = fraction
+
+        return fraction
+
+    def calculatePvalue(self):
+        """
+        Calculate pvalue of fraction along multiple networks
+
+        :return: dataframe containing pvalue between all modules in all netwroks
+        :rtype: pandas dataframe
+        """
+
+        num = 0
+        names = []
+        for network in self.geneModules.keys():
+            num = num + len(self.geneModules[network].moduleColors.unique())
+            tmp = [f"{network}:" + s for s in self.geneModules[network].moduleColors.unique().tolist()]
+            names = names + tmp
+        pvalue = pd.DataFrame(0, columns=names, index=names)
+        pvalue.values[[np.arange(pvalue.shape[0])] * 2] = 0
 
         genes = []
-        count = 0
-        for moduleColor1 in moduleColors1:
-            node1 = self.geneModule1.loc[self.geneModule1.moduleColors == moduleColor1, 'gene_id'].tolist()
-            genes = genes + node1
-            for moduleColor2 in moduleColors2:
-                if self.sc:
-                    node2 = self.geneMarker[self.geneMarker['cluster'] == moduleColor2].index.tolist()
-                else:
-                    node2 = self.geneModule2.loc[self.geneModule2.moduleColors == moduleColor2, 'gene_id'].tolist()
-
-                df[name1][count] = moduleColor1
-                df[name2][count] = moduleColor2
-                df[f"{name1}_size"][count] = len(node1)
-                df[f"{name2}_size"][count] = len(node2)
-                num = np.intersect1d(node1, node2)
-                df['number'][count] = len(num)
-                df['fraction(%)'][count] = len(num) / len(node2) * 100
-                count = count + 1
-
-                genes = genes + node2
+        for network in self.geneModules.keys():
+            genes = genes + self.geneModules[network].index.tolist()
 
         genes = list(set(genes))
         nGenes = len(genes)
 
-        count = 0
-        for moduleColor1 in moduleColors1:
-            for moduleColor2 in moduleColors2:
-                table = np.array(
-                    [[nGenes - df[f"{name1}_size"][count] - df[f"{name2}_size"][count] + df['number'][count],
-                      df[f"{name1}_size"][count] - df['number'][count]],
-                     [df[f"{name2}_size"][count] - df['number'][count],
-                      df['number'][count]]])
-                oddsr, p = fisher_exact(table, alternative='two-sided')
-                df['P_value'][count] = p
-                count = count + 1
+        for network1 in self.geneModules.keys():
+            for network2 in self.geneModules.keys():
+                if network1 != network2:
+                    modules1 = self.geneModules[network1].moduleColors.unique().tolist()
+                    modules2 = self.geneModules[network2].moduleColors.unique().tolist()
+                    for module1 in modules1:
+                        for module2 in modules2:
+                            list1 = self.geneModules[network1].index[
+                                self.geneModules[network1].moduleColors == module1].tolist()
+                            list2 = self.geneModules[network2].index[
+                                self.geneModules[network2].moduleColors == module2].tolist()
+                            number = self.fraction.loc[f"{network1}:{module1}", f"{network2}:{module2}"] * len(
+                                list2) / 100
+                            table = np.array(
+                                [[nGenes - len(list1) - len(list2) + number, len(list1) - number],
+                                 [len(list2) - number, number]])
+                            oddsr, p = fisher_exact(table, alternative='two-sided')
+                            pvalue.loc[f"{network1}:{module1}", f"{network2}:{module2}"] = p
+        self.P_value = pvalue
 
-        self.comparison = df
+        return pvalue
 
-    def plotComparison(self, order1=None, order2=None, save=False, file_format="pdf"):
+    def compareNetworks(self):
         """
-        plot comparison
+        compare Networks
+        """
+        self.calculateJaccardSimilarity()
+        self.calculateFraction()
+        self.calculatePvalue()
 
+    def plotHeatmapComparison(self,
+                              color="jaccard_similarity",
+                              row_cluster=True,
+                              col_cluster=True,
+                              save=True,
+                              plot_show=True,
+                              plot_format="pdf",
+                              file_name="heatmap_comparison"):
+        """
+        plot heatmap comparison
+
+        :param color: how to color heatmap (options: jaccard_similarity or fraction) default: jaccard_similarity
+        :type color: str
+        :param row_cluster: If True, cluster the rows. (default True)
+        :type row_cluster: bool
+        :param col_cluster: If True, cluster the columns. (default True)
+        :type col_cluster: bool
+        :param save: if you want to save plot as comparison.png near to your script
+        :type save: bool
+        :param plot_show: indicate if you want to show the plot or not (default: True)
+        :type plot_show: bool
+        :param plot_format: indicate the format of plot (default: pdf)
+        :type plot_format: str
+        :param file_name: name and path of the plot use for save (default: heatmap_comparison)
+        :type file_name: str
+
+        """
+        if color == "jaccard_similarity":
+            tmp1 = self.jaccard_similarity
+        elif color == "fraction":
+            tmp1 = self.fraction
+        else:
+            sys.exit("Color is not correct!")
+
+        reds = cm.get_cmap('Reds', 256)
+        newcolors = reds(np.linspace(0, 1, 256))
+        white = np.array([255 / 256, 255 / 256, 255 / 256, 1])
+        newcolors[:1, :] = white
+        newcmp = ListedColormap(newcolors)
+
+        tmp1.values[[np.arange(tmp1.shape[0])] * 2] = 0
+        labels = self.P_value.round(decimals=2)
+        labels[tmp1 == 0] = ""
+        labels = (np.asarray(["{0}".format(pvalue)
+                              for pvalue in labels.values.flatten()])) \
+            .reshape(self.jaccard_similarity.shape)
+
+        sns.set(font_scale=1.5)
+        res = sns.clustermap(tmp1, annot=labels, fmt="", cmap=newcmp,
+                             row_cluster=row_cluster, col_cluster=col_cluster,
+                             figsize=(tmp1.shape[0] + 3, tmp1.shape[1]),
+                             annot_kws={'size': 20, "weight": "bold"})
+        plt.setp(res.ax_heatmap.xaxis.get_majorticklabels(), fontsize=20, fontweight="bold", rotation=90)
+        plt.setp(res.ax_heatmap.yaxis.get_majorticklabels(), fontsize=20, fontweight="bold")
+        plt.yticks(rotation=0)
+        res.fig.suptitle(f"comparison heatmap", fontsize=30, fontweight="bold")
+
+        if save:
+            res.savefig(f"{file_name}.{plot_format}")
+        if plot_show:
+            plt.show()
+        else:
+            plt.close()
+
+    def plotJaccardSimilarity(self,
+                              color=None,
+                              cutoff=0.1,
+                              figsize=None,
+                              save=True,
+                              plot_show=True,
+                              plot_format="png",
+                              file_name="jaccard_similarity"):
+        """
+        Plot jaccard similarity matrix as a network
+
+        :param color: if you want to color nodes for each networks separately
+        :type color: dict
+        :param cutoff: threshold you used for filtering jaccard similarity
+        :type cutoff: double
+        :param figsize: indicate the size of plot (default is base on the number of nodes that pass cutoff)
+        :type figsize: tuple of int
+        :param save: indicate if you want to save the plot or not (default: True)
+        :type save: bool
+        :param plot_show: indicate if you want to show the plot or not (default: True)
+        :type plot_show: bool
+        :param plot_format: indicate the format of plot (default: png)
+        :type plot_format: str
+        :param file_name: name and path of the plot use for save (default: jaccard_similarity)
+        :type file_name: str
+        """
+        df = self.jaccard_similarity
+        df.values[[np.arange(df.shape[0])] * 2] = 0
+        df = pd.DataFrame(df.stack())
+        df.reset_index(inplace=True)
+        df = df[df[0] >= cutoff]
+        df.columns = ['source', 'dest', 'weight']
+        if df.shape[0] == 0:
+            print(f"{WARNING}None of the connections pass the cutoff{ENDC}")
+            return None
+
+        G = nx.from_pandas_edgelist(df, 'source', 'dest', 'weight')
+        node_labels = {}
+        nodes = list(G.nodes())
+        for i in range(len(nodes)):
+            node_labels[nodes[i]] = nodes[i].split(":")[1]
+        edges = G.edges()
+        weights = [G[u][v]['weight'] * 10 for u, v in edges]
+        edge_labels = {}
+        for u, v in edges:
+            edge_labels[u, v] = str(round(G[u][v]['weight'], 2))
+
+        color_map = []
+        if color is None:
+            color_map = None
+        else:
+            for node in G:
+                color_map.append(color[node.split(":")[0]])
+
+        if figsize is None:
+            figsize = (len(G.nodes()) / 2, len(G.nodes()) / 2)
+        fig, ax = plt.subplots(figsize=figsize, facecolor='white')
+        pos = nx.spring_layout(G, k=1 / math.sqrt(len(G.nodes()) / 2))
+        nx.draw_networkx(G,
+                         pos=pos,
+                         node_color=color_map,
+                         width=weights,
+                         labels=node_labels,
+                         font_size=8,
+                         node_size=500,
+                         with_labels=True,
+                         ax=ax)
+
+        nx.draw_networkx_edge_labels(G,
+                                     pos,
+                                     edge_labels=edge_labels,
+                                     font_size=7)
+
+        if color is not None:
+            for label in color:
+                ax.plot([0], [0], color=color[label], label=label)
+
+        plt.legend()
+        plt.tight_layout()
+        if save:
+            plt.savefig(f"{file_name}.{plot_format}")
+        if plot_show:
+            plt.show()
+        else:
+            plt.close()
+
+    def plotBubbleComparison(self,
+                             bubble_size="jaccard_similarity",
+                             cutoff=0.01,
+                             color=None,
+                             order1=None,
+                             order2=None,
+                             figsize=None,
+                             save=True,
+                             plot_show=True,
+                             plot_format="png",
+                             file_name="bubble_comparison"):
+        """
+        plot comparison matrix as a bubble plot
+
+        :param bubble_size: which information you want to use for size of bubble (options: jaccard_similarity or fraction) default: jaccard_similarity
+        :type bubble_size: str
+        :param cutoff: threshold you used for defining significant comparison
+        :type cutoff: double
+        :param color: if you want to color tick labels for each networks separately
+        :type color: dict
         :param order1: order of modules in PyWGCNA1 you want to show in plot (name of each elements should mapped the name of modules in your first PyWGCNA)
         :type order1: list of str
         :param order2: order of modules in PyWGCNA2 you want to show in plot (name of each elements should mapped the name of modules in your second PyWGCNA)
         :type order2: list of str
+        :param figsize: indicate the size of plot (default is base on the number of modules)
+        :type figsize: tuple of int
         :param save: if you want to save plot as comparison.png near to your script
         :type save: bool
-        :param file_format: indicate the format of plot (default: pdf)
-        :type file_format: str
-
+        :param save: indicate if you want to save the plot or not (default: True)
+        :type save: bool
+        :param plot_show: indicate if you want to show the plot or not (default: True)
+        :type plot_show: bool
+        :param plot_format: indicate the format of plot (default: png)
+        :type plot_format: str
+        :param file_name: name and path of the plot use for save (default: jaccard_similarity)
+        :type file_name: str
         """
-        result = self.comparison.copy(deep=True)
-        result['-log10(P_value)'] = -1 * np.log10(result['P_value'].astype(np.float64))
+        viridis = cm.get_cmap('viridis', 256)
+        newcolors = viridis(np.linspace(0, 1, 256))
+        grey = np.array([128 / 256, 128 / 256, 128 / 256, 1])
+        newcolors[:round(256 * cutoff), :] = grey
+        newcmp = ListedColormap(newcolors)
 
-        if self.name1 == self.name2:
-            name1 = self.name1 + "1"
-            name2 = self.name2 + "2"
+        P_value = self.P_value.copy(deep=True)
+        P_value = -1 * np.log10(P_value.astype(np.float64))
+
+        if bubble_size == "jaccard_similarity":
+            size = self.jaccard_similarity.copy(deep=True)
+        elif bubble_size == "fraction":
+            size = self.fraction.copy(deep=True)
         else:
-            name1 = self.name1
-            name2 = self.name2
+            sys.exit("Color is not correct!")
+        size.values[[np.arange(size.shape[0])] * 2] = 0
 
-        result.drop(labels=np.where(result[name1] == 'grey')[0].tolist(),
-                    axis=0,
-                    inplace=True)
-        result.reset_index(drop=True, inplace=True)
-        result.drop(labels=np.where(result[name2] == 'grey')[0].tolist(),
-                    axis=0,
-                    inplace=True)
-        result.reset_index(drop=True, inplace=True)
+        P_value[size == 0] = np.nan
+        P_value.replace([np.inf], -1, inplace=True)
+        P_value[P_value == -1] = P_value.max(numeric_only=True).max() + 1
 
-        result.loc[np.where(result['fraction(%)'] == 0)[0].tolist(), 'fraction(%)'] = np.nan
-        result.loc[np.where(result['fraction(%)'] == 0)[0].tolist(), 'fraction(%)'] = np.nan
-
-        if np.max(result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) is np.nan:
-            result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = 100
-        else:
-            result.loc[np.isinf(result['-log10(P_value)']), '-log10(P_value)'] = np.max(
-                result['-log10(P_value)'][np.isfinite(result['-log10(P_value)'])]) + 1
-
-        grey = result.copy(deep=True)
-        result.loc[np.where(result['P_value'] > 0.01)[0].tolist(), '-log10(P_value)'] = np.nan
-
-        result.dropna(axis=0, inplace=True)
-        result.reset_index(drop=True, inplace=True)
-
-        grey.loc[np.where(grey['P_value'] <= 0.01)[0].tolist(), '-log10(P_value)'] = np.nan
-        grey.dropna(axis=0, inplace=True)
-        grey.reset_index(drop=True, inplace=True)
+        size[size == 0] = np.nan
 
         if order1 is not None:
-            result[name1] = pd.Categorical(result[name1], order1)
-            result.sort_values(by=[name1], inplace=True)
-
-            grey[name1] = pd.Categorical(grey[name1], order1)
-            grey.sort_values(by=[name1], inplace=True)
+            P_value = P_value.reindex(columns=order1)
+            size = size.reindex(columns=order1)
 
         if order2 is not None:
-            result[name2] = pd.Categorical(result[name2], order2)
-            result.sort_values(by=[name2], inplace=True)
+            P_value = P_value.reindex(order2)
+            size = size.reindex(order2)
 
-            grey[name2] = pd.Categorical(grey[name2], order2)
-            grey.sort_values(by=[name2], inplace=True)
+        df = pd.DataFrame(size.stack())
+        df.reset_index(inplace=True)
+        df.columns = ['x', 'y', 'size']
 
-        fig, ax = plt.subplots(figsize=(max(5, len(np.unique(result[name1])) / 3) + 3,
-                                        max(5, len(np.unique(result[name2])) / 3)),
-                               facecolor='white')
-        scatter = ax.scatter(x=result[name1],
-                             y=result[name2],
-                             s=result['fraction(%)'].astype(float) * 4,
-                             c=result['-log10(P_value)'],
-                             alpha=0.8,
-                             cmap='viridis',
-                             vmin=np.min(result['fraction(%)']),
-                             vmax=np.max(result['fraction(%)']))
-        # Add a colorbar
-        fig.colorbar(scatter, shrink=0.25, label='-log10(P_value)')
+        P_value = pd.DataFrame(P_value.stack())
+        P_value.reset_index(inplace=True)
+        df['-log10(P_value)'] = P_value[0].values.tolist()
 
-        geyplot = ax.scatter(x=grey[name1],
-                             y=grey[name2],
-                             s=grey['fraction(%)'].astype(float) * 4,
-                             c='grey',
-                             alpha=0.8,
-                             vmin=np.min(grey['fraction(%)']),
-                             vmax=np.max(grey['fraction(%)']))
+        if figsize is None:
+            figsize = (df.shape[0] / 70 + df.shape[0] / 400, df.shape[0] / 70)
+        fig, ax = plt.subplots(figsize=figsize, facecolor='white')
 
-        # produce a legend with the unique colors from the scatter
-        kw = dict(prop="sizes", num=4, color='black', fmt="{x:.1f} %",
-                  func=lambda s: s / 4)
-        legend1 = ax.legend(*scatter.legend_elements(**kw),
-                            bbox_to_anchor=(1.05, 0.98),
-                            loc="upper left",
-                            title="Fraction(%)",
-                            frameon=False)
-        ax.add_artist(legend1)
+        ax = sns.scatterplot(data=df,
+                             x="x",
+                             y="y",
+                             hue="-log10(P_value)",
+                             size="size",
+                             palette=newcmp)
 
-        if grey.shape[0] != 0:
-            kw = dict(prop="sizes",
-                      num=1,
-                      color='grey',
-                      fmt="< 2")
-            legend2 = ax.legend(*geyplot.legend_elements(**kw),
-                                bbox_to_anchor=(1.05, 0.75),
-                                loc="upper left",
-                                title="-log10(P_value)",
-                                frameon=False)
-            ax.add_artist(legend2)
+        norm = plt.Normalize(0, df['-log10(P_value)'].max())
+        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm.set_array([])
 
-        plt.xticks(rotation=90)
-        if self.sc:
-            plt.xlabel(f"{name1} modules")
-            plt.ylabel(f"{name2} clusters")
+        fig.canvas.draw()
+
+        if color is not None:
+            xticks = []
+            yticks = []
+            for xtick, ytick in zip(ax.get_xticklabels(), ax.get_yticklabels()):
+                tmp = xtick.get_text().split(":")
+                xtick.set_color(color[tmp[0]])
+                xticks.append(tmp[1])
+
+                tmp = ytick.get_text().split(":")
+                ytick.set_color(color[tmp[0]])
+                yticks.append(tmp[1])
+
+            ax.set_xticklabels(xticks, rotation=90)
+            ax.set_yticklabels(yticks)
         else:
-            plt.xlabel(f"{name1} modules")
-            plt.ylabel(f"{name2} modules")
+            ax.set_xticklabels(rotation=90)
+
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+
+        # Remove the legend and add a colorbar
+        ax.get_legend().remove()
+        ax.figure.colorbar(sm, shrink=0.25, label='-log10(P_value)')
+
+        handles, labels = ax.get_legend_handles_labels()
+        entries_to_skip = labels.index('size') + 1
+        handles = handles[entries_to_skip:]
+        labels = labels[entries_to_skip:]
+        for h in handles[1:]:
+            sizes = [s for s in h.get_sizes()]
+            h.set_sizes(sizes)
+        labels = labels[:1] + [f'{float(lab):.2f}' for lab in labels[1:]]
+        legend_size = ax.legend(handles, labels,
+                                title=bubble_size,
+                                bbox_to_anchor=(1.04, 1),
+                                loc=2,
+                                borderaxespad=0.,
+                                frameon=False)
+        plt.gca().add_artist(legend_size)
+
+        legend_elements = []
+        if color is not None:
+            for label in color:
+                tmp = Line2D([0], [0], color=color[label], label=label)
+                legend_elements.append(tmp)
+
+            ax.legend(handles=legend_elements,
+                      title='networks',
+                      bbox_to_anchor=(1.04, 0),
+                      loc=3,
+                      borderaxespad=0.,
+                      frameon=False)
 
         if save:
-            plt.savefig(f"comparison_{name1}_{name2}.{file_format}")
-        plt.show()
+            plt.savefig(f"{file_name}.{plot_format}")
+        if plot_show:
+            plt.show()
+        else:
+            plt.close()
+
+    @staticmethod
+    def jaccard(list1, list2):
+        """
+        Calculate jaccard similarity matrix for two lists
+
+        :param list1: first list containing the data
+        :type list1: list
+        :param list2: second list containing the data
+        :type list2: list
+
+        :return: jaccard similarity
+        :rtype: double
+        """
+        intersection = len(list(set(list1).intersection(list2)))
+        union = (len(list1) + len(list2)) - intersection
+        return float(intersection) / union
 
     def saveComparison(self, name="comparison"):
         """

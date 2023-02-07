@@ -9,9 +9,10 @@ import sys
 import warnings
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, cut_tree, dendrogram, fcluster
+from scipy.cluster.hierarchy import to_tree
 from scipy.stats import t
+from scipy.stats import rankdata
 from statsmodels.formula.api import ols
-import resource
 from matplotlib import colors as mcolors
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import scale
@@ -26,6 +27,14 @@ from pyvis.network import Network
 from reactome2py import analysis
 
 from PyWGCNA.geneExp import *
+
+try:
+    import resource
+except ImportError:
+    try:
+        import rsrc as resource
+    except ImportError:
+        sys.exit("resource or rsrc package is not installed!")
 
 # remove runtime warning (divided by zero)
 np.seterr(divide='ignore', invalid='ignore')
@@ -227,7 +236,7 @@ class WGCNA(GeneExp):
 
         print("\tDone pre-processing..\n")
 
-    def findModules(self):
+    def findModules(self, **kwargs):
         """
         Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically
         """
@@ -236,7 +245,7 @@ class WGCNA(GeneExp):
         # Call the network topology analysis function
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.to_df(), RsquaredCut=self.RsquaredCut,
                                                        MeanCut=self.MeanCut, powerVector=self.powers,
-                                                       networkType=self.networkType)
+                                                       networkType=self.networkType, **kwargs)
 
         fig, ax = plt.subplots(ncols=2, figsize=(10, 5), facecolor='white')
         ax[0].plot(self.sft['Power'], -1 * np.sign(self.sft['slope']) * self.sft['SFT.R.sq'], 'o')
@@ -279,8 +288,10 @@ class WGCNA(GeneExp):
         self.geneTree = linkage(a, method="average")
 
         # Module identification using dynamic tree cut:
+        # dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
+        #                                 minClusterSize=self.minModuleSize, **kwargs)
         dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
-                                         minClusterSize=self.minModuleSize)
+                                         minClusterSize=self.minModuleSize, **kwargs)
 
         # Convert numeric labels into colors
         self.datExpr.var['dynamicColors'] = WGCNA.labels2colors(labels=dynamicMods)
@@ -293,26 +304,31 @@ class WGCNA(GeneExp):
             self.MEs.drop(['MEgrey'], axis=1, inplace=True)
         # Calculate dissimilarity of module eigengenes
         MEDiss = pd.DataFrame(1 - np.corrcoef(self.MEs, rowvar=False), index=self.MEs.columns, columns=self.MEs.columns)
-        # Cluster module eigengenes
-        a = squareform(MEDiss, checks=False)
-        METree = WGCNA.hclust(a, method="average")
+        if MEDiss.shape != (1, 1):
+            # Cluster module eigengenes
+            a = squareform(MEDiss, checks=False)
 
-        plt.figure(figsize=(max(20, round(MEDiss.shape[1] / 20)), 10), facecolor='white')
-        dendrogram(METree, color_threshold=self.MEDissThres, labels=MEDiss.columns, leaf_rotation=90,
-                   leaf_font_size=8)
-        plt.axhline(y=self.MEDissThres, c='grey', lw=1, linestyle='dashed')
-        plt.title('Clustering of module eigengenes')
-        plt.xlabel('')
-        plt.ylabel('')
-        plt.tight_layout()
-        if self.save:
-            plt.savefig(f"{self.outputPath}/figures/eigenesgenes.{self.figureType}")
+            METree = WGCNA.hclust(a, method="average")
 
-        # Call an automatic merging function
-        merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
-                                        cutHeight=self.MEDissThres)
-        # The merged module colors; Rename to moduleColors
-        self.datExpr.var['moduleColors'] = merge['colors']
+            plt.figure(figsize=(max(20, round(MEDiss.shape[1] / 20)), 10), facecolor='white')
+            dendrogram(METree, color_threshold=self.MEDissThres, labels=MEDiss.columns, leaf_rotation=90,
+                       leaf_font_size=8)
+            plt.axhline(y=self.MEDissThres, c='grey', lw=1, linestyle='dashed')
+            plt.title('Clustering of module eigengenes')
+            plt.xlabel('')
+            plt.ylabel('')
+            plt.tight_layout()
+            if self.save:
+                plt.savefig(f"{self.outputPath}/figures/eigenesgenes.{self.figureType}")
+
+            # Call an automatic merging function
+            merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
+                                            cutHeight=self.MEDissThres)
+            # The merged module colors; Rename to moduleColors
+            self.datExpr.var['moduleColors'] = merge['colors']
+        else:
+            self.datExpr.var['moduleColors'] = ["black"] * self.datExpr.shape[1]
+
         # Construct numerical labels corresponding to the colors
         colorOrder = np.unique(self.datExpr.var['moduleColors']).tolist()
         self.datExpr.var['moduleLabels'] = [colorOrder.index(x) if x in colorOrder else None for x in
@@ -645,7 +661,7 @@ class WGCNA(GeneExp):
         :type useGenes: list of bool
         :param minFraction: minimum fraction of non-missing samples for a gene to be considered good. (default = 1/2)
         :type minFraction: float
-        :param minNSamples: minimum number of non-missing samples for a gene to be considered good. (default = 4)
+        :param minNSamples: findModulesminimum number of non-missing samples for a gene to be considered good. (default = 4)
         :type minNSamples: int
         :param minNGenes: minimum number of good genes for the data set to be considered fit for analysis. If the actual number of good genes falls below this threshold, an error will be issued. (default = 4)
         :type minNGenes: int
@@ -1168,6 +1184,29 @@ class WGCNA(GeneExp):
         return CoreSize
 
     @staticmethod
+    def get_heights(Z):
+
+        clusternode = to_tree(Z, True)
+        height = np.array([c.dist for c in clusternode[1] if c.is_leaf() is not True])
+
+        return height
+
+    @staticmethod
+    def get_merges(z):
+        n = z.shape[0]
+        merges = np.zeros((z.shape[0], 2), dtype=int)
+
+        for i in range(z.shape[0]):
+            for j in range(2):
+                if z[i][j] <= n:
+                    merges[i][j] = -(z[i][j] + 1)
+                else:
+                    cluster = z[i][j] - n
+                    merges[i][j] = cluster
+
+        return merges
+
+    @staticmethod
     def cutreeHybrid(dendro, distM, cutHeight=None, minClusterSize=20, deepSplit=1,
                      maxCoreScatter=None, minGap=None, maxAbsCoreScatter=None,
                      minAbsGap=None, minSplitHeight=None, minAbsSplitHeight=None,
@@ -1223,12 +1262,8 @@ class WGCNA(GeneExp):
         :return: list detailing the deteced branch structure.
         :rtype: list
         """
-        tmp = dendro[:, 0] > dendro.shape[0]
-        dendro[tmp, 0] = dendro[tmp, 0] - dendro.shape[0]
-        dendro[np.logical_not(tmp), 0] = -1 * (dendro[np.logical_not(tmp), 0] + 1)
-        tmp = dendro[:, 1] > dendro.shape[0]
-        dendro[tmp, 1] = dendro[tmp, 1] - dendro.shape[0]
-        dendro[np.logical_not(tmp), 1] = -1 * (dendro[np.logical_not(tmp), 1] + 1)
+        dendro_height = WGCNA.get_heights(dendro)
+        dendro_merge = WGCNA.get_merges(dendro)
 
         chunkSize = dendro.shape[0]
 
@@ -1260,15 +1295,15 @@ class WGCNA(GeneExp):
             refMerge = 0
         refHeight = dendro[refMerge, 2]
         if cutHeight is None:
-            cutHeight = 0.99 * (np.max(dendro[:, 2]) - refHeight) + refHeight
+            cutHeight = 0.99 * (np.max(dendro_height) - refHeight) + refHeight
             print("..cutHeight not given, setting it to", round(cutHeight, 3),
                   " ===>  99% of the (truncated) height range in dendro.", flush=True)
         else:
-            if cutHeight > np.max(dendro[:, 2]):
-                cutHeight = np.max(dendro[:, 2])
+            if cutHeight > np.max(dendro_height):
+                cutHeight = np.max(dendro_height)
         if maxPamDist is None:
             maxPamDist = cutHeight
-        nMergeBelowCut = np.count_nonzero(dendro[:, 2] <= cutHeight)
+        nMergeBelowCut = np.count_nonzero(dendro_height <= cutHeight)
         if nMergeBelowCut < minClusterSize:
             print("cutHeight set too low: no merges below the cut.", flush=True)
             return pd.DataFrame({'labels': np.repeat(0, nMerge + 1, axis=0)})
@@ -1296,11 +1331,11 @@ class WGCNA(GeneExp):
         branch_nBasicClusters = np.repeat(0, MxBranches, axis=0)
         branch_mergedInto = np.repeat(0, MxBranches, axis=0)
         branch_attachHeight = np.repeat(np.nan, MxBranches, axis=0)
-        branch_singletons = pd.DataFrame()
-        branch_basicClusters = pd.DataFrame()
-        branch_mergingHeights = pd.DataFrame()
-        branch_singletonHeights = pd.DataFrame()
-        nBranches = -1
+        branch_singletons = [np.nan] * MxBranches
+        branch_basicClusters = [np.nan] * MxBranches
+        branch_mergingHeights = [np.nan] * MxBranches
+        branch_singletonHeights = [np.nan] * MxBranches
+        nBranches = 0
 
         defMCS = [0.64, 0.73, 0.82, 0.91, 0.95]
         defMG = [(1.0 - defMC) * 3.0 / 4.0 for defMC in defMCS]
@@ -1324,7 +1359,7 @@ class WGCNA(GeneExp):
         if minAbsSplitHeight is None:
             minAbsSplitHeight = refHeight + minSplitHeight * (cutHeight - refHeight)
         nPoints = nMerge + 1
-        IndMergeToBranch = np.repeat(-1, nMerge, axis=0)
+        IndMergeToBranch = np.repeat(0, nMerge, axis=0)
         onBranch = np.repeat(0, nPoints, axis=0)
         RootBranch = 0
 
@@ -1343,85 +1378,94 @@ class WGCNA(GeneExp):
         extender = np.repeat(0, chunkSize, axis=0)
 
         for merge in range(nMerge):
-            if dendro[merge, 2] <= cutHeight:
-                if dendro[merge, 0] < 0 and dendro[merge, 1] < 0:
+            if dendro_height[merge] <= cutHeight:
+                if dendro_merge[merge, 0] < 0 and dendro_merge[merge, 1] < 0:
                     nBranches = nBranches + 1
-                    branch_isBasic[nBranches] = True
-                    branch_isTopBasic[nBranches] = True
-                    branch_singletons.insert(nBranches, nBranches,
-                                             np.concatenate((-1 * dendro[merge, 0:2], extender), axis=0))
-                    branch_basicClusters.insert(nBranches, nBranches, extender)
-                    branch_mergingHeights.insert(nBranches, nBranches,
-                                                 np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0))
-                    branch_singletonHeights.insert(nBranches, nBranches,
-                                                   np.concatenate((np.repeat(dendro[merge, 2], 2), extender), axis=0))
+                    branch_isBasic[nBranches - 1] = True
+                    branch_isTopBasic[nBranches - 1] = True
+                    branch_singletons[nBranches - 1] = np.append(-1 * dendro_merge[merge, :], extender)
+                    branch_basicClusters[nBranches - 1] = extender
+                    branch_mergingHeights[nBranches - 1] = np.append(np.repeat(dendro_height[merge], 2), extender)
+                    branch_singletonHeights[nBranches - 1] = np.append(np.repeat(dendro_height[merge], 2), extender)
                     IndMergeToBranch[merge] = nBranches
                     RootBranch = nBranches
-                elif np.sign(dendro[merge, 0]) * np.sign(dendro[merge, 1]) < 0:
-                    clust = IndMergeToBranch[int(np.max(dendro[merge, 0:2])) - 1]
+                elif np.sign(dendro_merge[merge, 0]) * np.sign(dendro_merge[merge, 1]) < 0:
+                    clust = IndMergeToBranch[int(np.max(dendro_merge[merge, :])) - 1]
 
-                    if clust == -1:
+                    if clust == 0:
                         sys.exit("Internal error: a previous merge has no associated cluster. Sorry!")
 
-                    gene = -1 * int(np.min(dendro[merge, 0:2]))
-                    ns = branch_nSingletons[clust]
-                    nm = branch_nMerge[clust]
+                    gene = -1 * int(np.min(dendro_merge[merge, :]))
+                    ns = branch_nSingletons[clust - 1] + 1
+                    nm = branch_nMerge[clust - 1] + 1
 
-                    if branch_isBasic[clust]:
-                        branch_singletons.loc[ns, clust] = gene
-                        branch_singletonHeights.loc[ns, clust] = dendro[merge, 2]
+                    if branch_isBasic[clust - 1]:
+                        if ns > len(branch_singletons[clust - 1]):
+                            branch_singletons[clust - 1] = np.append(branch_singletons[clust - 1], extender)
+                            branch_singletonHeights[clust - 1] = np.append(branch_singletonHeights[clust - 1], extender)
+                        branch_singletons[clust - 1][ns - 1] = gene
+                        branch_singletonHeights[clust - 1][ns - 1] = dendro_height[merge]
                     else:
-                        onBranch[int(gene)] = clust
+                        onBranch[int(gene) - 1] = clust
 
-                    branch_mergingHeights.loc[nm, clust] = dendro[merge, 2]
-                    branch_size[clust] = branch_size[clust] + 1
-                    branch_nMerge[clust] = nm + 1
-                    branch_nSingletons[clust] = ns + 1
+                    if nm >= len(branch_mergingHeights[clust - 1]):
+                        branch_mergingHeights[clust - 1] = np.append(branch_mergingHeights[clust - 1], extender)
+                    branch_mergingHeights[clust - 1][nm - 1] = dendro_height[merge]
+                    branch_size[clust - 1] = branch_size[clust - 1] + 1
+                    branch_nMerge[clust - 1] = nm
+                    branch_nSingletons[clust - 1] = ns
                     IndMergeToBranch[merge] = clust
                     RootBranch = clust
                 else:
-                    clusts = IndMergeToBranch[dendro[merge, 0:2].astype(int) - 1]
-                    sizes = branch_size[clusts]
-                    rnk = np.argsort(sizes)
-                    small = clusts[rnk[0]]
-                    large = clusts[rnk[1]]
-                    sizes = sizes[rnk]
+                    clusts = IndMergeToBranch[dendro_merge[merge, :].astype(int) - 1]
+                    sizes = branch_size[clusts - 1]
+                    rnk = rankdata(sizes, method="ordinal")
+                    small = clusts[rnk[0] - 1]
+                    large = clusts[rnk[1] - 1]
+                    sizes = sizes[rnk - 1]
 
-                    if branch_isBasic[small]:
-                        coresize = WGCNA.coreSizeFunc(branch_nSingletons[small], minClusterSize) - 1
-                        Core = branch_singletons.loc[0:coresize, small] - 1
+                    if branch_isBasic[small - 1]:
+                        coresize = WGCNA.coreSizeFunc(branch_nSingletons[small - 1], minClusterSize)
+                        Core = branch_singletons[small - 1][np.arange(coresize)]
                         Core = Core.astype(int).tolist()
-                        SmAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize)
+                        SmAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize - 1)
                     else:
                         SmAveDist = 0
 
-                    if branch_isBasic[large]:
-                        coresize = WGCNA.coreSizeFunc(branch_nSingletons[large], minClusterSize) - 1
-                        Core = branch_singletons.loc[0:coresize, large] - 1
+                    if branch_isBasic[large - 1]:
+                        coresize = WGCNA.coreSizeFunc(branch_nSingletons[large - 1], minClusterSize)
+                        Core = branch_singletons[small - 1][np.arange(coresize)]
                         Core = Core.astype(int).tolist()
-                        LgAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize)
+                        LgAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize - 1)
                     else:
                         LgAveDist = 0
 
-                    mergeDiagnostics.loc[merge, :] = [small, branch_size[small], SmAveDist,
-                                                      dendro[merge, 2] - SmAveDist,
-                                                      large, branch_size[large], LgAveDist,
-                                                      dendro[merge, 2] - LgAveDist,
+                    mergeDiagnostics.loc[merge, :] = [small,
+                                                      branch_size[small - 1],
+                                                      SmAveDist,
+                                                      dendro_height[merge] - SmAveDist,
+                                                      large,
+                                                      branch_size[large - 1],
+                                                      LgAveDist,
+                                                      dendro_height[merge] - LgAveDist,
                                                       None]
-                    SmallerScores = [branch_isBasic[small], branch_size[small] < minClusterSize,
-                                     SmAveDist > maxAbsCoreScatter, dendro[merge, 2] - SmAveDist < minAbsGap,
-                                     dendro[merge, 2] < minAbsSplitHeight]
+                    SmallerScores = [branch_isBasic[small - 1],
+                                     branch_size[small - 1] < minClusterSize,
+                                     SmAveDist > maxAbsCoreScatter,
+                                     dendro_height[merge] - SmAveDist < minAbsGap,
+                                     dendro_height[merge] < minAbsSplitHeight]
                     if SmallerScores[0] * np.count_nonzero(SmallerScores[1:]) > 0:
                         DoMerge = True
-                        SmallerFailSize = not (SmallerScores[2] | SmallerScores[3])
+                        SmallerFailSize = ~np.logical_or(SmallerScores[2], SmallerScores[3])
                     else:
-                        LargerScores = [branch_isBasic[large],
-                                        branch_size[large] < minClusterSize, LgAveDist > maxAbsCoreScatter,
-                                        dendro[merge, 2] - LgAveDist < minAbsGap,
-                                        dendro[merge, 2] < minAbsSplitHeight]
+                        LargerScores = [branch_isBasic[large - 1],
+                                        branch_size[large - 1] < minClusterSize,
+                                        LgAveDist > maxAbsCoreScatter,
+                                        dendro_height[merge] - LgAveDist < minAbsGap,
+                                        dendro_height[merge] < minAbsSplitHeight]
                         if LargerScores[0] * np.count_nonzero(LargerScores[1:]) > 0:
                             DoMerge = True
-                            SmallerFailSize = not (LargerScores[2] | LargerScores[3])
+                            SmallerFailSize = ~np.logical_or(LargerScores[2], LargerScores[3])
                             x = small
                             small = large
                             large = x
@@ -1432,113 +1476,113 @@ class WGCNA(GeneExp):
                     if DoMerge:
                         mergeDiagnostics['merged'][merge] = 1
 
-                    if not DoMerge and nExternalSplits > 0 and branch_isBasic[small] and branch_isBasic[large]:
-                        branch1 = branch_singletons[[large]][0:sizes[1]]
-                        branch2 = branch_singletons[[small]][0:sizes[0]]
+                    if not DoMerge and nExternalSplits > 0 and branch_isBasic[small - 1] and branch_isBasic[large - 1]:
+                        branch1 = branch_singletons[large - 1][np.arange(sizes[1])]
+                        branch2 = branch_singletons[small - 1][np.arange(sizes[0])]
                         es = 0
                         while es < nExternalSplits and not DoMerge:
                             es = es + 1
-                            args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[[es]],
+                            args = pd.DataFrame({'externalSplitOptions': externalSplitOptions[es - 1],
                                                  'branch1': branch1, 'branch2': branch2})
                             # TODO: extSplit = do.call(externalBranchSplitFnc[[es]], args)
                             extSplit = None
-                            DoMerge = extSplit < minExternalSplit[es]
-                            externalMergeDiags[merge, es] = extSplit
+                            DoMerge = extSplit < minExternalSplit[es - 1]
+                            externalMergeDiags[merge, es - 1] = extSplit
                             mergeDiagnostics['merged'][merge] = 0
                             if DoMerge:
                                 mergeDiagnostics['merged'][merge] = 2
 
                     if DoMerge:
-                        branch_failSize[[small]] = SmallerFailSize
-                        branch_mergedInto[small] = large + 1
-                        branch_attachHeight[small] = dendro[merge, 2]
-                        branch_isTopBasic[small] = False
-                        nss = branch_nSingletons[small] - 1
-                        nsl = branch_nSingletons[large]
+                        branch_failSize[small - 1] = SmallerFailSize
+                        branch_mergedInto[small - 1] = large
+                        branch_attachHeight[small - 1] = dendro_height[merge]
+                        branch_isTopBasic[small - 1] = False
+                        nss = branch_nSingletons[small - 1]
+                        nsl = branch_nSingletons[large - 1]
                         ns = nss + nsl
-                        if branch_isBasic[large]:
-                            branch_singletons.loc[nsl:ns, large] = branch_singletons.loc[0:nss, small].values
-                            branch_singletonHeights.loc[nsl:ns, large] = branch_singletonHeights.loc[0:nss,
-                                                                         small].values
-                            branch_nSingletons[large] = ns + 1
-                        else:
-                            if not branch_isBasic[small]:
-                                sys.exit("Internal error: merging two composite clusters. Sorry!")
-                            tmp = branch_singletons[[small]].astype(int).values
-                            tmp = tmp[tmp != 0]
-                            tmp = tmp - 1
-                            onBranch[tmp] = large + 1
 
-                        nm = branch_nMerge[large]
-                        branch_mergingHeights.loc[nm, large] = dendro[merge, 2]
-                        branch_nMerge[large] = nm + 1
-                        branch_size[large] = branch_size[small] + branch_size[large]
+                        if branch_isBasic[large - 1]:
+                            nExt = np.ceil((ns - len(branch_singletons[large - 1])) / chunkSize)
+                            if nExt > 0:
+                                branch_singletons[large - 1] = np.append(branch_singletons[large - 1],
+                                                                         np.repeat(extender, nExt))
+                                branch_singletonHeights[large - 1] = np.append(branch_singletonHeights[large - 1],
+                                                                               np.repeat(extender, nExt))
+
+                            branch_singletons[large - 1][np.arange(nsl, ns)] = branch_singletons[small - 1][np.arange(nss)]
+                            branch_singletonHeights[large - 1][np.arange(nsl, ns)] = branch_singletonHeights[small - 1][np.arange(nss)]
+                            branch_nSingletons[large] = ns
+                        else:
+                            if not branch_isBasic[small - 1]:
+                                sys.exit("Internal error: merging two composite clusters. Sorry!")
+
+                            onBranch[branch_singletons[small - 1][branch_singletons[small - 1] != 0] - 1] = large
+
+                        nm = branch_nMerge[large - 1] + 1
+
+                        if nm > len(branch_mergingHeights[large - 1]):
+                            branch_mergingHeights[large - 1] = np.append(branch_mergingHeights[large - 1], extender)
+
+                        branch_mergingHeights[large - 1][nm - 1] = dendro_height[merge]
+                        branch_nMerge[large - 1] = nm
+                        branch_size[large - 1] = branch_size[small - 1] + branch_size[large - 1]
                         IndMergeToBranch[merge] = large
                         RootBranch = large
                     else:
-                        if branch_isBasic[large] and not branch_isBasic[small]:
+                        if branch_isBasic[large - 1] and not branch_isBasic[small - 1]:
                             x = large
                             large = small
                             small = x
                             sizes = np.flip(sizes)
 
-                        if branch_isBasic[large] or (pamStage and pamRespectsDendro):
+                        if branch_isBasic[large - 1] or (pamStage and pamRespectsDendro):
                             nBranches = nBranches + 1
-                            branch_attachHeight[[large, small]] = dendro[merge, 2]
-                            branch_mergedInto[[large, small]] = nBranches
-                            if branch_isBasic[small]:
-                                addBasicClusters = [small + 1]
+                            branch_attachHeight[[large - 1, small - 1]] = dendro_height[merge]
+                            branch_mergedInto[[large - 1, small - 1]] = nBranches
+                            if branch_isBasic[small - 1]:
+                                addBasicClusters = small
                             else:
-                                addBasicClusters = branch_basicClusters.loc[
-                                    (branch_basicClusters[[small]] != 0).all(axis=1), small]
-                            if branch_isBasic[large]:
-                                addBasicClusters = np.concatenate((addBasicClusters, [large + 1]), axis=0)
+                                addBasicClusters = branch_basicClusters[small - 1]
+                            if branch_isBasic[large - 1]:
+                                addBasicClusters = np.append(addBasicClusters, large)
                             else:
-                                addBasicClusters = np.concatenate((addBasicClusters,
-                                                                   branch_basicClusters.loc[(
-                                                                                                    branch_basicClusters[
-                                                                                                        [
-                                                                                                            large]] != 0).all(
-                                                                       axis=1), large]),
-                                                                  axis=0)
-                            branch_isBasic[nBranches] = False
-                            branch_isTopBasic[nBranches] = False
-                            branch_basicClusters.insert(nBranches, nBranches,
-                                                        np.concatenate((addBasicClusters,
-                                                                        np.repeat(0,
-                                                                                  chunkSize - len(addBasicClusters))),
-                                                                       axis=0))
-                            branch_singletons.insert(nBranches, nBranches, np.repeat(np.nan, chunkSize + 2))
-                            branch_singletonHeights.insert(nBranches, nBranches, np.repeat(np.nan, chunkSize + 2))
-                            branch_mergingHeights.insert(nBranches, nBranches,
-                                                         np.concatenate((np.repeat(dendro[merge, 2], 2), extender),
-                                                                        axis=0))
-                            branch_nMerge[nBranches] = 2
-                            branch_size[nBranches] = sum(sizes) + 2
-                            branch_nBasicClusters[nBranches] = len(addBasicClusters)
+                                addBasicClusters = np.append(addBasicClusters, branch_basicClusters[large - 1])
+                            branch_isBasic[nBranches - 1] = False
+                            branch_isTopBasic[nBranches - 1] = False
+                            branch_basicClusters[nBranches - 1] = addBasicClusters
+                            branch_mergingHeights[nBranches - 1] = np.append(np.repeat(dendro_height[merge], 2),
+                                                                             extender)
+                            branch_nMerge[nBranches - 1] = 2
+                            branch_size[nBranches - 1] = np.sum(sizes)
+                            branch_nBasicClusters[nBranches - 1] = len(addBasicClusters)
                             IndMergeToBranch[merge] = nBranches
                             RootBranch = nBranches
                         else:
-                            if branch_isBasic[small]:
-                                addBasicClusters = [small + 1]
-                            else:
-                                addBasicClusters = branch_basicClusters.loc[
-                                    (branch_basicClusters[[small]] != 0).all(axis=1), small]
+                            addBasicClusters = [small] if branch_isBasic[small - 1] else branch_basicClusters[small - 1]
 
-                            nbl = branch_nBasicClusters[large]
-                            nb = branch_nBasicClusters[large] + len(addBasicClusters)
-                            branch_basicClusters.iloc[nbl:nb, large] = addBasicClusters
-                            branch_nBasicClusters[large] = nb
-                            branch_size[large] = branch_size[large] + branch_size[small]
-                            nm = branch_nMerge[large] + 1
-                            branch_mergingHeights.loc[nm, large] = dendro[merge, 2]
-                            branch_nMerge[large] = nm
-                            branch_attachHeight[small] = dendro[merge, 2]
-                            branch_mergedInto[small] = large + 1
+                            nbl = branch_nBasicClusters[large - 1]
+                            nb = branch_nBasicClusters[large - 1] + len(addBasicClusters)
+
+                            if nb > len(branch_basicClusters[large - 1]):
+                                nExt = np.ceil((nb - len(branch_basicClusters[large - 1])) / chunkSize)
+                                branch_basicClusters[large - 1] = np.append(branch_basicClusters[large - 1],
+                                                                            np.repeat(extender, nExt))
+
+                            branch_basicClusters[large - 1][np.arange(nbl,nb)] = addBasicClusters
+                            branch_nBasicClusters[large - 1] = nb
+                            branch_size[large - 1] = branch_size[large - 1] + branch_size[small - 1]
+                            nm = branch_nMerge[large - 1] + 1
+
+                            if nm > len(branch_mergingHeights[large - 1]):
+                                branch_mergingHeights[large - 1] = np.append(branch_mergingHeights[large - 1], extender)
+
+                            branch_mergingHeights[large - 1][nm - 1] = dendro_height[merge]
+                            branch_nMerge[large - 1] = nm
+                            branch_attachHeight[small - 1] = dendro_height[merge]
+                            branch_mergedInto[small - 1] = large
                             IndMergeToBranch[merge] = large
                             RootBranch = large
 
-        nBranches = nBranches + 1
         isCluster = np.repeat(False, nBranches)
         SmallLabels = np.repeat(0, nPoints)
 
@@ -1547,7 +1591,7 @@ class WGCNA(GeneExp):
                 branch_attachHeight[clust] = cutHeight
             if branch_isTopBasic[clust]:
                 coresize = WGCNA.coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-                Core = branch_singletons.iloc[0:coresize, clust] - 1
+                Core = branch_singletons[clust][np.arange(coresize)] - 1
                 Core = Core.astype(int).tolist()
                 CoreScatter = np.mean(distM.iloc[Core, Core].sum() / (coresize - 1))
                 isCluster[clust] = (branch_isTopBasic[clust] and branch_size[clust] >= minClusterSize and
@@ -1556,7 +1600,7 @@ class WGCNA(GeneExp):
             else:
                 CoreScatter = 0
             if branch_failSize[clust]:
-                SmallLabels[branch_singletons[[clust]].astype(int) - 1] = clust + 1
+                SmallLabels[branch_singletons[clust].astype(int) - 1] = clust + 1
 
         if not respectSmallClusters:
             SmallLabels = np.repeat(0, nPoints)
@@ -1569,14 +1613,10 @@ class WGCNA(GeneExp):
 
         for clust in clusterBranches:
             color = color + 1
-            tmp = branch_singletons[[clust]].astype(int) - 1
-            tmp = tmp[tmp != -1]
-            tmp.dropna(inplace=True)
-            tmp = tmp.iloc[:, 0].astype(int)
-            Colors[tmp] = color
-            SmallLabels[tmp] = 0
+            Colors[branch_singletons[clust][branch_singletons[clust] != 0] - 1] = color
+            SmallLabels[branch_singletons[clust][branch_singletons[clust] != 0] - 1] = 0
             coresize = WGCNA.coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-            Core = branch_singletons.loc[0:coresize, clust] - 1
+            Core = branch_singletons[clust][np.arange(coresize)] - 1
             Core = Core.astype(int).tolist()
             coreLabels[Core] = color
             branchLabels[clust] = color
@@ -1597,12 +1637,12 @@ class WGCNA(GeneExp):
             if useMedoids:
                 Medoids = np.repeat(0, nProperLabels)
                 ClusterRadii = np.repeat(0, nProperLabels)
-                for cluster in range(nProperLabels):
-                    InCluster = np.where(Colors == cluster)[0].tolist()
-                    DistInCluster = distM.iloc[InCluster, InCluster]
+                for cluster in range(1, nProperLabels + 1):
+                    InCluster = np.arange(1, nPoints + 1)[Colors == cluster]
+                    DistInCluster = distM.iloc[InCluster - 1, InCluster - 1]
                     DistSums = DistInCluster.sum(axis=0)
-                    Medoids[cluster] = InCluster[DistSums.idxmin()]
-                    ClusterRadii[cluster] = np.max(DistInCluster[:, DistSums.idxmin()])
+                    Medoids[cluster - 1] = InCluster[DistSums.idxmin()]
+                    ClusterRadii[cluster - 1] = np.max(DistInCluster[:, DistSums.idxmin()])
 
                 if respectSmallClusters:
                     FSmallLabels = pd.Categorical(SmallLabels)
@@ -1620,12 +1660,12 @@ class WGCNA(GeneExp):
                                     sys.exit(msg)
 
                                 if onBr > 0:
-                                    basicOnBranch = branch_basicClusters[[onBr]]
-                                    labelsOnBranch = branchLabels[basicOnBranch]
+                                    basicOnBranch = branch_basicClusters[onBr[0] - 1]
+                                    labelsOnBranch = branchLabels[basicOnBranch - 1]
                                 else:
                                     labelsOnBranch = None
                             else:
-                                labelsOnBranch = list(range(nProperLabels))
+                                labelsOnBranch = list(range(1, nProperLabels + 1))
 
                             DistInCluster = distM.iloc[InCluster, InCluster]
 
@@ -1633,11 +1673,11 @@ class WGCNA(GeneExp):
                                 if len(InCluster) > 1:
                                     DistSums = DistInCluster.sum(axis=1)
                                     smed = InCluster[DistSums.idxmin()]
-                                    DistToMeds = distM.iloc[Medoids[labelsOnBranch], smed]
+                                    DistToMeds = distM.iloc[Medoids[labelsOnBranch - 1] - 1, smed]
                                     closest = DistToMeds.idxmin()
                                     DistToClosest = DistToMeds[closest]
                                     closestLabel = labelsOnBranch[closest]
-                                    if DistToClosest < ClusterRadii[closestLabel] or DistToClosest < maxPamDist:
+                                    if DistToClosest < ClusterRadii[closestLabel - 1] or DistToClosest < maxPamDist:
                                         Colors[InCluster] = closestLabel
                                         nPAMed = nPAMed + len(InCluster)
                                 else:
@@ -1651,26 +1691,26 @@ class WGCNA(GeneExp):
                         if pamRespectsDendro:
                             onBr = onBranch[obj]
                             if onBr > 0:
-                                basicOnBranch = branch_basicClusters[[onBr]]
-                                labelsOnBranch = branchLabels[basicOnBranch]
+                                basicOnBranch = branch_basicClusters[onBr - 1]
+                                labelsOnBranch = branchLabels[basicOnBranch - 1]
                             else:
                                 labelsOnBranch = None
                         else:
-                            labelsOnBranch = list(range(nProperLabels))
+                            labelsOnBranch = np.arange(nProperLabels)
 
                         if labelsOnBranch is not None:
-                            UnassdToMedoidDist = distM.iloc[Medoids[labelsOnBranch], obj]
+                            UnassdToMedoidDist = distM.iloc[Medoids[labelsOnBranch - 1] - 1, obj]
                             nearest = UnassdToMedoidDist.idxmin()
                             NearestCenterDist = UnassdToMedoidDist[nearest]
                             nearestMed = labelsOnBranch[nearest]
-                            if NearestCenterDist < ClusterRadii[nearestMed] or NearestCenterDist < maxPamDist:
+                            if NearestCenterDist < ClusterRadii[nearestMed - 1] or NearestCenterDist < maxPamDist:
                                 Colors[obj] = nearestMed
                                 nPAMed = nPAMed + 1
                     UnlabeledExist = (sum(Colors == 0) > 0)
             else:
                 ClusterDiam = np.zeros((nProperLabels,))
                 for cluster in range(nProperLabels):
-                    InCluster = np.where(Colors == (cluster + 1))[0].tolist()
+                    InCluster = np.where(Colors == cluster)[0].tolist()
                     nInCluster = len(InCluster)
                     DistInCluster = distM.iloc[InCluster, InCluster]
                     if nInCluster > 1:
@@ -1695,17 +1735,17 @@ class WGCNA(GeneExp):
                                           "to several large branches:" + str(onBr)
                                     sys.exit(msg)
                                 if onBr > 0:
-                                    basicOnBranch = branch_basicClusters[[onBr]]
-                                    labelsOnBranch = branchLabels[basicOnBranch]
+                                    basicOnBranch = branch_basicClusters[onBr[0] - 1]
+                                    labelsOnBranch = branchLabels[basicOnBranch - 1]
                                     useObjects = ColorsX in np.unique(labelsOnBranch)
                                     DistSClustClust = distM.iloc[InCluster, useObjects]
                                     MeanDist = DistSClustClust.mean(axis=0)
                                     useColorsFac = pd.Categorical(ColorsX[useObjects])
-                                    # TODO
+                                    MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
                                     MeanMeanDist = MeanDist.groupby(
                                         'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
-                                    nearest = MeanMeanDist.idxmin()
-                                    NearestDist = MeanMeanDist[nearest]
+                                    nearest = MeanMeanDist[['MeanDist']].idxmin().astype(int) - 1
+                                    NearestDist = MeanMeanDist[['MeanDist']].min()
                                     if np.logical_or(np.all(NearestDist < ClusterDiam[nearest]),
                                                      NearestDist < maxPamDist).tolist()[0]:
                                         Colors[InCluster] = nearest
@@ -1731,19 +1771,20 @@ class WGCNA(GeneExp):
                                     nPAMed = nPAMed + len(InCluster)
                                 else:
                                     Colors[InCluster] = -1
+
                 Unlabeled = np.where(Colors == 0)[0].tolist()
                 if len(Unlabeled) > 0:
                     if pamRespectsDendro:
                         unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
                         for obj in unlabOnBranch:
                             onBr = onBranch[obj]
-                            basicOnBranch = branch_basicClusters[[onBr]]
+                            basicOnBranch = branch_basicClusters[onBr - 1]
                             labelsOnBranch = branchLabels[basicOnBranch]
                             useObjects = ColorsX in np.unique(labelsOnBranch)
                             useColorsFac = pd.Categorical(ColorsX[useObjects])
                             UnassdToClustDist = distM.iloc[useObjects, obj].groupby(
                                 'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
-                            nearest = UnassdToClustDist.idxmin()
+                            nearest = UnassdToClustDist.idxmin().astype(int) - 1
                             NearestClusterDist = UnassdToClustDist[nearest]
                             nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
                             if np.logical_or(np.all(NearestClusterDist < ClusterDiam[nearest]),
@@ -1785,7 +1826,7 @@ class WGCNA(GeneExp):
         else:
             SizeRank = stats.rankdata(-1 * Sizes, method='ordinal')
             for i in range(len(NumLabs)):
-                OrdNumLabs.Value[i] = SizeRank[NumLabs[i]-1]
+                OrdNumLabs.Value[i] = SizeRank[NumLabs[i] - 1]
 
         print("\tDone..\n")
 
@@ -1810,13 +1851,15 @@ class WGCNA(GeneExp):
         :rtype: ndarray
         """
         if colorSeq is None:
-            colors = dict(**mcolors.CSS4_COLORS)
+            colors = mcolors.CSS4_COLORS
+            colors = pd.DataFrame({"name": list(colors.keys()),
+                                   "color": list(colors.values())})
+            colors.drop_duplicates(subset='color', keep="last", inplace=True)
             # Sort colors by hue, saturation, value and name.
             by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
-                            for name, color in colors.items())
+                            for name, color in colors.itertuples(index=False))
             colorSeq = [name for hsv, name in by_hsv]
             colorSeq.remove(naColor)
-            colorSeq.remove("gray")
 
         if all(isinstance(x, int) for x in labels.Value):
             if zeroIsGrey:
@@ -1953,9 +1996,11 @@ class WGCNA(GeneExp):
                 u, d, v = np.linalg.svd(datModule)
                 u = u[:, 0:min(n, p, nPC)]
                 v = v[0:min(n, p, nPC), :]
-                tmp = datModule.T.copy()
-                tmp[[str(x) for x in range(min(n, p, nVarExplained))]] = v[0:min(n, p, nVarExplained), :].T
-                veMat = pd.DataFrame(np.corrcoef(tmp.T)).iloc[-1, :-1].T
+                tmp = datModule.copy()
+                tmp = tmp.append(pd.DataFrame(v[0:min(n, p, nVarExplained), :],
+                                              columns=tmp.columns.tolist()),
+                                 ignore_index=True)
+                veMat = pd.DataFrame(np.corrcoef(tmp.values)).iloc[:-1, -1].T
                 varExpl.iloc[0:min(n, p, nVarExplained), i] = (veMat ** 2).mean(axis=0)
                 pc = v[0].tolist()
             except:
@@ -2674,7 +2719,6 @@ class WGCNA(GeneExp):
             return {"colors": MergedNewColors, "dendro": Tree, "oldDendro": oldTree, "cutHeight": cutHeight,
                     "oldMEs": oldMEs['data'], "newMEs": newMEs['data'], "allOK": True}
 
-
     def saveWGCNA(self):
         """
         Saves the current WGCNA in pickle format with the .p extension
@@ -2989,7 +3033,7 @@ class WGCNA(GeneExp):
                 if not show:
                     plt.close(fig)
 
-    def functional_enrichment_analysis(self, type, moduleName, sets=None, p_value=0.05, file_name=None):
+    def functional_enrichment_analysis(self, type, moduleName, sets=None, p_value=1, file_name=None):
         """
         Doing functional enrichment analysis including GO, KEGG and REACTOME
 
@@ -3026,6 +3070,7 @@ class WGCNA(GeneExp):
 
         geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]
         geneModule = geneModule.fillna("").values.tolist()
+
         if type in ["GO", "KEGG"]:
             enr = gp.enrichr(gene_list=geneModule,
                              gene_sets=sets,
@@ -3053,8 +3098,10 @@ class WGCNA(GeneExp):
                                           species=self.species,
                                           p_value=str(p_value))
 
-            print(f"{numGeneModule - token_result['identifiersNotFound']} out of {numGeneModule} genes (identifiers) in the sample were found in Reactome.")
-            print(f"{token_result['resourceSummary'][0]['pathways']} pathways were hit by at least one of them, which {len(token_result['pathways'])} of them have p-value less than {p_value}.")
+            print(
+                f"{numGeneModule - token_result['identifiersNotFound']} out of {numGeneModule} genes (identifiers) in the sample were found in Reactome.")
+            print(
+                f"{token_result['resourceSummary'][0]['pathways']} pathways were hit by at least one of them, which {len(token_result['pathways'])} of them have p-value less than {p_value}.")
             print(f"Report was saved {self.outputPath}/figures/{type}/{file_name}.{self.figureType}!")
             print(f"For more information please visit https://reactome.org/PathwayBrowser/#/DTAB=AN&ANALYSIS={token}")
 

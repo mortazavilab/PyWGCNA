@@ -1,6 +1,8 @@
 import pickle
 import os
 import biomart
+import matplotlib.pyplot as plt
+import networkx as nx
 
 from PyWGCNA.comparison import *
 
@@ -37,33 +39,33 @@ def readWGCNA(file):
     return wgcna
 
 
-# compare two WGCNA
-def comparePyWGCNAs(WGCNA1, WGCNA2):
+# compare serveral networks
+def compareNetworks(PyWGCNAs):
     """
-    Compare two WGCNAs
+    Compare serveral PyWGCNA objects
                 
-    :param WGCNA1: first WGCNA object
-    :type WGCNA1: PyWGCNA class
-    :param WGCNA2: second WGCNA object
-    :type WGCNA2: PyWGCNA class
+    :param PyWGCNAs: list of PyWGCNA objects
+    :type PyWGCNAs: list of PyWGCNA class
 
     :return: compare object
     :rtype: Compare class
     """
-    compare = Comparison(name1=WGCNA1.name, name2=WGCNA2.name,
-                         geneModule1=WGCNA1.datExpr.var, geneModule2=WGCNA2.datExpr.var)
+    geneModules = {}
+    for PyWGCNA in PyWGCNAs:
+        geneModules[PyWGCNA.name] = PyWGCNA.datExpr.var
+    compare = Comparison(geneModules=geneModules)
     compare.compareNetworks()
 
     return compare
 
 
 # compare WGCNA to single cell
-def compareSingleCell(WGCNA, sc):
+def compareSingleCell(PyWGCNAs, sc):
     """
     Compare WGCNA and gene marker from single cell experiment
 
-    :param WGCNA: WGCNA object
-    :type WGCNA: PyWGCNA class
+    :param PyWGCNAs: WGCNA object
+    :type PyWGCNAs: PyWGCNA class
     :param sc: gene marker table which has ....
     :type sc: pandas dataframe
 
@@ -71,8 +73,11 @@ def compareSingleCell(WGCNA, sc):
     :rtype: Compare class
 
     """
-    compare = Comparison(name1=WGCNA.name, name2="single_cell", geneModule1=WGCNA.datExpr.var,
-                         geneMarker=sc, sc=True)
+    geneModules = {}
+    for PyWGCNA in PyWGCNAs:
+        geneModules[PyWGCNA.name] = PyWGCNA.datExpr.var
+    geneModules["single_cell"] = sc
+    compare = Comparison(geneModules=geneModules)
     compare.compareNetworks()
 
     return compare
