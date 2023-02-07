@@ -13,7 +13,6 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
 <meta charset='utf-8'>
@@ -108,6 +107,8 @@
 <span></span><span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">biomart</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 
 <span class="kn">from</span> <span class="nn">PyWGCNA.comparison</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -144,33 +145,33 @@
     <span class="k">return</span> <span class="n">wgcna</span></div>
 
 
-<span class="c1"># compare two WGCNA</span>
-<div class="viewcode-block" id="comparePyWGCNAs"><a class="viewcode-back" href="../../api.html#PyWGCNA.utils.comparePyWGCNAs">[docs]</a><span class="k">def</span> <span class="nf">comparePyWGCNAs</span><span class="p">(</span><span class="n">WGCNA1</span><span class="p">,</span> <span class="n">WGCNA2</span><span class="p">):</span>
+<span class="c1"># compare serveral networks</span>
+<div class="viewcode-block" id="compareNetworks"><a class="viewcode-back" href="../../api.html#PyWGCNA.utils.compareNetworks">[docs]</a><span class="k">def</span> <span class="nf">compareNetworks</span><span class="p">(</span><span class="n">PyWGCNAs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compare two WGCNAs</span>
+<span class="sd">    Compare serveral PyWGCNA objects</span>
 <span class="sd">                </span>
-<span class="sd">    :param WGCNA1: first WGCNA object</span>
-<span class="sd">    :type WGCNA1: PyWGCNA class</span>
-<span class="sd">    :param WGCNA2: second WGCNA object</span>
-<span class="sd">    :type WGCNA2: PyWGCNA class</span>
+<span class="sd">    :param PyWGCNAs: list of PyWGCNA objects</span>
+<span class="sd">    :type PyWGCNAs: list of PyWGCNA class</span>
 
 <span class="sd">    :return: compare object</span>
 <span class="sd">    :rtype: Compare class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                         <span class="n">geneModule1</span><span class="o">=</span><span class="n">WGCNA1</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">,</span> <span class="n">geneModule2</span><span class="o">=</span><span class="n">WGCNA2</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">)</span>
+    <span class="n">geneModules</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">PyWGCNA</span> <span class="ow">in</span> <span class="n">PyWGCNAs</span><span class="p">:</span>
+        <span class="n">geneModules</span><span class="p">[</span><span class="n">PyWGCNA</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span>
+    <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">geneModules</span><span class="o">=</span><span class="n">geneModules</span><span class="p">)</span>
     <span class="n">compare</span><span class="o">.</span><span class="n">compareNetworks</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">compare</span></div>
 
 
 <span class="c1"># compare WGCNA to single cell</span>
-<div class="viewcode-block" id="compareSingleCell"><a class="viewcode-back" href="../../api.html#PyWGCNA.utils.compareSingleCell">[docs]</a><span class="k">def</span> <span class="nf">compareSingleCell</span><span class="p">(</span><span class="n">WGCNA</span><span class="p">,</span> <span class="n">sc</span><span class="p">):</span>
+<div class="viewcode-block" id="compareSingleCell"><a class="viewcode-back" href="../../api.html#PyWGCNA.utils.compareSingleCell">[docs]</a><span class="k">def</span> <span class="nf">compareSingleCell</span><span class="p">(</span><span class="n">PyWGCNAs</span><span class="p">,</span> <span class="n">sc</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compare WGCNA and gene marker from single cell experiment</span>
 
-<span class="sd">    :param WGCNA: WGCNA object</span>
-<span class="sd">    :type WGCNA: PyWGCNA class</span>
+<span class="sd">    :param PyWGCNAs: WGCNA object</span>
+<span class="sd">    :type PyWGCNAs: PyWGCNA class</span>
 <span class="sd">    :param sc: gene marker table which has ....</span>
 <span class="sd">    :type sc: pandas dataframe</span>
 
@@ -178,8 +179,11 @@
 <span class="sd">    :rtype: Compare class</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">name1</span><span class="o">=</span><span class="n">WGCNA</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span><span class="s2">&quot;single_cell&quot;</span><span class="p">,</span> <span class="n">geneModule1</span><span class="o">=</span><span class="n">WGCNA</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">,</span>
-                         <span class="n">geneMarker</span><span class="o">=</span><span class="n">sc</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">geneModules</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">PyWGCNA</span> <span class="ow">in</span> <span class="n">PyWGCNAs</span><span class="p">:</span>
+        <span class="n">geneModules</span><span class="p">[</span><span class="n">PyWGCNA</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">PyWGCNA</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span>
+    <span class="n">geneModules</span><span class="p">[</span><span class="s2">&quot;single_cell&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc</span>
+    <span class="n">compare</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">geneModules</span><span class="o">=</span><span class="n">geneModules</span><span class="p">)</span>
     <span class="n">compare</span><span class="o">.</span><span class="n">compareNetworks</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">compare</span></div>
@@ -305,7 +309,7 @@
     </p>
     <p>
         &copy; Copyright 2022, Narges Rezaie.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br/>
     </p>
   </div>
 </footer>

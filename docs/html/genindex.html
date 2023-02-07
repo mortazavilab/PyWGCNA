@@ -13,7 +13,6 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
 <meta charset='utf-8'>
@@ -115,6 +114,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
@@ -151,6 +151,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.calBlockSize">calBlockSize() (PyWGCNA.wgcna.WGCNA static method)</a>
 </li>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.calculateFraction">calculateFraction() (PyWGCNA.comparison.Comparison method)</a>
+</li>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.calculateJaccardSimilarity">calculateJaccardSimilarity() (PyWGCNA.comparison.Comparison method)</a>
+</li>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.calculatePvalue">calculatePvalue() (PyWGCNA.comparison.Comparison method)</a>
+</li>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.CalculateSignedKME">CalculateSignedKME() (PyWGCNA.wgcna.WGCNA method)</a>
 </li>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.checkAdjMat">checkAdjMat() (PyWGCNA.wgcna.WGCNA static method)</a>
@@ -161,14 +167,16 @@
 </li>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.checkSimilarity">checkSimilarity() (PyWGCNA.wgcna.WGCNA static method)</a>
 </li>
-      <li><a href="api.html#PyWGCNA.wgcna.WGCNA.CoexpressionModulePlot">CoexpressionModulePlot() (PyWGCNA.wgcna.WGCNA method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#PyWGCNA.comparison.Comparison.compareNetworks">compareNetworks() (PyWGCNA.comparison.Comparison method)</a>
+      <li><a href="api.html#PyWGCNA.wgcna.WGCNA.CoexpressionModulePlot">CoexpressionModulePlot() (PyWGCNA.wgcna.WGCNA method)</a>
 </li>
-      <li><a href="api.html#PyWGCNA.utils.comparePyWGCNAs">comparePyWGCNAs() (in module PyWGCNA.utils)</a>
+      <li><a href="api.html#PyWGCNA.utils.compareNetworks">compareNetworks() (in module PyWGCNA.utils)</a>
+
+      <ul>
+        <li><a href="api.html#PyWGCNA.comparison.Comparison.compareNetworks">(PyWGCNA.comparison.Comparison method)</a>
 </li>
+      </ul></li>
       <li><a href="api.html#PyWGCNA.utils.compareSingleCell">compareSingleCell() (in module PyWGCNA.utils)</a>
 </li>
       <li><a href="api.html#PyWGCNA.comparison.Comparison">Comparison (class in PyWGCNA.comparison)</a>
@@ -242,6 +250,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.jaccard">jaccard() (PyWGCNA.comparison.Comparison static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -290,7 +306,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.pickSoftThreshold">pickSoftThreshold() (PyWGCNA.wgcna.WGCNA static method)</a>
 </li>
-      <li><a href="api.html#PyWGCNA.comparison.Comparison.plotComparison">plotComparison() (PyWGCNA.comparison.Comparison method)</a>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.plotBubbleComparison">plotBubbleComparison() (PyWGCNA.comparison.Comparison method)</a>
+</li>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.plotHeatmapComparison">plotHeatmapComparison() (PyWGCNA.comparison.Comparison method)</a>
+</li>
+      <li><a href="api.html#PyWGCNA.comparison.Comparison.plotJaccardSimilarity">plotJaccardSimilarity() (PyWGCNA.comparison.Comparison method)</a>
 </li>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.plotModuleEigenGene">plotModuleEigenGene() (PyWGCNA.wgcna.WGCNA method)</a>
 </li>
@@ -298,6 +318,8 @@
 </li>
       <li><a href="api.html#PyWGCNA.wgcna.WGCNA.preprocess">preprocess() (PyWGCNA.wgcna.WGCNA method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     PyWGCNA.comparison
 
@@ -305,8 +327,6 @@
         <li><a href="api.html#module-PyWGCNA.comparison">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     PyWGCNA.geneExp
 
@@ -421,7 +441,7 @@
     </p>
     <p>
         &copy; Copyright 2022, Narges Rezaie.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br/>
     </p>
   </div>
 </footer>
