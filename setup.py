@@ -14,7 +14,7 @@ setup(
     keywords=['PyWGCNA', 'WGCNA', 'bulk', 'gene clustering', 'network analysis'],  #
     install_requires=[  # these can also include >, <, == to enforce version compatibility
         'pandas>=1.4.4',  # make sure the packages you put here are those NOT included in the
-        'numpy>=1.23.2',  # base python distribution
+        'numpy==1.23.2',  # base python distribution
         'scipy>=1.9.3',
         'scikit-learn>=1.1.3',
         'statsmodels>=0.13.5',

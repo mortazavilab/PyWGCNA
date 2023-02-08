@@ -62,7 +62,6 @@ class Comparison:
             tmp = [f"{network}:" + s for s in self.geneModules[network].moduleColors.unique().tolist()]
             names = names + tmp
         jaccard_similarity = pd.DataFrame(0.0, columns=names, index=names)
-        jaccard_similarity.values[[np.arange(jaccard_similarity.shape[0])] * 2] = 1.0
 
         for network1 in self.geneModules.keys():
             for network2 in self.geneModules.keys():
@@ -78,6 +77,10 @@ class Comparison:
                             jaccard_similarity.loc[
                                 f"{network1}:{module1}", f"{network2}:{module2}"] = PyWGCNA.Comparison.jaccard(list1,
                                                                                                                list2)
+                else:
+                    modules = self.geneModules[network1].moduleColors.unique().tolist()
+                    for module in modules:
+                        jaccard_similarity.loc[f"{network1}:{module}", f"{network1}:{module}"] = 1.0
 
         self.jaccard_similarity = jaccard_similarity
 
@@ -98,7 +101,6 @@ class Comparison:
             tmp = [f"{network}:" + s for s in self.geneModules[network].moduleColors.unique().tolist()]
             names = names + tmp
         fraction = pd.DataFrame(0, columns=names, index=names)
-        fraction.values[[np.arange(fraction.shape[0])] * 2] = 1
 
         for network1 in self.geneModules.keys():
             for network2 in self.geneModules.keys():
@@ -113,6 +115,10 @@ class Comparison:
                                 self.geneModules[network2].moduleColors == module2].tolist()
                             num = np.intersect1d(list1, list2)
                             fraction.loc[f"{network1}:{module1}", f"{network2}:{module2}"] = len(num) / len(list2) * 100
+                else:
+                    modules = self.geneModules[network1].moduleColors.unique().tolist()
+                    for module in modules:
+                        fraction.loc[f"{network1}:{module}", f"{network1}:{module}"] = 1.0
         self.fraction = fraction
 
         return fraction
@@ -132,7 +138,6 @@ class Comparison:
             tmp = [f"{network}:" + s for s in self.geneModules[network].moduleColors.unique().tolist()]
             names = names + tmp
         pvalue = pd.DataFrame(0, columns=names, index=names)
-        pvalue.values[[np.arange(pvalue.shape[0])] * 2] = 0
 
         genes = []
         for network in self.geneModules.keys():
@@ -211,7 +216,7 @@ class Comparison:
         newcolors[:1, :] = white
         newcmp = ListedColormap(newcolors)
 
-        tmp1.values[[np.arange(tmp1.shape[0])] * 2] = 0
+        np.fill_diagonal(tmp1.values, 0)
         labels = self.P_value.round(decimals=2)
         labels[tmp1 == 0] = ""
         labels = (np.asarray(["{0}".format(pvalue)
@@ -262,7 +267,7 @@ class Comparison:
         :type file_name: str
         """
         df = self.jaccard_similarity
-        df.values[[np.arange(df.shape[0])] * 2] = 0
+        np.fill_diagonal(df.values, 0)
         df = pd.DataFrame(df.stack())
         df.reset_index(inplace=True)
         df = df[df[0] >= cutoff]
@@ -373,7 +378,7 @@ class Comparison:
             size = self.fraction.copy(deep=True)
         else:
             sys.exit("Color is not correct!")
-        size.values[[np.arange(size.shape[0])] * 2] = 0
+        np.fill_diagonal(size.values, 0)
 
         P_value[size == 0] = np.nan
         P_value.replace([np.inf], -1, inplace=True)

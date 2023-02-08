@@ -8,9 +8,9 @@ __pycache__/
 # tutorials data
 tutorials/.ipynb_checkpoints/
 tutorials/5xFAD.p
-#tutorials/comparison.p
 tutorials/5xFAD_paper/.Rhistory
 tutorials/3xTgAD_paper/
+tutorials/modelAD_TREM2_5xFAD_BL6_4mon_12mon.p
 
 # other
 .DS_Store
