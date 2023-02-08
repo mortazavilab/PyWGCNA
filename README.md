@@ -30,8 +30,9 @@ git cloning the [PyWGCNA repository](https://github.com/mortazavilab/PyWGCNA), g
 
 - [Data input, cleaning and pre-processing](tutorials/Data_format.md): How data format look like
 - [Quick Start](tutorials/Quick_Start.ipynb): How to load data into PyWGCNA and find modules and analyse them
-- [Compare two PyWGCNA objects](tutorials/Comparison_two_PyWGCNA.ipynb): How to compare two PyWGCNA objects
-- [Compare PyWGCNA objects to gene marker list](tutorials/Comparison_PyWGCAN_geneMarker.ipynb): How to compare PyWGCNA objects to gene marker from single cell data
+- [Compare two PyWGCNA objects](tutorials/Comparison_two_PyWGCNAs.ipynb): How to compare two PyWGCNA objects
+- [Compare more than two PyWGCNA objects](tutorials/Comparison_multi_PyWGCNAs.ipynb): How to compare three PyWGCNA objects
+- [Compare PyWGCNA objects to gene marker list](tutorials/Comparison_PyWGCNA_geneMarker.ipynb): How to compare PyWGCNA objects to gene marker from single cell data
 - [Functional enrichment analysis ](tutorials/functional_enrichment_analysis.ipynb): How to perform functional enrichment analysis including GO, KEGG and REACTOME in PyWGCNA object
 - [Visualize modules as network](tutorials/network_analysis.ipynb): How to visualize PyWGCNA objects as a network
 - [Recover Protein-Protein Interaction](tutorials/protein_protein_interaction.ipynb): How to find and plot PPI using STRING database.
