@@ -1,35 +1,35 @@
 # Data input, cleaning and pre-processing
 
-This is the first step of any network analysis. 
-We show here how to load typical expression data, 
-pre-process them into a format suitable for 
-network analysis, and clean the data by removing 
-obvious outlier samples as well as genes and 
-samples with excessive numbers of missing entries.
+This is the first step of any network analysis.
+We show here how to load typical expression data,
+pre-process them into a format suitable for
+network analysis, and clean the data by removing
+obvious outlier samples and genes genes.
 
-* [Data Input](Data_format.md#data-input)
-  * [anndata format](Data_format.md#expression-data-gene-and-sample-information-all-together-in-anndata-format)
-  * [separate format](Data_format.md#expression-data-gene-and-sample-information-separately)
-    * [Gene Expression](Data_format.md#gene-expression)
-    * [Gene Information](Data_format.md#gene-information)
-    * [Sample Information](Data_format.md#sample-information)
-    * [Other parameters](Data_format.md#other-parameters)
-* [Data cleaning and pre-processing](Data_format.md#data-cleaning-and-pre-processing)
+* [Data Input](#input_data)
+  * [AnnData format](#anndata)
+  * [Separate matrices](#separate_mat)
+    * [Gene expression](#gene_exp)
+    * [Gene metadata](#gene_meta)
+    * [Sample metadata](#sample_meta)
+    * [Other parameters](#params)
+* [Data cleaning and pre-processing](#data_preproc)
 
-## Data Input
-We store **raw** expression data along information in [anndata](https://anndata.readthedocs.io/en/latest/) format in `geneExpr` variable.
-you can pass your expression data, gene and sample information all together or separately:
+## <a name="input_data"></a>Input data format
 
-### expression data, gene and sample information all together in anndata format
-If you already have your expression data in anndata format you can define your pyWGCNA object by passing your variable in `anndata` format. 
-keep in mind X should be expression matrix. var is gene information and obs is sample information.
+We store **raw** expression data along information in [AnnData](https://anndata.readthedocs.io/en/latest/) format in the `geneExpr` variable. Gene expression data, gene metadata, and sample metadata can either be passed to PyWGCNA all together in an AnnData object, or separately as a series of matrices.
 
-### expression data, gene and sample information separately
-you can pass the paths that store each information or the table contains them.
+### <a name="anndata"></a>AnnData format
+If you already have your expression data in AnnData format you can define your PyWGCNA object by passing your variable in `AnnData` format.
+Keep in mind `AnnData.X` should be the expression matrix, `AnnData.var` should contain information about each gene, and `AnnData.obs` should contain information about each sample. You can read more about the AnnData format [here](https://anndata.readthedocs.io/en/latest/)
 
-#### Gene Expression
-The expression data is a table which the rows are samples and columns are genes.
-The first column (index of dataframe) is going to be sample id or sample name and first column (column of dataframe) should be gene id or gene name which both of them should be unique.
+### <a name="separate_mat"></a>Separate matrices for gene expression, sample metadata, and gene metadata
+
+The user can pass individual file paths for gene expression, sample metadata, and gene metadata, in the formats specified below.
+
+#### <a name="gene_exp"></a>Gene expression
+The expression table should be formatted such that the rows correspond to samples and the columns correspond to genes.
+The first column should represent the sample id or sample name. The following columns should contain gene ids or gene names which are all unique.
 
 <div>
 <table border="1" class="dataframe">
@@ -61,10 +61,12 @@ The first column (index of dataframe) is going to be sample id or sample name an
 </table>
 </div>
 
-#### Gene Information
-The gene information is a table which contains additional information about each genes. 
-First column should be your index which should be the same name as first column of gene expression data (gene ID).
+#### <a name="gene_meta"></a>Gene metadata
 
+The gene metadata is a table which contains additional information about each gene, such as gene biotype or gene length.
+Each row should represent a gene and each column should represent a gene feature, where the first columns contains the same gene identifier that was used in the gene expression matrix
+The rows should be in the same order as the columns of the gene expression matrix, or
+the user can specify `order=False`.
 
 <div>
 <table border="1" class="dataframe">
@@ -100,9 +102,12 @@ First column should be your index which should be the same name as first column 
 </table>
 </div>
 
-#### Sample Information
-The sample information is a table which contains additional information about each sample. 
-First column should be your index which should be the same name as first row of gene expression data (sample ID).
+#### <a name="sample_meta"></a>Sample metadata
+
+The sample metadata is a table which contains additional information about each sample, such as timepoint or genotype.
+Each row should represent a sample and each column should represent a metadata feature, where the first columns contains the same sample identifier that was used in the gene expression matrix
+The rows should be in the same order as the rows of the gene expression matrix, or
+the user can specify `order=False`.
 
 <div>
 <table border="1" class="dataframe">
@@ -134,31 +139,30 @@ First column should be your index which should be the same name as first row of 
 </table>
 </div>
 
-### Other parameters
-These are other parameters we suggest checking them before starting any analysis. 
-* **name**: name of the WGCNA we used to visualize data (default: `WGCNA`)
+### <a name="params"></a>Other parameters
+These are other parameters that can be specified.
 
-* **save**: define whether you want to save result of important steps or not (If you want to set it 
-`TRUE` you should have a write access on the output directory)
+* **name**: Name of the WGCNA used to visualize data (default: `WGCNA`)
 
-* **outputPath**: define where you want to save your data, otherwise it will be store near the code. 
+* **save**: Whether to save the results of important steps or not (If you want to set it
+`True` you should have a write access on the output directory)
 
-* **TPMcutoff**: cut off for removing genes that expressed under this number along samples
+* **outputPath**: Where to save your data, otherwise it will be stored in the same directory as the code.
 
-* **networkType** : Type of networks (default: `signed hybrid` and Options: `unsigned`, `signed` and `signed hybrid`)
+* **TPMcutoff**: TPM cutoff for removing genes
 
-* **adjacencyType**: Type of adjacency matrix (default: `signed hybrid` and Options: `unsigned`, `signed` and `signed hybrid`)
+* **networkType** : Type of network to generate ({`unsigned`, `signed` and `signed hybrid`}, default: `signed hybrid`)
 
+* **adjacencyType**: Type of adjacency matrix to use ({`unsigned`, `signed` and `signed hybrid`}, default: `signed hybrid`)
 
-* **TOMType**: Type of topological overlap matrix(TOM) (default: `signed` and Options: `unsigned` and `signed`)
+* **TOMType**: Type of topological overlap matrix(TOM) to use ({`unsigned`, `signed`}, default: `signed`)
 
-For depth-in documents look at [here](https://mortazavilab.github.io/PyWGCNA/html/PyWGCNA.html).
+For depth-in documentation on these parameters see [here](https://mortazavilab.github.io/PyWGCNA/html/PyWGCNA.html).
 
-## Data cleaning and pre-processing
+## <a name="data_preproc"></a>Data cleaning and preprocessing
 
-PyWGCNA checks data for genes and samples with too many missing values.
+PyWGCNA can clean the input data according to the following criteria:
 1. Remove genes without any expression more than `TPMcutoff` value (default one) across all samples.
-2. `goodSamplesGenes()` function to find genes and samples with too many missing values.
-3. Cluster the samples (use [Hierarchical clustering](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy)
-from [scipy](https://scipy.org/)) to see if there are any obvious outliers. 
-you can define value the height by `cut` value. By default, we don't remove any sample by hierarchical clustering
+2. Find genes and samples `goodSamplesGenes()` function to find genes and samples with too many missing values.
+3. Cluster the samples (uses [hierarchical clustering](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html#module-scipy.cluster.hierarchy)
+from [scipy](https://scipy.org/)) to see if there are any obvious outliers. The user can define value the height by specifying the `cut` value. By default, no samples are removed by hierarchical clustering
