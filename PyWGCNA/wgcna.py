@@ -1434,7 +1434,7 @@ class WGCNA(GeneExp):
 
                     if branch_isBasic[large - 1]:
                         coresize = WGCNA.coreSizeFunc(branch_nSingletons[large - 1], minClusterSize)
-                        Core = branch_singletons[small - 1][np.arange(coresize)]
+                        Core = branch_singletons[large - 1][np.arange(coresize)]
                         Core = Core.astype(int).tolist()
                         LgAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize - 1)
                     else:
