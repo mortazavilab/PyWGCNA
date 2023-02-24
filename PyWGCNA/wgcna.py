@@ -1426,16 +1426,14 @@ class WGCNA(GeneExp):
 
                     if branch_isBasic[small - 1]:
                         coresize = WGCNA.coreSizeFunc(branch_nSingletons[small - 1], minClusterSize)
-                        Core = branch_singletons[small - 1][np.arange(coresize)]
-                        Core = Core.astype(int).tolist()
+                        Core = np.array(branch_singletons[small - 1][np.arange(coresize)] - 1, dtype=int)
                         SmAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize - 1)
                     else:
                         SmAveDist = 0
 
                     if branch_isBasic[large - 1]:
                         coresize = WGCNA.coreSizeFunc(branch_nSingletons[large - 1], minClusterSize)
-                        Core = branch_singletons[large - 1][np.arange(coresize)]
-                        Core = Core.astype(int).tolist()
+                        Core = np.array(branch_singletons[large - 1][np.arange(int(coresize))] - 1, dtype=int)
                         LgAveDist = np.mean(distM.iloc[Core, Core].sum() / coresize - 1)
                     else:
                         LgAveDist = 0
@@ -1591,8 +1589,7 @@ class WGCNA(GeneExp):
                 branch_attachHeight[clust] = cutHeight
             if branch_isTopBasic[clust]:
                 coresize = WGCNA.coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-                Core = branch_singletons[clust][np.arange(coresize)] - 1
-                Core = Core.astype(int).tolist()
+                Core = np.array(branch_singletons[clust][np.arange(coresize)] - 1, dtype=int)
                 CoreScatter = np.mean(distM.iloc[Core, Core].sum() / (coresize - 1))
                 isCluster[clust] = (branch_isTopBasic[clust] and branch_size[clust] >= minClusterSize and
                                     CoreScatter < maxAbsCoreScatter and branch_attachHeight[
@@ -1616,8 +1613,7 @@ class WGCNA(GeneExp):
             Colors[branch_singletons[clust][branch_singletons[clust] != 0] - 1] = color
             SmallLabels[branch_singletons[clust][branch_singletons[clust] != 0] - 1] = 0
             coresize = WGCNA.coreSizeFunc(branch_nSingletons[clust], minClusterSize)
-            Core = branch_singletons[clust][np.arange(coresize)] - 1
-            Core = Core.astype(int).tolist()
+            Core = np.array(branch_singletons[clust][np.arange(coresize)] - 1, dtype=int)
             coreLabels[Core] = color
             branchLabels[clust] = color
 
