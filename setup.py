@@ -3,14 +3,14 @@ from setuptools import setup
 setup(
     name='PyWGCNA',  # the name of your package
     packages=['PyWGCNA'],  # same as above
-    version='1.16.2',  # version number
+    version='1.16.3',  # version number
     license='MIT',  # license type
     description='PyWGCNA is a Python package designed to do Weighted correlation network analysis (WGCNA)',
     # short description
     author='Narges Rezaie',  # your name
     author_email='nargesrezaie80@gmail.com',  # your email
     url='https://github.com/mortazavilab/PyWGCNA',  # url to your git repo
-    download_url='https://github.com/mortazavilab/PyWGCNA/archive/refs/tags/v1.16.1.tar.gz',  # link to the tar.gz file associated with this release
+    download_url='https://github.com/mortazavilab/PyWGCNA/archive/refs/tags/v1.16.3.tar.gz',  # link to the tar.gz file associated with this release
     keywords=['PyWGCNA', 'WGCNA', 'bulk', 'gene clustering', 'network analysis'],  #
     install_requires=[  # these can also include >, <, == to enforce version compatibility
         'pandas>=1.4.4',  # make sure the packages you put here are those NOT included in the
@@ -23,7 +23,7 @@ setup(
         'biomart>=0.9.2',
         'gseapy>=1.0.1',
         'pyvis>=0.3.1',
-        'setuptools>=59.8.0',
+        'setuptools>=67.4.0',
         'biomart>=0.9.2',
         'reactome2py>=3.0.0',
         'anndata>=0.8.0',
