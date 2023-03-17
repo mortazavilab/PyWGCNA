@@ -1,6 +1,7 @@
 import pickle
 import os
 import biomart
+import requests
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -101,7 +102,21 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
     :rtype: pandas dataframe
     """
 
-    server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
+    server_domain = "http://ensembl.org/biomart"
+    r = requests.get('https://www.ensembl.org/biomart/martview')
+
+    if r.status_code != 200:
+        server_domain = "http://useast.ensembl.org/biomart"
+        r = requests.get("https://useast.ensembl.org/biomart/martview")
+        if r.status_code != 200:
+            server_domain = "http://asia.ensembl.org/biomart"
+            r = requests.get('https://www.asia.ensembl.org/biomart/martview')
+            if r.status_code != 200:
+                print("all of the biomart servers are currently unavailable! please try later")
+                return
+
+    r.close()
+    server = biomart.BiomartServer(server_domain)
     mart = server.datasets[dataset]
 
     # Get the mapping between the attributes
@@ -144,7 +159,21 @@ def getGeneListGOid(dataset='mmusculus_gene_ensembl',
     :rtype: pandas dataframe
     """
 
-    server = biomart.BiomartServer('http://uswest.ensembl.org/biomart')
+    server_domain = "http://ensembl.org/biomart"
+    r = requests.get('https://www.ensembl.org/biomart/martview')
+
+    if r.status_code != 200:
+        server_domain = "http://useast.ensembl.org/biomart"
+        r = requests.get("https://useast.ensembl.org/biomart/martview")
+        if r.status_code != 200:
+            server_domain = "http://asia.ensembl.org/biomart"
+            r = requests.get('https://www.asia.ensembl.org/biomart/martview')
+            if r.status_code != 200:
+                print("all of the biomart servers are currently unavailable! please try later")
+                return
+
+    r.close()
+    server = biomart.BiomartServer(server_domain)
     mart = server.datasets[dataset]
 
     # mart.show_attributes()

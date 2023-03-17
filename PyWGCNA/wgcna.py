@@ -3068,16 +3068,19 @@ class WGCNA(GeneExp):
         geneModule = geneModule.fillna("").values.tolist()
 
         if type in ["GO", "KEGG"]:
-            enr = gp.enrichr(gene_list=geneModule,
-                             gene_sets=sets,
-                             organism=self.species,
-                             outdir=f"{self.outputPath}/figures/{type}/{file_name}",
-                             cutoff=p_value)
-            dotplot(enr.res2d,
-                    title=f"Gene ontology in {moduleName} module",
-                    cmap='viridis_r',
-                    cutoff=p_value,
-                    ofname=f"{self.outputPath}/figures/{type}/{file_name}.{self.figureType}")
+            try:
+                enr = gp.enrichr(gene_list=geneModule,
+                                 gene_sets=sets,
+                                 organism=self.species,
+                                 outdir=f"{self.outputPath}/figures/{type}/{file_name}",
+                                 cutoff=p_value)
+                dotplot(enr.res2d,
+                        title=f"Gene ontology in {moduleName} module",
+                        cmap='viridis_r',
+                        cutoff=p_value,
+                        ofname=f"{self.outputPath}/figures/{type}/{file_name}.{self.figureType}")
+            except:
+                print(f"No enrich terms when cutoff = {p_value} in module {moduleName}")
         else:
             numGeneModule = len(geneModule)
             geneModule = ",".join(geneModule)
