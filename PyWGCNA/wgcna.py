@@ -159,7 +159,7 @@ class WGCNA(GeneExp):
         self.RsquaredCut = RsquaredCut
         self.MeanCut = MeanCut
         self.powers = powers
-        self.power = None
+        self.power = 0
         self.sft = None
 
         self.geneTree = None
@@ -167,7 +167,7 @@ class WGCNA(GeneExp):
         self.TOMType = TOMType
         self.TOM = None
         self.minModuleSize = minModuleSize
-        self.dynamicMods = None
+        self.dynamicMods = [None]
         self.naColor = naColor
         self.MEs = None
         self.MEDissThres = MEDissThres
@@ -2721,7 +2721,7 @@ class WGCNA(GeneExp):
         """
         print(f"{BOLD}{OKBLUE}Saving WGCNA as {self.name}.p{ENDC}")
 
-        picklefile = open(self.outputPath + '/' + self.name + '.p', 'wb')
+        picklefile = open(self.outputPath + self.name + '.p', 'wb')
         pickle.dump(self, picklefile)
         picklefile.close()
 
@@ -3519,3 +3519,36 @@ class WGCNA(GeneExp):
             print(f"https://string-db.org/api/tsv/get_link?identifiers={tmp}&species={params['species']}")
 
         sleep(1)
+
+    def top_n_hub_genes(self, moduleName, n=10):
+        """
+        find top n hub genes based on connectivity in given module
+
+        :param moduleName: name of module you want to top n hub genes
+        :type moduleName: str
+        :param n: number of top hub genes
+        :type n: int
+
+        :return: dataframe contains top n hun genes along with connectivity score and additional gene information you added to your expression matrix
+        :rtype: pandas dataframe
+        """
+
+        modules = np.unique(self.datExpr.var['moduleColors']).tolist()
+        if np.all(moduleName not in modules):
+            print(f"{WARNING}Module name does not exist in {ENDC}")
+            return
+
+        datExpr = self.datExpr.copy()
+        datExpr = datExpr[:, datExpr.var['moduleColors'] == moduleName]
+        adj = WGCNA.adjacency(datExpr.to_df(), power=self.power, adjacencyType=self.networkType)
+        adj = pd.DataFrame(adj,
+                           columns=datExpr.to_df().columns,
+                           index=datExpr.to_df().columns)
+        hub_genes = adj.sum().sort_values(ascending=False)
+        hub_genes = pd.DataFrame(hub_genes,
+                                 columns=["connectivity"])
+
+        hub_genes = pd.concat([hub_genes, datExpr.var], axis=1)
+        hub_genes = hub_genes.iloc[:n, :]
+
+        return hub_genes

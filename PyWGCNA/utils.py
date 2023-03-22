@@ -86,7 +86,8 @@ def compareSingleCell(PyWGCNAs, sc):
 
 def getGeneList(dataset='mmusculus_gene_ensembl',
                 attributes=['ensembl_gene_id', 'external_gene_name', 'gene_biotype'],
-                maps=['gene_id', 'gene_name', 'go_id']):
+                maps=['gene_id', 'gene_name', 'go_id'],
+                server_domain="http://ensembl.org/biomart"):
     """
     get table that map gene ensembl id to gene name from biomart
 
@@ -97,23 +98,18 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
     :type attributes: list
     :param maps: mapping between attributes and column names of gene information you want to show
     :type maps: list
+    :param server_domain: URL of ensembl biomart server that you want to use to pull out the information (options: [‘’, ‘uswest’, ‘asia’])
+    :type server_domain: string
     
     :return: table extracted from biomart related to the datasets including information from attributes
     :rtype: pandas dataframe
     """
 
-    server_domain = "http://ensembl.org/biomart"
-    r = requests.get('https://www.ensembl.org/biomart/martview')
+    r = requests.get(f"{server_domain}/martview")
 
     if r.status_code != 200:
-        server_domain = "http://useast.ensembl.org/biomart"
-        r = requests.get("https://useast.ensembl.org/biomart/martview")
-        if r.status_code != 200:
-            server_domain = "http://asia.ensembl.org/biomart"
-            r = requests.get('https://www.asia.ensembl.org/biomart/martview')
-            if r.status_code != 200:
-                print("all of the biomart servers are currently unavailable! please try later")
-                return
+        print("The biomart server you requested is currently unavailable! please use other biomart server or try later")
+        return
 
     r.close()
     server = biomart.BiomartServer(server_domain)
@@ -143,7 +139,8 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
 
 def getGeneListGOid(dataset='mmusculus_gene_ensembl',
                     attributes=['ensembl_gene_id', 'external_gene_name', 'go_id'],
-                    Goid='GO:0003700'):
+                    Goid='GO:0003700',
+                    server_domain="http://ensembl.org/biomart"):
     """
     get table that find gene id and gene name to specific Go term from biomart
 
@@ -154,23 +151,18 @@ def getGeneListGOid(dataset='mmusculus_gene_ensembl',
     :type attributes: list
     :param Goid: GO term id you would like to get genes from them
     :type Goid: list or str
+    :param server_domain: URL of ensembl biomart server that you want to use to pull out the inforamtion
+    :type server_domain: string
 
     :return: table extracted from biomart related to the datasets including information from attributes with filtering
     :rtype: pandas dataframe
     """
 
-    server_domain = "http://ensembl.org/biomart"
-    r = requests.get('https://www.ensembl.org/biomart/martview')
+    r = requests.get(f"{server_domain}/martview")
 
     if r.status_code != 200:
-        server_domain = "http://useast.ensembl.org/biomart"
-        r = requests.get("https://useast.ensembl.org/biomart/martview")
-        if r.status_code != 200:
-            server_domain = "http://asia.ensembl.org/biomart"
-            r = requests.get('https://www.asia.ensembl.org/biomart/martview')
-            if r.status_code != 200:
-                print("all of the biomart servers are currently unavailable! please try later")
-                return
+        print("The biomart server you requested is currently unavailable! please use other biomart server or try later")
+        return
 
     r.close()
     server = biomart.BiomartServer(server_domain)
