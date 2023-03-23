@@ -30,6 +30,7 @@ To install the most recent release, run
 
 - [Data input, cleaning and pre-processing](tutorials/Data_format.md): How to format, clean and preprocess your input data for PyWGCNA
 - [Quick Start](tutorials/Quick_Start.ipynb): How to load data into PyWGCNA, find modules, and analyze them
+- [PyWGCNA object](tutorials/PyWGCNA_object.ipynb): How to interact with PyWGCNA objects and some parameters we have them in the object and how you can access them
 - [Compare two PyWGCNA objects](tutorials/Comparison_two_PyWGCNAs.ipynb): How to compare two PyWGCNA objects
 - [Compare more than two PyWGCNA objects](tutorials/Comparison_multi_PyWGCNAs.ipynb): How to compare three PyWGCNA objects
 - [Compare PyWGCNA objects to gene marker list](tutorials/Comparison_PyWGCNA_geneMarker.ipynb): How to compare PyWGCNA objects to external gene lists (here shown on marker genes from single-cell data)

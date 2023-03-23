@@ -1116,6 +1116,26 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.top_n_hub_genes">
+<span class="sig-name descname"><span class="pre">top_n_hub_genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moduleName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.top_n_hub_genes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.top_n_hub_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>find top n hub genes based on connectivity in given module</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moduleName</strong> (<em>str</em>) – name of module you want to top n hub genes</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – number of top hub genes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dataframe contains top n hun genes along with connectivity score and additional gene information you added to your expression matrix</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas dataframe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.updateGeneInfo">
 <span class="sig-name descname"><span class="pre">updateGeneInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geneInfo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.updateGeneInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.updateGeneInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>add/update genes info in datExpr and geneExpr anndata</p>
@@ -1342,7 +1362,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.getGeneList">
-<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name',</span> <span class="pre">'gene_biotype']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['gene_id',</span> <span class="pre">'gene_name',</span> <span class="pre">'go_id']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name',</span> <span class="pre">'gene_biotype']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['gene_id',</span> <span class="pre">'gene_name',</span> <span class="pre">'go_id']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_domain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'http://ensembl.org/biomart'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneList" title="Permalink to this definition">¶</a></dt>
 <dd><p>get table that map gene ensembl id to gene name from biomart</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1351,6 +1371,7 @@
 you can find more information here: <a class="reference external" href="https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset">https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</a></p></li>
 <li><p><strong>attributes</strong> (<em>list</em>) – List the types of data we want</p></li>
 <li><p><strong>maps</strong> (<em>list</em>) – mapping between attributes and column names of gene information you want to show</p></li>
+<li><p><strong>server_domain</strong> (<em>string</em>) – URL of ensembl biomart server that you want to use to pull out the information (options: [‘’, ‘uswest’, ‘asia’])</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1364,7 +1385,7 @@ you can find more information here: <a class="reference external" href="https://
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyWGCNA.utils.getGeneListGOid">
-<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneListGOid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name',</span> <span class="pre">'go_id']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Goid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GO:0003700'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneListGOid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneListGOid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">PyWGCNA.utils.</span></span><span class="sig-name descname"><span class="pre">getGeneListGOid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmusculus_gene_ensembl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['ensembl_gene_id',</span> <span class="pre">'external_gene_name',</span> <span class="pre">'go_id']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Goid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GO:0003700'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_domain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'http://ensembl.org/biomart'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/utils.html#getGeneListGOid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.utils.getGeneListGOid" title="Permalink to this definition">¶</a></dt>
 <dd><p>get table that find gene id and gene name to specific Go term from biomart</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1373,6 +1394,7 @@ you can find more information here: <a class="reference external" href="https://
 you can find more information here: <a class="reference external" href="https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset">https://bioconductor.riken.jp/packages/3.4/bioc/vignettes/biomaRt/inst/doc/biomaRt.html#selecting-a-biomart-database-and-dataset</a></p></li>
 <li><p><strong>attributes</strong> (<em>list</em>) – List the types of data we want</p></li>
 <li><p><strong>Goid</strong> (<em>list</em><em> or </em><em>str</em>) – GO term id you would like to get genes from them</p></li>
+<li><p><strong>server_domain</strong> (<em>string</em>) – URL of ensembl biomart server that you want to use to pull out the inforamtion</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

@@ -107,6 +107,7 @@
 <span></span><span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">biomart</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 
@@ -191,7 +192,8 @@
 
 <div class="viewcode-block" id="getGeneList"><a class="viewcode-back" href="../../api.html#PyWGCNA.utils.getGeneList">[docs]</a><span class="k">def</span> <span class="nf">getGeneList</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">,</span>
                 <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span> <span class="s1">&#39;external_gene_name&#39;</span><span class="p">,</span> <span class="s1">&#39;gene_biotype&#39;</span><span class="p">],</span>
-                <span class="n">maps</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;gene_id&#39;</span><span class="p">,</span> <span class="s1">&#39;gene_name&#39;</span><span class="p">,</span> <span class="s1">&#39;go_id&#39;</span><span class="p">]):</span>
+                <span class="n">maps</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;gene_id&#39;</span><span class="p">,</span> <span class="s1">&#39;gene_name&#39;</span><span class="p">,</span> <span class="s1">&#39;go_id&#39;</span><span class="p">],</span>
+                <span class="n">server_domain</span><span class="o">=</span><span class="s2">&quot;http://ensembl.org/biomart&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get table that map gene ensembl id to gene name from biomart</span>
 
@@ -202,12 +204,21 @@
 <span class="sd">    :type attributes: list</span>
 <span class="sd">    :param maps: mapping between attributes and column names of gene information you want to show</span>
 <span class="sd">    :type maps: list</span>
+<span class="sd">    :param server_domain: URL of ensembl biomart server that you want to use to pull out the information (options: [‘’, ‘uswest’, ‘asia’])</span>
+<span class="sd">    :type server_domain: string</span>
 <span class="sd">    </span>
 <span class="sd">    :return: table extracted from biomart related to the datasets including information from attributes</span>
 <span class="sd">    :rtype: pandas dataframe</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">server</span> <span class="o">=</span> <span class="n">biomart</span><span class="o">.</span><span class="n">BiomartServer</span><span class="p">(</span><span class="s1">&#39;http://uswest.ensembl.org/biomart&#39;</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">server_domain</span><span class="si">}</span><span class="s2">/martview&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The biomart server you requested is currently unavailable! please use other biomart server or try later&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">r</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">biomart</span><span class="o">.</span><span class="n">BiomartServer</span><span class="p">(</span><span class="n">server_domain</span><span class="p">)</span>
     <span class="n">mart</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="n">dataset</span><span class="p">]</span>
 
     <span class="c1"># Get the mapping between the attributes</span>
@@ -234,7 +245,8 @@
 
 <div class="viewcode-block" id="getGeneListGOid"><a class="viewcode-back" href="../../api.html#PyWGCNA.utils.getGeneListGOid">[docs]</a><span class="k">def</span> <span class="nf">getGeneListGOid</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;mmusculus_gene_ensembl&#39;</span><span class="p">,</span>
                     <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span> <span class="s1">&#39;external_gene_name&#39;</span><span class="p">,</span> <span class="s1">&#39;go_id&#39;</span><span class="p">],</span>
-                    <span class="n">Goid</span><span class="o">=</span><span class="s1">&#39;GO:0003700&#39;</span><span class="p">):</span>
+                    <span class="n">Goid</span><span class="o">=</span><span class="s1">&#39;GO:0003700&#39;</span><span class="p">,</span>
+                    <span class="n">server_domain</span><span class="o">=</span><span class="s2">&quot;http://ensembl.org/biomart&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get table that find gene id and gene name to specific Go term from biomart</span>
 
@@ -245,12 +257,21 @@
 <span class="sd">    :type attributes: list</span>
 <span class="sd">    :param Goid: GO term id you would like to get genes from them</span>
 <span class="sd">    :type Goid: list or str</span>
+<span class="sd">    :param server_domain: URL of ensembl biomart server that you want to use to pull out the inforamtion</span>
+<span class="sd">    :type server_domain: string</span>
 
 <span class="sd">    :return: table extracted from biomart related to the datasets including information from attributes with filtering</span>
 <span class="sd">    :rtype: pandas dataframe</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">server</span> <span class="o">=</span> <span class="n">biomart</span><span class="o">.</span><span class="n">BiomartServer</span><span class="p">(</span><span class="s1">&#39;http://uswest.ensembl.org/biomart&#39;</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">server_domain</span><span class="si">}</span><span class="s2">/martview&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The biomart server you requested is currently unavailable! please use other biomart server or try later&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">r</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">biomart</span><span class="o">.</span><span class="n">BiomartServer</span><span class="p">(</span><span class="n">server_domain</span><span class="p">)</span>
     <span class="n">mart</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="n">dataset</span><span class="p">]</span>
 
     <span class="c1"># mart.show_attributes()</span>
