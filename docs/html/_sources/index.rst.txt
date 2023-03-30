@@ -18,6 +18,7 @@ You can find GitHub pages `here <https://github.com/mortazavilab/PyWGCNA>`_.
 
    installation
    tutorials
+   suggested_reading
    cite
    api
 
