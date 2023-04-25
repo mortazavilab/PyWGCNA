@@ -367,7 +367,7 @@ class WGCNA(GeneExp):
         """
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
-        datTraits = self.getDatTraits()
+        datTraits = self.getDatTraits(self.datExpr.obs.columns.tolist())
 
         print(f"{OKCYAN}Calculating module trait relationship ...{ENDC}")
 
@@ -384,37 +384,10 @@ class WGCNA(GeneExp):
                 self.moduleTraitCor.loc[i, j] = tmp[0]
                 self.moduleTraitPvalue.loc[i, j] = tmp[1]
 
-        fig, ax = plt.subplots(figsize=(max(20, int(self.moduleTraitPvalue.shape[0] * 1.5)),
-                                        self.moduleTraitPvalue.shape[1] * 1.5), facecolor='white')
-        # names
-        xlabels = []
-        for label in self.MEs.columns:
-            xlabels.append(label[2:].capitalize() + '(' + str(sum(self.datExpr.var['moduleColors'] == label[2:])) + ')')
-        ylabels = datTraits.columns
-
-        # Loop over data dimensions and create text annotations.
-        tmp_cor = self.moduleTraitCor.T.round(decimals=2)
-        tmp_pvalue = self.moduleTraitPvalue.T.round(decimals=3)
-        labels = (np.asarray(["{0}\n({1})".format(cor, pvalue)
-                              for cor, pvalue in zip(tmp_cor.values.flatten(),
-                                                     tmp_pvalue.values.flatten())])) \
-            .reshape(self.moduleTraitCor.T.shape)
-
-        sns.set(font_scale=1.5)
-        res = sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
-                          vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
-                          xticklabels=xlabels, yticklabels=ylabels)
-        res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=90)
-        res.set_yticklabels(res.get_ymajorticklabels(), fontsize=20, fontweight="bold")
-        plt.yticks(rotation=0)
-        ax.set_title(f"Module-trait Relationships heatmap for {self.name}",
-                     fontsize=30, fontweight="bold")
-        ax.set_facecolor('white')
-        fig.tight_layout()
-        if not show:
-            plt.close(fig)
         if self.save:
-            fig.savefig(f"{self.outputPath}figures/Module_trait_relationships.{self.figureType}")
+            self.module_trait_relationships_heatmap(metaData=self.datExpr.obs.columns.tolist(),
+                                                    show=show,
+                                                    file_name='module-traitRelationships')
         print("\tDone..\n")
 
         print(f"{OKCYAN}Adding (signed) eigengene-based connectivity (module membership) ...{ENDC}")
@@ -438,13 +411,13 @@ class WGCNA(GeneExp):
         if self.save:
             print(f"{OKCYAN}plotting module heatmap eigengene...{ENDC}")
             for module in modules:
-                self.plotModuleEigenGene(module, metadata, show=False)
+                self.plotModuleEigenGene(module, metadata, show=show)
             print("\tDone..\n")
 
         if self.save:
             print(f"{OKCYAN}plotting module barplot eigengene...{ENDC}")
             for module in modules:
-                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=True)
+                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=show)
             print("\tDone..\n")
 
         if self.save:
@@ -1507,8 +1480,10 @@ class WGCNA(GeneExp):
                                 branch_singletonHeights[large - 1] = np.append(branch_singletonHeights[large - 1],
                                                                                np.repeat(extender, nExt))
 
-                            branch_singletons[large - 1][np.arange(nsl, ns)] = branch_singletons[small - 1][np.arange(nss)]
-                            branch_singletonHeights[large - 1][np.arange(nsl, ns)] = branch_singletonHeights[small - 1][np.arange(nss)]
+                            branch_singletons[large - 1][np.arange(nsl, ns)] = branch_singletons[small - 1][
+                                np.arange(nss)]
+                            branch_singletonHeights[large - 1][np.arange(nsl, ns)] = branch_singletonHeights[small - 1][
+                                np.arange(nss)]
                             branch_nSingletons[large] = ns
                         else:
                             if not branch_isBasic[small - 1]:
@@ -1566,7 +1541,7 @@ class WGCNA(GeneExp):
                                 branch_basicClusters[large - 1] = np.append(branch_basicClusters[large - 1],
                                                                             np.repeat(extender, nExt))
 
-                            branch_basicClusters[large - 1][np.arange(nbl,nb)] = addBasicClusters
+                            branch_basicClusters[large - 1][np.arange(nbl, nb)] = addBasicClusters
                             branch_nBasicClusters[large - 1] = nb
                             branch_size[large - 1] = branch_size[large - 1] + branch_size[small - 1]
                             nm = branch_nMerge[large - 1] + 1
@@ -2725,14 +2700,14 @@ class WGCNA(GeneExp):
         pickle.dump(self, picklefile)
         picklefile.close()
 
-    def getDatTraits(self):
+    def getDatTraits(self, metaData):
         """
         get data trait module base on samples information
 
         :return: a dataframe contains information in suitable format for plotting module trait relationship heatmap
         :rtype: pandas dataframe
         """
-        data = self.datExpr.obs.copy()
+        data = self.datExpr.obs.copy()[metaData]
         datTraits = pd.DataFrame(index=data.index)
         for i in range(data.shape[1]):
             data.iloc[:, i] = data.iloc[:, i].astype(str)
@@ -2754,6 +2729,54 @@ class WGCNA(GeneExp):
 
         return datTraits
 
+    def module_trait_relationships_heatmap(self,
+                                           metaData,
+                                           show=True,
+                                           file_name='module-traitRelationships'):
+        """
+        plot topic-trait relationship heatmap
+
+        :param metaData: traits you would like to see the relationship with topics (must be column name of datExpr.obs)
+        :type metaData: list
+        :param show: indicate if you want to show the plot or not (default: True)
+        :type show: bool
+        :param file_name: name and path of the plot use for save (default: topic-traitRelationships)
+        :type file_name: str
+        """
+        datTraits = self.getDatTraits(metaData)
+
+        fig, ax = plt.subplots(figsize=(max(20, int(self.moduleTraitPvalue.shape[0] * 1.5)),
+                                        self.moduleTraitPvalue.shape[1] * 1.5), facecolor='white')
+        # names
+        xlabels = []
+        for label in self.MEs.columns:
+            xlabels.append(label[2:].capitalize() + '(' + str(sum(self.datExpr.var['moduleColors'] == label[2:])) + ')')
+        ylabels = datTraits.columns
+
+        # Loop over data dimensions and create text annotations.
+        tmp_cor = self.moduleTraitCor.T.round(decimals=2)
+        tmp_pvalue = self.moduleTraitPvalue.T.round(decimals=3)
+        labels = (np.asarray(["{0}\n({1})".format(cor, pvalue)
+                              for cor, pvalue in zip(tmp_cor.values.flatten(),
+                                                     tmp_pvalue.values.flatten())])) \
+            .reshape(self.moduleTraitCor.T.shape)
+
+        sns.set(font_scale=1.5)
+        res = sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
+                          vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
+                          xticklabels=xlabels, yticklabels=ylabels)
+        res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=90)
+        res.set_yticklabels(res.get_ymajorticklabels(), fontsize=20, fontweight="bold")
+        plt.yticks(rotation=0)
+        ax.set_title(f"Module-trait Relationships heatmap for {self.name}",
+                     fontsize=30, fontweight="bold")
+        ax.set_facecolor('white')
+        fig.tight_layout()
+        if not show:
+            plt.close(fig)
+        if self.save:
+            fig.savefig(f"{self.outputPath}figures/{file_name}.{self.figureType}")
+
     def getModuleName(self):
         """
         get names of modules
@@ -2761,7 +2784,7 @@ class WGCNA(GeneExp):
         :return: name of modules
         :rtype: ndarray
         """
-        return np.unique(self.datExpr.obs['moduleColors']).tolist()
+        return np.unique(self.datExpr.var['moduleColors']).tolist()
 
     def getGeneModule(self, moduleName):
         """
@@ -2774,13 +2797,13 @@ class WGCNA(GeneExp):
         :rtype: dict
         """
         output = {}
-        moduleColors = np.unique(self.datExpr.obs['moduleColors']).tolist()
+        moduleColors = np.unique(self.datExpr.var['moduleColors']).tolist()
         if moduleName not in moduleColors:
             print(f"{WARNING}Module name(s) does not exist in {ENDC}")
             return None
         for color in moduleColors:
             if color in moduleName:
-                output[color] = self.datExpr.obs[self.datExpr.obs['moduleColors'] == color]
+                output[color] = self.datExpr.var[self.datExpr.var['moduleColors'] == color]
         return output
 
     def getModulesGene(self, geneIds):
@@ -2798,7 +2821,7 @@ class WGCNA(GeneExp):
 
         modules = []
         for geneId in geneIds:
-            modules.append(self.datExpr.obs.moduleColors[self.datExpr.obs.gene_id == geneId])
+            modules.append(self.datExpr.var.moduleColors[self.datExpr.var.gene_id == geneId])
 
         if len(modules) == 1:
             modules = modules[0]
@@ -2900,9 +2923,12 @@ class WGCNA(GeneExp):
                         cbar=False,  # cbar_ax=axs[2,1],
                         yticklabels=False, xticklabels=False,
                         ax=axs[2, 0])
+            if self.save:
+                fig.savefig(f"{self.outputPath}figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
             if not show:
                 plt.close(fig)
-            fig.savefig(f"{self.outputPath}figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
+            else:
+                return axs
 
         return None
 
@@ -3025,9 +3051,12 @@ class WGCNA(GeneExp):
                     if i != 0:
                         bar.set(ylabel=None)
 
-                fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
+                if self.save:
+                    fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
                 if not show:
                     plt.close(fig)
+                else:
+                    return axs
 
     def functional_enrichment_analysis(self, type, moduleName, sets=None, p_value=1, file_name=None):
         """
