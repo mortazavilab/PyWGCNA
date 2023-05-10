@@ -224,7 +224,7 @@ class WGCNA(GeneExp):
         plt.ylabel('Distances')
         plt.tight_layout()
         if self.save:
-            plt.savefig(f"{self.outputPath}figures/sample_clustering_cleaning.{self.figureType}")
+            plt.savefig(f"{self.outputPath}/figures/sample_clustering_cleaning.{self.figureType}")
 
         # Determine cluster under the line
         clust = WGCNA.cutree(sampleTree, cutHeight=self.cut)
@@ -268,7 +268,7 @@ class WGCNA(GeneExp):
 
         fig.tight_layout()
         if self.save:
-            fig.savefig(f"{self.outputPath}figures/summary_power.{self.figureType}")
+            fig.savefig(f"{self.outputPath}/figures/summary_power.{self.figureType}")
 
         # Set Power
         self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType)
@@ -319,7 +319,7 @@ class WGCNA(GeneExp):
             plt.ylabel('')
             plt.tight_layout()
             if self.save:
-                plt.savefig(f"{self.outputPath}figures/eigenesgenes.{self.figureType}")
+                plt.savefig(f"{self.outputPath}/figures/eigenesgenes.{self.figureType}")
 
             # Call an automatic merging function
             merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
@@ -2775,7 +2775,7 @@ class WGCNA(GeneExp):
         if not show:
             plt.close(fig)
         if self.save:
-            fig.savefig(f"{self.outputPath}figures/{file_name}.{self.figureType}")
+            fig.savefig(f"{self.outputPath}/figures/{file_name}.{self.figureType}")
 
     def getModuleName(self):
         """
@@ -2924,7 +2924,7 @@ class WGCNA(GeneExp):
                         yticklabels=False, xticklabels=False,
                         ax=axs[2, 0])
             if self.save:
-                fig.savefig(f"{self.outputPath}figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
+                fig.savefig(f"{self.outputPath}/figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
             if not show:
                 plt.close(fig)
             else:
@@ -3035,7 +3035,7 @@ class WGCNA(GeneExp):
                 axs[1, 0].set_ylabel('eigengeneExp')
                 axs[1, 0].set_facecolor('white')
                 fig.subplots_adjust(bottom=0.3)
-                fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
+                fig.savefig(f"{self.outputPath}/figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
                 if not show:
                     plt.close(fig)
 
@@ -3052,7 +3052,7 @@ class WGCNA(GeneExp):
                         bar.set(ylabel=None)
 
                 if self.save:
-                    fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
+                    fig.savefig(f"{self.outputPath}/figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
                 if not show:
                     plt.close(fig)
                 else:
@@ -3084,9 +3084,9 @@ class WGCNA(GeneExp):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return
 
-        if not os.path.exists(f"{self.outputPath}figures/{type}"):
+        if not os.path.exists(f"{self.outputPath}/figures/{type}"):
             print(f"{WARNING}{type} directory does not exist!\nCreating {type} directory!{ENDC}")
-            os.makedirs(f"{self.outputPath}figures/{type}")
+            os.makedirs(f"{self.outputPath}/figures/{type}")
 
         if type == "GO" and sets is None:
             sets = ["GO_Biological_Process_2021"]
@@ -3101,13 +3101,13 @@ class WGCNA(GeneExp):
                 enr = gp.enrichr(gene_list=geneModule,
                                  gene_sets=sets,
                                  organism=self.species,
-                                 outdir=f"{self.outputPath}figures/{type}/{file_name}",
+                                 outdir=f"{self.outputPath}/figures/{type}/{file_name}",
                                  cutoff=p_value)
                 dotplot(enr.res2d,
                         title=f"Gene ontology in {moduleName} module",
                         cmap='viridis_r',
                         cutoff=p_value,
-                        ofname=f"{self.outputPath}figures/{type}/{file_name}.{self.figureType}")
+                        ofname=f"{self.outputPath}/figures/{type}/{file_name}.{self.figureType}")
             except:
                 print(f"No enrich terms when cutoff = {p_value} in module {moduleName}")
         else:
@@ -3118,7 +3118,7 @@ class WGCNA(GeneExp):
                                           p_value=str(p_value))
             token = result['summary']['token']
             analysis.report(token,
-                            path=f"{self.outputPath}figures/{type}/",
+                            path=f"{self.outputPath}/figures/{type}/",
                             file=f"{file_name}.{self.figureType}",
                             number='50',
                             species=self.species)
@@ -3130,7 +3130,7 @@ class WGCNA(GeneExp):
                 f"{numGeneModule - token_result['identifiersNotFound']} out of {numGeneModule} genes (identifiers) in the sample were found in Reactome.")
             print(
                 f"{token_result['resourceSummary'][0]['pathways']} pathways were hit by at least one of them, which {len(token_result['pathways'])} of them have p-value less than {p_value}.")
-            print(f"Report was saved {self.outputPath}figures/{type}/{file_name}.{self.figureType}!")
+            print(f"Report was saved {self.outputPath}/figures/{type}/{file_name}.{self.figureType}!")
             print(f"For more information please visit https://reactome.org/PathwayBrowser/#/DTAB=AN&ANALYSIS={token}")
 
     def updateGeneInfo(self, geneInfo=None, path=None, sep=','):
@@ -3336,9 +3336,9 @@ class WGCNA(GeneExp):
         if self.signedKME is None:
             print("signedKME is empty! call signedKME() to calculate it")
 
-        if not os.path.exists(f"{self.outputPath}figures/network/"):
+        if not os.path.exists(f"{self.outputPath}/figures/network/"):
             print(f"{WARNING}Network directory does not exist!\nCreating network directory!{ENDC}")
-            os.makedirs(f"{self.outputPath}figures/network/")
+            os.makedirs(f"{self.outputPath}/figures/network/")
 
         gene_id = self.datExpr.var.loc[self.datExpr.var.moduleColors.isin(modules), :]
         if gene_id.shape[0] == 0:
@@ -3390,7 +3390,7 @@ class WGCNA(GeneExp):
                 file_name = '_'.join(modules)
             else:
                 file_name = "network"
-        net.show(f"{self.outputPath}figures/network/{file_name}.html")
+        net.show(f"{self.outputPath}/figures/network/{file_name}.html")
 
     def PPI_network(self, species, moduleName=None, geneList=None, output_format="image"):
         """
@@ -3415,9 +3415,9 @@ class WGCNA(GeneExp):
         elif geneList is None:
             sys.exit("geneList or moduleName should be empty at the same time!")
 
-        if not os.path.exists(f"{self.outputPath}figures/PPI/"):
+        if not os.path.exists(f"{self.outputPath}/figures/PPI/"):
             print(f"{WARNING}PPI directory does not exist!\nCreating PPI directory!{ENDC}")
-            os.makedirs(f"{self.outputPath}figures/PPI/")
+            os.makedirs(f"{self.outputPath}/figures/PPI/")
 
         res = WGCNA.request_PPI(genes=geneList, species=species)
         res.sort_values(by=["gene1"], axis=0, inplace=True)
@@ -3441,7 +3441,7 @@ class WGCNA(GeneExp):
             }
             WGCNA.request_PPI_image(params=params,
                                     genes=genes,
-                                    file_name=f"{self.outputPath}figures/PPI/{tmp.gene1.tolist()[0]}_PPI.png",
+                                    file_name=f"{self.outputPath}/figures/PPI/{tmp.gene1.tolist()[0]}_PPI.png",
                                     request_url=request_url)
         return res
 
