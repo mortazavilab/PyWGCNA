@@ -1114,15 +1114,13 @@ class WGCNA(GeneExp):
         """
         TOMTypeC = TOMTypes.index(TOMType)
         if TOMTypeC is None:
-            sys.exit(("Invalid 'TOMType'. Recognized values are", str(TOMTypes)))
-        if TOMTypeC == 0:
-            sys.exit("'TOMType' cannot be 'none' for this function.")
+            sys.exit(f"Invalid 'TOMType'. Recognized values are {', '.join(TOMTypes)}")
         TOMDenomC = TOMDenoms.index(TOMDenom)
         if TOMDenomC is None:
-            sys.exit(("Invalid 'TOMDenom'. Recognized values are", str(TOMDenoms)))
+            sys.exit(f"Invalid 'TOMDenom'. Recognized values are {', '.join(TOMDenoms)}")
 
         min = 0
-        if TOMTypeC == 2:
+        if TOMTypeC == 1:
             min = -1
         WGCNA.checkAdjMat(adjMat, min=min, max=1)
         np.nan_to_num(adjMat, copy=False, nan=0)
@@ -2265,7 +2263,7 @@ class WGCNA(GeneExp):
         methods = ["consensus", "majority"]
         m = methods.index(method)
         if m is None:
-            sys.exit(("Unrecognized method given. Recognized values are", str(methods)))
+            sys.exit(f"Unrecognized method given. Recognized values are {', '.join(methods)}")
         nSets = len(MEs)
         MEDiss = {}
         if useSets is None:
@@ -2282,12 +2280,12 @@ class WGCNA(GeneExp):
             if set == useSets[0]:
                 ConsDiss = MEDiss[set]['Diss']
             else:
-                if m == 1:
+                if m == 0:
                     ConsDiss = pd.concat([ConsDiss, MEDiss[set]['Diss']]).max(
                         level=0)  # pmax(ConsDiss, MEDiss[[set]]['Diss'])
                 else:
                     ConsDiss = ConsDiss + MEDiss[set]['Diss']
-        if m == 2:
+        if m == 1:
             ConsDiss = ConsDiss / nSets
         ConsDiss = pd.DataFrame(ConsDiss, index=np.unique(MEs[useSets[0]]['data'].columns),
                                 columns=MEs[useSets[0]]['data'].columns)
