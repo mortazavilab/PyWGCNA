@@ -47,7 +47,7 @@ If you are unfamiliar with R refrence WGCNA, we suggest reading the original WGC
 
 ## Cite
 
-Please cite our paper when using PyWGCNA:
+PyWGCNA is now online in Bioinformatics. Please cite our paper when using PyWGCNA:
 
-Rezaie, Narges, Fairlie Reese, and Ali Mortazavi. "PyWGCNA: A Python package for weighted gene co-expression network analysis." bioRxiv (2022).
-[https://www.biorxiv.org/content/10.1101/2022.08.22.504852v1.abstract](https://www.biorxiv.org/content/10.1101/2022.08.22.504852v1.abstract)
+Narges Rezaie and others, PyWGCNA: A Python package for weighted gene co-expression network analysis, Bioinformatics, 2023;
+[https://doi.org/10.1093/bioinformatics/btad415](https://doi.org/10.1093/bioinformatics/btad415)
