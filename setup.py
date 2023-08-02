@@ -13,7 +13,7 @@ setup(
     download_url='https://github.com/mortazavilab/PyWGCNA/archive/refs/tags/v1.2.4.tar.gz',  # link to the tar.gz file associated with this release
     keywords=['PyWGCNA', 'WGCNA', 'bulk', 'gene clustering', 'network analysis'],  #
     install_requires=[  # these can also include >, <, == to enforce version compatibility
-        'pandas>=1.4.4',  # make sure the packages you put here are those NOT included in the
+        'pandas==1.4.4',  # make sure the packages you put here are those NOT included in the
         'numpy>=1.24.0',  # base python distribution
         'scipy>=1.9.1',
         'scikit-learn>=1.2.2',
