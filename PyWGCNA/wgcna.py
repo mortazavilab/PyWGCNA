@@ -201,16 +201,16 @@ class WGCNA(GeneExp):
         # if not okay
         if not allOK:
             # Optionally, print the gene and sample names that were removed:
-            if np.count_nonzero(goodGenes) > 0:
+            if np.size(goodGenes) - np.count_nonzero(goodGenes) > 0:
                 print(
                     f"{OKGREEN} {np.size(goodGenes) - np.count_nonzero(goodGenes)} gene(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing genes: {self.datExpr.obs.columns[not goodGenes].values}{ENDC}")
-            if np.count_nonzero(goodSamples) > 0:
+                print(f"{OKGREEN}Removing genes: {', '.join(self.datExpr.var.index[[not goodGene for goodGene in goodGenes]].tolist())}{ENDC}")
+            if np.size(goodSamples) - np.count_nonzero(goodSamples) > 0:
                 print(
                     f"{OKGREEN} {np.size(goodSamples) - np.count_nonzero(goodSamples)} sample(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing samples: {self.datExpr.obs.index[not goodSamples].values}{ENDC}")
+                print(f"{OKGREEN}Removing samples: {', '.join(self.datExpr.obs.index[[not goodSample for goodSample in goodSamples]].tolist())}{ENDC}")
             # Remove the offending genes and samples from the data:
-            self.datExpr.X = self.datExpr.X.loc[goodSamples, goodGenes]
+            self.datExpr = self.datExpr[goodSamples, goodGenes]
 
         # Clustering
         sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df()), method="average")
@@ -593,7 +593,17 @@ class WGCNA(GeneExp):
             nPresent = (datExpr.loc[useGenes, useSamples].notna() and
                         weights.loc[useGenes, useSamples] > minRelativeWeight).sum(axis=1)
 
-        gg = useGenes
+        gg = useGenes.copy()
+        if len(useGenes) != len(nPresent):
+            tmp = list(useGenes.copy())
+            ind = [i for i in range(len(tmp)) if tmp[i]]
+            tmp = pd.Series(data=tmp)
+            index = np.asarray(tmp.index.tolist(), dtype=object)
+            index[ind] = nPresent.index.tolist()
+            tmp.index = index
+            tmp.loc[nPresent.index] = nPresent.values
+            nPresent = tmp.copy()
+
         gg[np.logical_and(useGenes, nPresent < minNSamples)] = False
 
         if weights is None:
