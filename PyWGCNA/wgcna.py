@@ -1920,6 +1920,8 @@ class WGCNA(GeneExp):
             sys.exit("moduleEigengenes: Error: expr must be two-dimensional.")
         if expr.shape[1] != len(colors):
             sys.exit("moduleEigengenes: Error: ncol(expr) and length(colors) must be equal (one color per gene).")
+        if len(pd.Categorical(colors).categories) == 1:
+            sys.exit(f"{WARNING}All your genes ended up in one modules! Reconsider your input parameters in order to get more modules.{ENDC}")
         # TODO: "Argument 'colors' contains unused levels (empty modules). Use colors[, drop=TRUE] to get rid of them."
         if softPower < 0:
             sys.exit("softPower must be non-negative")
