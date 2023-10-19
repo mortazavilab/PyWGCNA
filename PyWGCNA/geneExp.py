@@ -18,8 +18,8 @@ class GeneExp:
     :type level: str
     :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.
     :param anndata: anndata
-    :param geneExpr: expression matrix which genes are in the rows and samples are columns
-    :type geneExpr: pandas dataframe
+    :param geneExp: expression matrix which genes are in the rows and samples are columns
+    :type geneExp: pandas dataframe
     :param geneExpPath: path of expression matrix
     :type geneExpPath: str
     :param sep: separation symbol to use for reading data in geneExpPath properly

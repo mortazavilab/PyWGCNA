@@ -74,12 +74,24 @@ class WGCNA(GeneExp):
     :type name: str
     :param save: indicate if you want to save result of important steps in a figure directory (default: False)
     :type save: bool
+    :param species: species of the data you use i.e mouse, human
+    :type species: str
+    :param level: which type of data you use including gene, transcript (default: gene)
+    :type level: str
     :param outputPath: path you want to save all you figures and object (default: '', where you rau your script)
     :type outputPath: str
-    :param geneExpr: expression matrix
-    :type geneExpr: geneExp class
-    :param datExpr: data expression data that contains preprocessed data
-    :type datExpr: anndata
+    :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.
+    :param anndata: anndata
+    :param geneExp: expression matrix which genes are in the rows and samples are columns
+    :type geneExp: pandas dataframe
+    :param geneExpPath: path of expression matrix
+    :type geneExpPath: str
+    :param sep: separation symbol to use for reading data in geneExpPath properly
+    :type sep: str
+    :param geneInfo: dataframe that contains genes information it should have a same index as gene expression column names (gene/transcript ID)
+    :type geneInfo: pandas dataframe
+    :param sampleInfo: dataframe that contains samples information it should have a same index as gene expression index (sample ID)
+    :type sampleInfo: pandas dataframe
     :param TPMcutoff: cut off for removing genes that expressed under this number along samples
     :type TPMcutoff: int
     :param cut: number to remove outlier sample (default: 'inf') By default we don't remove any sample by hierarchical clustering
@@ -90,30 +102,36 @@ class WGCNA(GeneExp):
     :type RsquaredCut: float
     :param MeanCut: mean connectivity to choose power for having scale free network (default: 100)
     :type MeanCut: int
-    :param power: power to have scale free network (default: 6)
-    :type power: int
-    :param sft: soft threshold table which has information for each powers
-    :type sft: pandas dataframe
     :param networkType: Type of network we can create including "unsigned", "signed" and "signed hybrid" (default: "signed hybrid")
     :type networkType: str
+    :param TOMType: Type of topological overlap matrix(TOM) including "unsigned", "signed" (default: "signed")
+    :type TOMType: str
+    :param minModuleSize: We like large modules, so we set the minimum module size relatively high (default: 50)
+    :type minModuleSize: int
+    :param naColor: color we used to identify genes we don't find any cluster for them (default: "grey")
+    :type naColor: str
+    :param MEDissThres:  diss similarity threshold (default: 0.2)
+    :type MEDissThres: float
+    :param figureType: extension of figure (default: "pdf")
+    :type figureType: str
+    :param MEs: eigengenes
+    :type MEs: ndarray
+    :param geneExpr: gene expression object that contains raw gene expression along with gene and sample information.
+    :type geneExpr: geneExp class
+    :param datExpr: data expression data that contains preprocessed data
+    :type datExpr: anndata
+    :param dynamicMods: name of modules by clustering similar genes together
+    :type dynamicMods: list
+    :param TOM: topological overlap measure using average linkage hierarchical clustering which inputs a measure of interconnectedness
+    :param TOM: ndarray
     :param adjacency: adjacency matrix calculating base of the type of network
     :type adjacency: ndarray
     :param geneTree: average hierarchical clustering of dissTOM matrix
     :type geneTree: ndarray
-    :param TOMType: Type of topological overlap matrix(TOM) including "unsigned", "signed" (default: "signed")
-    :type TOMType: str
-    :param TOM: topological overlap measure using average linkage hierarchical clustering which inputs a measure of interconnectedness
-    :param TOM: ndarray
-    :param minModuleSize: We like large modules, so we set the minimum module size relatively high (default: 50)
-    :type minModuleSize: int
-    :param dynamicMods: name of modules by clustering similar genes together
-    :type dynamicMods: list
-    :param naColor: color we used to identify genes we don't find any cluster for them (default: "grey")
-    :type naColor: str
-    :param MEs: eigengenes
-    :type MEs: ndarray
-    :param MEDissThres:  diss similarity threshold (default: 0.2)
-    :type MEDissThres: float
+    :param power: power to have scale free network (default: 6)
+    :type power: int
+    :param sft: soft threshold table which has information for each powers
+    :type sft: pandas dataframe
     :param datME:
     :type datME: pandas dataframe
     :param signedKME:(signed) eigengene-based connectivity (module membership)
@@ -122,7 +140,6 @@ class WGCNA(GeneExp):
     :type moduleTraitCor: pandas dataframe
     :param moduleTraitPvalue: p-value of correlation between each module and metadata
     :type moduleTraitPvalue: pandas dataframe
-    :param figureType: extension of figure (default: "pdf")
     """
 
     def __init__(self, name='WGCNA',
@@ -132,11 +149,11 @@ class WGCNA(GeneExp):
                  minModuleSize=50, naColor="grey", cut=float('inf'),
                  MEDissThres=0.2,
                  species=None, level='gene', anndata=None, geneExp=None,
-                 geneExpPath=None, sep=',',
+                 geneExpPath=None, sep=',', geneInfo=None, sampleInfo=None,
                  save=False, outputPath=None, figureType='pdf'):
 
         super().__init__(species=species, level=level, anndata=anndata, geneExp=geneExp,
-                         geneExpPath=geneExpPath, sep=sep)
+                         geneExpPath=geneExpPath, sep=sep, geneInfo=geneInfo, sampleInfo=sampleInfo)
 
         if powers is None:
             powers = list(range(1, 11)) + list(range(11, 21, 2))
@@ -384,7 +401,7 @@ class WGCNA(GeneExp):
                 self.moduleTraitCor.loc[i, j] = tmp[0]
                 self.moduleTraitPvalue.loc[i, j] = tmp[1]
 
-        if self.save:
+        if self.save and self.datExpr.obs.shape[1] != 0:
             self.module_trait_relationships_heatmap(metaData=self.datExpr.obs.columns.tolist(),
                                                     show=show,
                                                     file_name='module-traitRelationships')
@@ -416,9 +433,12 @@ class WGCNA(GeneExp):
 
         if self.save:
             print(f"{OKCYAN}plotting module barplot eigengene...{ENDC}")
-            for module in modules:
-                self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=show)
-            print("\tDone..\n")
+            if self.datExpr.obs.shape[1] == 0:
+                print(f"{WARNING}There is not any sample information in given object! Skip running barplotModuleEigenGene() function.{ENDC}")
+            else:
+                for module in modules:
+                    self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=show)
+                print("\tDone..\n")
 
         if self.save:
             print(f"{OKCYAN}doing Enrichr GO analysis for each module...{ENDC}")
@@ -2889,50 +2909,67 @@ class WGCNA(GeneExp):
             heatmap = heatmap.iloc[labels_order, :]
             ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
             ME['sample_name'] = self.datME.index
-
-            fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(26, len(metadata) * 5),
-                                    sharex='col', gridspec_kw={
-                    'height_ratios': [len(metadata) * 0.4, len(metadata) * 0.5, len(metadata) * 1.5],
-                    'width_ratios': [20, 3]})
-            gs = axs[0, 1].get_gridspec()
-            # remove the underlying axes
-            for ax in axs[:, 1]:
-                ax.remove()
-            ax_legend = fig.add_subplot(gs[:, 1])
-            ax_legend.axis('off')
-            axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend,
-                                                          height_ratios=height_ratios)
-
             ind = [i + 0.5 for i in range(ME.shape[0])]
-            for m in metadata:
-                handles = []
-                x = ind
-                y = np.repeat(3000 * metadata.index(m), len(ind))
-                color = sampleInfo[m].values
-                for n in list(self.metadataColors[m].keys()):
-                    color = np.where(color == n, self.metadataColors[m][n], color)
-                    patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
-                    handles.append(patch)
-                axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
-                ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
-                ax_legend.legend(title=m, handles=handles)
+
+            if len(metadata) != 0:
+                fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(ME.shape[0], len(metadata) * 5),
+                                        sharex='col', gridspec_kw={
+                        'height_ratios': [len(metadata) * 0.4, len(metadata) * 0.5, len(metadata) * 1.5],
+                        'width_ratios': [20, 3]})
+
+                gs = axs[0, 1].get_gridspec()
+                # remove the underlying axes
+                for ax in axs[:, 1]:
+                    ax.remove()
+                ax_legend = fig.add_subplot(gs[:, 1])
                 ax_legend.axis('off')
-                fig.add_subplot(ax_legend)
+                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend,
+                                                              height_ratios=height_ratios)
 
-            axs[0, 0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
-            axs[0, 0].set_ylim(-2000, np.max(y) + 2000)
-            axs[0, 0].grid(False)
-            axs[0, 0].axis('off')
+                for m in metadata:
+                    handles = []
+                    x = ind
+                    y = np.repeat(3000 * metadata.index(m), len(ind))
+                    color = sampleInfo[m].values
+                    for n in list(self.metadataColors[m].keys()):
+                        color = np.where(color == n, self.metadataColors[m][n], color)
+                        patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
+                        handles.append(patch)
+                    axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
+                    ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                    ax_legend.legend(title=m, handles=handles)
+                    ax_legend.axis('off')
+                    fig.add_subplot(ax_legend)
 
-            axs[1, 0].bar(ind, ME.eigengeneExp, align='center', color='black')
-            axs[1, 0].set_ylabel('eigengeneExp')
-            axs[1, 0].set_facecolor('white')
+                axs[0, 0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
+                axs[0, 0].set_ylim(-2000, np.max(y) + 2000)
+                axs[0, 0].grid(False)
+                axs[0, 0].axis('off')
 
-            cmap = sns.color_palette("dark:red", as_cmap=True)
-            sns.heatmap(heatmap, cmap=cmap,
-                        cbar=False,  # cbar_ax=axs[2,1],
-                        yticklabels=False, xticklabels=False,
-                        ax=axs[2, 0])
+                axs[1, 0].bar(ind, ME.eigengeneExp, align='center', color='black')
+                axs[1, 0].set_ylabel('eigengeneExp')
+                axs[1, 0].set_facecolor('white')
+
+                cmap = sns.color_palette("dark:red", as_cmap=True)
+                sns.heatmap(heatmap, cmap=cmap,
+                            cbar=False,  # cbar_ax=axs[2,1],
+                            yticklabels=False, xticklabels=False,
+                            ax=axs[2, 0])
+            else:
+                fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(ME.shape[0], 20),
+                                        sharex='col', gridspec_kw={
+                        'height_ratios': [1, 1.5]}, facecolor='white')
+
+                axs[0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
+                axs[0].bar(ind, ME.eigengeneExp, align='center', color='black')
+                axs[0].set_ylabel('eigengeneExp')
+
+                cmap = sns.color_palette("dark:red", as_cmap=True)
+                sns.heatmap(heatmap, cmap=cmap,
+                            cbar=False,  # cbar_ax=axs[2,1],
+                            yticklabels=False, xticklabels=False,
+                            ax=axs[1])
+
             if self.save:
                 fig.savefig(f"{self.outputPath}figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
             if not show:
@@ -2958,6 +2995,9 @@ class WGCNA(GeneExp):
         :type show: bool
         """
         sampleInfo = self.datExpr.obs
+        if sampleInfo.shape[1] == 0:
+            print(f"{WARNING}There is not any sample information in given object! Skip running barplotModuleEigenGene() function.{ENDC}")
+            return None
 
         height_ratios = []
         for m in metadata:
