@@ -371,7 +371,7 @@ class WGCNA(GeneExp):
 
         return self
 
-    def analyseWGCNA(self, order=None, geneList=None, show=True):
+    def analyseWGCNA(self, order=None, geneList=None, show=True, alternative='two-sided'):
         """
         Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module
 
@@ -381,6 +381,8 @@ class WGCNA(GeneExp):
         :type geneList: pandas dataframe
         :param show: indicate if you want to see plots in when you run your code
         :type show: bool
+        :param alternative: Defines the alternative hypothesis for calculating correlation for module-trait relationship. Default is ‘two-sided’. The following options are available: 'two-sided’: the correlation is nonzero, ‘less’: the correlation is negative (less than zero), ‘greater’: the correlation is positive (greater than zero)
+        :type alternative: str
         """
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
@@ -397,7 +399,7 @@ class WGCNA(GeneExp):
 
         for i in self.MEs.columns:
             for j in datTraits.columns:
-                tmp = stats.pearsonr(self.MEs[i], datTraits[j], alternative='greater')
+                tmp = stats.pearsonr(self.MEs[i], datTraits[j], alternative=alternative)
                 self.moduleTraitCor.loc[i, j] = tmp[0]
                 self.moduleTraitPvalue.loc[i, j] = tmp[1]
 
