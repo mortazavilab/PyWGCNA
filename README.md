@@ -14,7 +14,7 @@ PyWGCNA's full documentation can be found [here](https://mortazavilab.github.io/
 
 ## Installation
 
-To install PyWGCNA, Python version 3.7 or greater is required.
+To install PyWGCNA, Python version 3.10 or greater is required.
 
 ### Install from PyPi (recommended)
 To install the most recent release, run
