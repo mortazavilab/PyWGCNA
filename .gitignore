@@ -3,9 +3,9 @@
 __pycache__/
 */__pycache__/
 *ipynb_checkpoint*
-*lib*
 
 # tutorials data
+tutorials/lib
 tutorials/.ipynb_checkpoints/
 tutorials/5xFAD.p
 tutorials/5xFAD_paper/.Rhistory
