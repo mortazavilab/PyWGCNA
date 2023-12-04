@@ -1,6 +1,7 @@
 import pickle
 import os
 import biomart
+import pandas as pd
 import requests
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -123,10 +124,11 @@ def getGeneList(dataset='mmusculus_gene_ensembl',
     # Store the data in a dict
     for line in data.splitlines():
         line = line.split('\t')
+        tmp = pd.DataFrame(line, index=attributes).T
         dict = {}
         for i in range(len(attributes)):
             dict[attributes[i]] = line[i]
-        geneInfo = geneInfo.append(dict, ignore_index=True)
+        geneInfo = pd.concat([geneInfo, tmp], ignore_index=True)
 
     geneInfo.index = geneInfo[attributes[0]]
     geneInfo.drop(attributes[0], axis=1, inplace=True)

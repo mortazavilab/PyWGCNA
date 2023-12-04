@@ -1741,7 +1741,7 @@ class WGCNA(GeneExp):
                                     useObjects = ColorsX in np.unique(labelsOnBranch)
                                     DistSClustClust = distM.iloc[InCluster, useObjects]
                                     MeanDist = DistSClustClust.mean(axis=0)
-                                    useColorsFac = pd.Categorical(ColorsX[useObjects])
+                                    useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
                                     MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
                                     MeanMeanDist = MeanDist.groupby(
                                         'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
@@ -1760,7 +1760,7 @@ class WGCNA(GeneExp):
                                 InCluster = np.where(SmallLabels == sclust)[0].tolist()
                                 DistSClustClust = distM.iloc[InCluster, useObjects]
                                 MeanDist = DistSClustClust.mean(axis=0)
-                                useColorsFac = pd.Categorical(ColorsX[useObjects])
+                                useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
                                 MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
                                 MeanMeanDist = MeanDist.groupby(
                                     'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
@@ -1782,7 +1782,7 @@ class WGCNA(GeneExp):
                             basicOnBranch = branch_basicClusters[onBr - 1]
                             labelsOnBranch = branchLabels[basicOnBranch]
                             useObjects = ColorsX in np.unique(labelsOnBranch)
-                            useColorsFac = pd.Categorical(ColorsX[useObjects])
+                            useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
                             UnassdToClustDist = distM.iloc[useObjects, obj].groupby(
                                 'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
                             nearest = UnassdToClustDist.idxmin().astype(int) - 1
@@ -1794,7 +1794,7 @@ class WGCNA(GeneExp):
                                 nPAMed = nPAMed + 1
                     else:
                         useObjects = np.where(ColorsX != 0)[0].tolist()
-                        useColorsFac = pd.Categorical(ColorsX[useObjects])
+                        useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
                         tmp = pd.DataFrame(distM.iloc[useObjects, Unlabeled])
                         tmp['group'] = useColorsFac
                         UnassdToClustDist = tmp.groupby(
@@ -2000,9 +2000,9 @@ class WGCNA(GeneExp):
                 u = u[:, 0:min(n, p, nPC)]
                 v = v[0:min(n, p, nPC), :]
                 tmp = datModule.copy()
-                tmp = tmp.append(pd.DataFrame(v[0:min(n, p, nVarExplained), :],
-                                              columns=tmp.columns.tolist()),
-                                 ignore_index=True)
+                tmp = pd.concat([tmp, pd.DataFrame(v[0:min(n, p, nVarExplained), :],
+                                                   columns=tmp.columns.tolist())],
+                                ignore_index=True)
                 veMat = pd.DataFrame(np.corrcoef(tmp.values)).iloc[:-1, -1].T
                 varExpl.iloc[0:min(n, p, nVarExplained), i] = (veMat ** 2).mean(axis=0)
                 pc = v[0].tolist()
@@ -2020,7 +2020,7 @@ class WGCNA(GeneExp):
                         scaledExpr = pd.DataFrame(scale(datModule.T).T, index=datModule.index,
                                                   columns=datModule.columns)
                         covEx = np.cov(scaledExpr)
-                        covEx[not np.isfinite(covEx)] = 0
+                        covEx[~ np.isfinite(covEx)] = 0
                         modAdj = np.abs(covEx) ** softPower
                         kIM = (modAdj.mean(axis=0)) ** 3
                         if np.max(kIM) > 1:
@@ -2763,6 +2763,7 @@ class WGCNA(GeneExp):
 
     def module_trait_relationships_heatmap(self,
                                            metaData,
+                                           figsize=None,
                                            show=True,
                                            file_name='module-traitRelationships'):
         """
@@ -2770,6 +2771,8 @@ class WGCNA(GeneExp):
 
         :param metaData: traits you would like to see the relationship with topics (must be column name of datExpr.obs)
         :type metaData: list
+        :param figsize: indicate the size of plot
+        :type figsize: tuple of float
         :param show: indicate if you want to show the plot or not (default: True)
         :type show: bool
         :param file_name: name and path of the plot use for save (default: topic-traitRelationships)
@@ -2777,8 +2780,10 @@ class WGCNA(GeneExp):
         """
         datTraits = self.getDatTraits(metaData)
 
-        fig, ax = plt.subplots(figsize=(max(20, int(self.moduleTraitPvalue.shape[0] * 1.5)),
-                                        self.moduleTraitPvalue.shape[1] * 1.5), facecolor='white')
+        if figsize is None:
+            figsize = (max(20, int(self.moduleTraitPvalue.shape[0] * 1.5)),
+                       self.moduleTraitPvalue.shape[1] * 1.5)
+        fig, ax = plt.subplots(figsize=figsize, facecolor='white')
         # names
         xlabels = []
         for label in self.MEs.columns:
@@ -3110,7 +3115,7 @@ class WGCNA(GeneExp):
                 else:
                     return axs
 
-    def functional_enrichment_analysis(self, type, moduleName, sets=None, p_value=1, file_name=None):
+    def functional_enrichment_analysis(self, type, moduleName, sets=None, p_value=1, file_name=None, **kwargs):
         """
         Doing functional enrichment analysis including GO, KEGG and REACTOME
 
@@ -3124,6 +3129,8 @@ class WGCNA(GeneExp):
         :type p_value: float
         :param file_name: name of the file you want to use to save plot (default is moduleName)
         :type file_name: str
+        :param kwargs: Other keyword arguments are passed through to the underlying gseapy.enrichr() finction
+        :type kwargs: key, value pairings
         """
         if type not in ["GO", "KEGG", "REACTOME"]:
             sys.exit("Type is not valid! it should be one of them GO, KEGG, REACTOME")
@@ -3154,7 +3161,8 @@ class WGCNA(GeneExp):
                                  gene_sets=sets,
                                  organism=self.species,
                                  outdir=f"{self.outputPath}figures/{type}/{file_name}",
-                                 cutoff=p_value)
+                                 cutoff=p_value,
+                                 **kwargs)
                 dotplot(enr.res2d,
                         title=f"Gene ontology in {moduleName} module",
                         cmap='viridis_r',
@@ -3409,9 +3417,9 @@ class WGCNA(GeneExp):
 
         adj = self.TOM.loc[genes, genes]
         adj[adj < minTOM] = 0
-        adj = adj.where(np.triu(np.ones(adj.shape)).astype(bool))
-        adj = adj.where(adj.values != np.diag(adj), 0,
-                        adj.where(adj.values != np.flipud(adj).diagonal(0), 0, inplace=True))
+        adj.where(np.triu(np.ones(adj.shape)).astype(bool), inplace=True)
+        adj.where(adj.values != np.diag(adj), 0, inplace=True)
+        adj.where(adj.values != np.flipud(adj).diagonal(0), 0, inplace=True)
         adj = adj.stack().nlargest(numConnections)
 
         net = Network()
