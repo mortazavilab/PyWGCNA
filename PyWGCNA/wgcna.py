@@ -203,9 +203,12 @@ class WGCNA(GeneExp):
 
         self.figureType = figureType
 
-    def preprocess(self):
+    def preprocess(self, show=True):
         """
         Preprocessing PyWGCNA object including removing obvious outlier on genes and samples
+
+        :param show: indicate if you want to show your plot or not (if you put this to False it will not either show and save the plot)
+        :type show: bool
         """
         print(f"{BOLD}{OKBLUE}Pre-processing...{ENDC}")
 
@@ -232,16 +235,17 @@ class WGCNA(GeneExp):
         # Clustering
         sampleTree = WGCNA.hclust(pdist(self.datExpr.to_df()), method="average")
 
-        plt.figure(figsize=(max(25, round(self.datExpr.X.shape[0] / 20)), 10), facecolor='white')
-        dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().index, leaf_rotation=90,
-                   leaf_font_size=8)
-        plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
-        plt.title('Sample clustering to detect outliers')
-        plt.xlabel('Samples')
-        plt.ylabel('Distances')
-        plt.tight_layout()
-        if self.save:
-            plt.savefig(f"{self.outputPath}figures/sample_clustering_cleaning.{self.figureType}")
+        if show:
+            plt.figure(figsize=(max(25, round(self.datExpr.X.shape[0] / 20)), 10), facecolor='white')
+            dendrogram(sampleTree, color_threshold=self.cut, labels=self.datExpr.to_df().index, leaf_rotation=90,
+                       leaf_font_size=8)
+            plt.axhline(y=self.cut, c='grey', lw=1, linestyle='dashed')
+            plt.title('Sample clustering to detect outliers')
+            plt.xlabel('Samples')
+            plt.ylabel('Distances')
+            plt.tight_layout()
+            if self.save:
+                plt.savefig(f"{self.outputPath}figures/sample_clustering_cleaning.{self.figureType}")
 
         # Determine cluster under the line
         clust = WGCNA.cutree(sampleTree, cutHeight=self.cut)
