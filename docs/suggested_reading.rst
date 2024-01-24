@@ -1,5 +1,5 @@
 Suggested Reading
-=========
+=================
 
 If you are unfamiliar with R refrence WGCNA, we suggest reading the original WGCNA publication:
 

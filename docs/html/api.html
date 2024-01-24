@@ -127,7 +127,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>species</strong> (<em>str</em>) – species of the data you use i.e mouse, human</p></li>
 <li><p><strong>level</strong> (<em>str</em>) – which type of data you use including gene, transcript (default: gene)</p></li>
-<li><p><strong>anndata</strong> – if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.</p></li>
+<li><p><strong>anndata</strong> – if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a gene information and obs is a sample information.</p></li>
 <li><p><strong>anndata</strong> – anndata</p></li>
 <li><p><strong>geneExp</strong> (<em>pandas dataframe</em>) – expression matrix which genes are in the rows and samples are columns</p></li>
 <li><p><strong>geneExpPath</strong> (<em>str</em>) – path of expression matrix</p></li>
@@ -195,8 +195,7 @@
 <li><p><strong>species</strong> (<em>str</em>) – species of the data you use i.e mouse, human</p></li>
 <li><p><strong>level</strong> (<em>str</em>) – which type of data you use including gene, transcript (default: gene)</p></li>
 <li><p><strong>outputPath</strong> (<em>str</em>) – path you want to save all you figures and object (default: ‘’, where you rau your script)</p></li>
-<li><p><strong>anndata</strong> – if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.</p></li>
-<li><p><strong>anndata</strong> – anndata</p></li>
+<li><p><strong>anndata</strong> (<em>anndata</em>) – if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a gene information and obs is a sample information.</p></li>
 <li><p><strong>geneExp</strong> (<em>pandas dataframe</em>) – expression matrix which genes are in the rows and samples are columns</p></li>
 <li><p><strong>geneExpPath</strong> (<em>str</em>) – path of expression matrix</p></li>
 <li><p><strong>sep</strong> (<em>str</em>) – separation symbol to use for reading data in geneExpPath properly</p></li>
@@ -718,7 +717,7 @@
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.goodSamplesGenes">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">goodSamplesGenes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datExpr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minFraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minNSamples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minNGenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minRelativeWeight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.goodSamplesGenes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.goodSamplesGenes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks data for missing entries, entries with weights below a threshold, and zero-variance genes. If necessary, the filtering is iterated.</p>
-<p>:param datExpr:expression data. A data frame in which columns are genes and rows ar samples.
+<p>:param datExpr:expression data. A data frame in which columns are samples and rows are gene.
 :type datExpr: pandas dataframe
 :param weights: optional observation weights in the same format (and dimensions) as datExpr.
 :type weights: pandas dataframe
@@ -876,12 +875,13 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.module_trait_relationships_heatmap">
-<span class="sig-name descname"><span class="pre">module_trait_relationships_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metaData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'module-traitRelationships'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.module_trait_relationships_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.module_trait_relationships_heatmap" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">module_trait_relationships_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metaData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alternative</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'two-sided'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'module-traitRelationships'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.module_trait_relationships_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.module_trait_relationships_heatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>plot topic-trait relationship heatmap</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>metaData</strong> (<em>list</em>) – traits you would like to see the relationship with topics (must be column name of datExpr.obs)</p></li>
+<li><p><strong>alternative</strong> (<em>str</em>) – Defines the alternative hypothesis for calculating correlation for module-trait relationship. Default is ‘two-sided’. The following options are available: ‘two-sided’: the correlation is nonzero, ‘less’: the correlation is negative (less than zero), ‘greater’: the correlation is positive (greater than zero)</p></li>
 <li><p><strong>figsize</strong> (<em>tuple of float</em>) – indicate the size of plot</p></li>
 <li><p><strong>show</strong> (<em>bool</em>) – indicate if you want to show the plot or not (default: True)</p></li>
 <li><p><strong>file_name</strong> (<em>str</em>) – name and path of the plot use for save (default: topic-traitRelationships)</p></li>

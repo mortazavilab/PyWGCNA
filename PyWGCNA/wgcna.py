@@ -65,7 +65,6 @@ ENDC = "\033[0m"
 BOLD = "\033[1m"
 UNDERLINE = "\033[4m"
 
-
 class WGCNA(GeneExp):
     """
     A class used to do weighted gene co-expression network analysis.
@@ -2360,7 +2359,7 @@ class WGCNA(GeneExp):
         :param MEs: Module eigengenes in a multi-set format.
         :type MEs: dict
         :param greyLast: Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (default = True)
-        :type greyLast:bool
+        :type greyLast: bool
         :param greyName: Name of the grey module eigengene. (default = "MEgrey")
         :type greyName: str
         :param orderBy: Specifies the set by which the eigengenes are to be ordered (in all other sets as well). Defaults to the first set in useSets (or the first set, if useSets is not given). (defualt = 0)
