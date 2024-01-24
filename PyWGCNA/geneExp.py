@@ -16,7 +16,7 @@ class GeneExp:
     :type species: str
     :param level: which type of data you use including gene, transcript (default: gene)
     :type level: str
-    :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.
+    :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a gene information and obs is a sample information.
     :param anndata: anndata
     :param geneExp: expression matrix which genes are in the rows and samples are columns
     :type geneExp: pandas dataframe

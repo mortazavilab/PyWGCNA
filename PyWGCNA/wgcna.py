@@ -80,8 +80,8 @@ class WGCNA(GeneExp):
     :type level: str
     :param outputPath: path you want to save all you figures and object (default: '', where you rau your script)
     :type outputPath: str
-    :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a sample information and obs is a gene information.
-    :param anndata: anndata
+    :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a gene information and obs is a sample information.
+    :type anndata: anndata
     :param geneExp: expression matrix which genes are in the rows and samples are columns
     :type geneExp: pandas dataframe
     :param geneExpPath: path of expression matrix
@@ -224,11 +224,13 @@ class WGCNA(GeneExp):
             if np.size(goodGenes) - np.count_nonzero(goodGenes) > 0:
                 print(
                     f"{OKGREEN} {np.size(goodGenes) - np.count_nonzero(goodGenes)} gene(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing genes: {', '.join(self.datExpr.var.index[[not goodGene for goodGene in goodGenes]].tolist())}{ENDC}")
+                print(
+                    f"{OKGREEN}Removing genes: {', '.join(self.datExpr.var.index[[not goodGene for goodGene in goodGenes]].tolist())}{ENDC}")
             if np.size(goodSamples) - np.count_nonzero(goodSamples) > 0:
                 print(
                     f"{OKGREEN} {np.size(goodSamples) - np.count_nonzero(goodSamples)} sample(s) detected as an outlier!{ENDC}")
-                print(f"{OKGREEN}Removing samples: {', '.join(self.datExpr.obs.index[[not goodSample for goodSample in goodSamples]].tolist())}{ENDC}")
+                print(
+                    f"{OKGREEN}Removing samples: {', '.join(self.datExpr.obs.index[[not goodSample for goodSample in goodSamples]].tolist())}{ENDC}")
             # Remove the offending genes and samples from the data:
             self.datExpr = self.datExpr[goodSamples, goodGenes]
 
@@ -390,27 +392,12 @@ class WGCNA(GeneExp):
         """
         print(f"{BOLD}{OKBLUE}Analysing WGCNA...{ENDC}")
 
-        datTraits = self.getDatTraits(self.datExpr.obs.columns.tolist())
-
         print(f"{OKCYAN}Calculating module trait relationship ...{ENDC}")
 
-        self.moduleTraitCor = pd.DataFrame(index=self.MEs.columns,
-                                           columns=datTraits.columns,
-                                           dtype="float")
-        self.moduleTraitPvalue = pd.DataFrame(index=self.MEs.columns,
-                                              columns=datTraits.columns,
-                                              dtype="float")
-
-        for i in self.MEs.columns:
-            for j in datTraits.columns:
-                tmp = stats.pearsonr(self.MEs[i], datTraits[j], alternative=alternative)
-                self.moduleTraitCor.loc[i, j] = tmp[0]
-                self.moduleTraitPvalue.loc[i, j] = tmp[1]
-
-        if self.save and self.datExpr.obs.shape[1] != 0:
-            self.module_trait_relationships_heatmap(metaData=self.datExpr.obs.columns.tolist(),
-                                                    show=show,
-                                                    file_name='module-traitRelationships')
+        self.module_trait_relationships_heatmap(metaData=self.datExpr.obs.columns.tolist(),
+                                                alternative=alternative,
+                                                show=show,
+                                                file_name='module-traitRelationships')
         print("\tDone..\n")
 
         print(f"{OKCYAN}Adding (signed) eigengene-based connectivity (module membership) ...{ENDC}")
@@ -440,7 +427,8 @@ class WGCNA(GeneExp):
         if self.save:
             print(f"{OKCYAN}plotting module barplot eigengene...{ENDC}")
             if self.datExpr.obs.shape[1] == 0:
-                print(f"{WARNING}There is not any sample information in given object! Skip running barplotModuleEigenGene() function.{ENDC}")
+                print(
+                    f"{WARNING}There is not any sample information in given object! Skip running barplotModuleEigenGene() function.{ENDC}")
             else:
                 for module in modules:
                     self.barplotModuleEigenGene(module, metadata, colorBar=metadata[-1], show=show)
@@ -522,7 +510,7 @@ class WGCNA(GeneExp):
         """
         Checks data for missing entries, entries with weights below a threshold, and zero-variance genes. If necessary, the filtering is iterated.
 
-        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.
+        :param datExpr:expression data. A data frame in which columns are samples and rows are gene.
         :type datExpr: pandas dataframe
         :param weights: optional observation weights in the same format (and dimensions) as datExpr.
         :type weights: pandas dataframe
@@ -1745,7 +1733,7 @@ class WGCNA(GeneExp):
                                     useObjects = ColorsX in np.unique(labelsOnBranch)
                                     DistSClustClust = distM.iloc[InCluster, useObjects]
                                     MeanDist = DistSClustClust.mean(axis=0)
-                                    useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
+                                    useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
                                     MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
                                     MeanMeanDist = MeanDist.groupby(
                                         'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
@@ -1764,7 +1752,7 @@ class WGCNA(GeneExp):
                                 InCluster = np.where(SmallLabels == sclust)[0].tolist()
                                 DistSClustClust = distM.iloc[InCluster, useObjects]
                                 MeanDist = DistSClustClust.mean(axis=0)
-                                useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
+                                useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
                                 MeanDist = pd.DataFrame({'MeanDist': MeanDist, 'useColorsFac': useColorsFac})
                                 MeanMeanDist = MeanDist.groupby(
                                     'useColorsFac').mean()  # tapply(MeanDist, useColorsFac, mean)
@@ -1786,7 +1774,7 @@ class WGCNA(GeneExp):
                             basicOnBranch = branch_basicClusters[onBr - 1]
                             labelsOnBranch = branchLabels[basicOnBranch]
                             useObjects = ColorsX in np.unique(labelsOnBranch)
-                            useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
+                            useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
                             UnassdToClustDist = distM.iloc[useObjects, obj].groupby(
                                 'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
                             nearest = UnassdToClustDist.idxmin().astype(int) - 1
@@ -1798,7 +1786,7 @@ class WGCNA(GeneExp):
                                 nPAMed = nPAMed + 1
                     else:
                         useObjects = np.where(ColorsX != 0)[0].tolist()
-                        useColorsFac = ColorsX[useObjects]#pd.Categorical(ColorsX[useObjects])
+                        useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
                         tmp = pd.DataFrame(distM.iloc[useObjects, Unlabeled])
                         tmp['group'] = useColorsFac
                         UnassdToClustDist = tmp.groupby(
@@ -1947,7 +1935,8 @@ class WGCNA(GeneExp):
         if expr.shape[1] != len(colors):
             sys.exit("moduleEigengenes: Error: ncol(expr) and length(colors) must be equal (one color per gene).")
         if len(pd.Categorical(colors).categories) == 1:
-            sys.exit(f"{WARNING}All your genes ended up in one modules! Reconsider your input parameters in order to get more modules.{ENDC}")
+            sys.exit(
+                f"{WARNING}All your genes ended up in one modules! Reconsider your input parameters in order to get more modules.{ENDC}")
         # TODO: "Argument 'colors' contains unused levels (empty modules). Use colors[, drop=TRUE] to get rid of them."
         if softPower < 0:
             sys.exit("softPower must be non-negative")
@@ -2767,6 +2756,7 @@ class WGCNA(GeneExp):
 
     def module_trait_relationships_heatmap(self,
                                            metaData,
+                                           alternative='two-sided',
                                            figsize=None,
                                            show=True,
                                            file_name='module-traitRelationships'):
@@ -2775,6 +2765,8 @@ class WGCNA(GeneExp):
 
         :param metaData: traits you would like to see the relationship with topics (must be column name of datExpr.obs)
         :type metaData: list
+        :param alternative: Defines the alternative hypothesis for calculating correlation for module-trait relationship. Default is ‘two-sided’. The following options are available: 'two-sided’: the correlation is nonzero, ‘less’: the correlation is negative (less than zero), ‘greater’: the correlation is positive (greater than zero)
+        :type alternative: str
         :param figsize: indicate the size of plot
         :type figsize: tuple of float
         :param show: indicate if you want to show the plot or not (default: True)
@@ -2784,9 +2776,26 @@ class WGCNA(GeneExp):
         """
         datTraits = self.getDatTraits(metaData)
 
+        moduleTraitCor = pd.DataFrame(index=self.MEs.columns,
+                                      columns=datTraits.columns,
+                                      dtype="float")
+        moduleTraitPvalue = pd.DataFrame(index=self.MEs.columns,
+                                         columns=datTraits.columns,
+                                         dtype="float")
+
+        for i in self.MEs.columns:
+            for j in datTraits.columns:
+                tmp = stats.pearsonr(self.MEs[i], datTraits[j], alternative=alternative)
+                moduleTraitCor.loc[i, j] = tmp[0]
+                moduleTraitPvalue.loc[i, j] = tmp[1]
+
+        if set(metaData) == set(self.datExpr.obs.columns.tolist()):
+            self.moduleTraitCor = moduleTraitCor
+            self.moduleTraitPvalue = moduleTraitPvalue
+
         if figsize is None:
-            figsize = (max(20, int(self.moduleTraitPvalue.shape[0] * 1.5)),
-                       self.moduleTraitPvalue.shape[1] * 1.5)
+            figsize = (max(20, int(moduleTraitPvalue.shape[0] * 1.5)),
+                       moduleTraitPvalue.shape[1] * 1.5)
         fig, ax = plt.subplots(figsize=figsize, facecolor='white')
         # names
         xlabels = []
@@ -2795,15 +2804,15 @@ class WGCNA(GeneExp):
         ylabels = datTraits.columns
 
         # Loop over data dimensions and create text annotations.
-        tmp_cor = self.moduleTraitCor.T.round(decimals=2)
-        tmp_pvalue = self.moduleTraitPvalue.T.round(decimals=3)
+        tmp_cor = moduleTraitCor.T.round(decimals=2)
+        tmp_pvalue = moduleTraitPvalue.T.round(decimals=3)
         labels = (np.asarray(["{0}\n({1})".format(cor, pvalue)
                               for cor, pvalue in zip(tmp_cor.values.flatten(),
                                                      tmp_pvalue.values.flatten())])) \
-            .reshape(self.moduleTraitCor.T.shape)
+            .reshape(moduleTraitCor.T.shape)
 
         sns.set(font_scale=1.5)
-        res = sns.heatmap(self.moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
+        res = sns.heatmap(moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
                           vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
                           xticklabels=xlabels, yticklabels=ylabels)
         res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=90)
@@ -3007,7 +3016,8 @@ class WGCNA(GeneExp):
         """
         sampleInfo = self.datExpr.obs
         if sampleInfo.shape[1] == 0:
-            print(f"{WARNING}There is not any sample information in given object! Skip running barplotModuleEigenGene() function.{ENDC}")
+            print(
+                f"{WARNING}There is not any sample information in given object! Skip running barplotModuleEigenGene() function.{ENDC}")
             return None
 
         height_ratios = []
