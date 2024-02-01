@@ -25,6 +25,7 @@ import gseapy as gp
 from gseapy.plot import dotplot
 from pyvis.network import Network
 from reactome2py import analysis
+from pandas.api.types import is_numeric_dtype
 
 from PyWGCNA.geneExp import *
 
@@ -2734,6 +2735,9 @@ class WGCNA(GeneExp):
         data = self.datExpr.obs.copy()[metaData]
         datTraits = pd.DataFrame(index=data.index)
         for i in range(data.shape[1]):
+            if is_numeric_dtype(data.iloc[:, i].dtypes):
+                datTraits[data.columns[i]] = data.iloc[:, i]
+                continue
             data.iloc[:, i] = data.iloc[:, i].astype(str)
             if len(np.unique(data.iloc[:, i])) == 2:
                 datTraits[data.columns[i]] = data.iloc[:, i]
