@@ -37,6 +37,7 @@ To install the most recent release, run
 - [Functional enrichment analysis ](tutorials/functional_enrichment_analysis.ipynb): How to perform functional enrichment analysis using databases such as GO, KEGG, and REACTOME in PyWGCNA object
 - [Visualize modules as network](tutorials/network_analysis.ipynb): How to visualize PyWGCNA objects as a network
 - [Recover Protein-Protein Interaction](tutorials/protein_protein_interaction.ipynb): How to find and plot PPI using STRING database.
+- [module trait relationships heatmap](tutorials/module_trait_relationships_heatmap.ipynb): How to calculate correlation between modules and traits
 
 ## Suggested Reading
 
