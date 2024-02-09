@@ -929,25 +929,18 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>MEs</strong> (<em>dict</em>) – Module eigengenes in a multi-set format.</p></li>
-<li><p><strong>greyLast</strong> – Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (default = True)</p></li>
+<li><p><strong>greyLast</strong> (<em>bool</em>) – Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (default = True)</p></li>
+<li><p><strong>greyName</strong> (<em>str</em>) – Name of the grey module eigengene. (default = “MEgrey”)</p></li>
+<li><p><strong>orderBy</strong> (<em>int</em>) – Specifies the set by which the eigengenes are to be ordered (in all other sets as well). Defaults to the first set in useSets (or the first set, if useSets is not given). (defualt = 0)</p></li>
+<li><p><strong>order</strong> (<em>list</em>) – Allows the user to specify a custom ordering.</p></li>
+<li><p><strong>useSets</strong> (<em>list</em>) – Allows the user to specify for which sets the eigengene ordering is to be performed.</p></li>
 </ul>
 </dd>
-</dl>
-<p>:type greyLast:bool
-:param greyName: Name of the grey module eigengene. (default = “MEgrey”)
-:type greyName: str
-:param orderBy: Specifies the set by which the eigengenes are to be ordered (in all other sets as well). Defaults to the first set in useSets (or the first set, if useSets is not given). (defualt = 0)
-:type orderBy: int
-:param order: Allows the user to specify a custom ordering.
-:type order: list
-:param useSets: Allows the user to specify for which sets the eigengene ordering is to be performed.
-:type useSets: list</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A dictionary of the same type as MEs containing the re-ordered eigengenes.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary of the same type as MEs containing the re-ordered eigengenes.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

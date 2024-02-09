@@ -132,6 +132,7 @@
 <span class="kn">from</span> <span class="nn">gseapy.plot</span> <span class="kn">import</span> <span class="n">dotplot</span>
 <span class="kn">from</span> <span class="nn">pyvis.network</span> <span class="kn">import</span> <span class="n">Network</span>
 <span class="kn">from</span> <span class="nn">reactome2py</span> <span class="kn">import</span> <span class="n">analysis</span>
+<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="kn">import</span> <span class="n">is_numeric_dtype</span>
 
 <span class="kn">from</span> <span class="nn">PyWGCNA.geneExp</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -171,7 +172,6 @@
 <span class="n">ENDC</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span>
 <span class="n">BOLD</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1m&quot;</span>
 <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[4m&quot;</span>
-
 
 <div class="viewcode-block" id="WGCNA"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA">[docs]</a><span class="k">class</span> <span class="nc">WGCNA</span><span class="p">(</span><span class="n">GeneExp</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2467,7 +2467,7 @@
 <span class="sd">        :param MEs: Module eigengenes in a multi-set format.</span>
 <span class="sd">        :type MEs: dict</span>
 <span class="sd">        :param greyLast: Normally the color grey is reserved for unassigned genes; hence the grey module is not a proper module and it is conventional to put it last. If this is not desired, set the parameter to FALSE. (default = True)</span>
-<span class="sd">        :type greyLast:bool</span>
+<span class="sd">        :type greyLast: bool</span>
 <span class="sd">        :param greyName: Name of the grey module eigengene. (default = &quot;MEgrey&quot;)</span>
 <span class="sd">        :type greyName: str</span>
 <span class="sd">        :param orderBy: Specifies the set by which the eigengenes are to be ordered (in all other sets as well). Defaults to the first set in useSets (or the first set, if useSets is not given). (defualt = 0)</span>
@@ -2842,6 +2842,9 @@
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="n">metaData</span><span class="p">]</span>
         <span class="n">datTraits</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">):</span>
+                <span class="n">datTraits</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+                <span class="k">continue</span>
             <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">datTraits</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
