@@ -628,7 +628,7 @@ class WGCNA(GeneExp):
             # TODO:colWeightedVars
             var = np.var(datExpr, w=weights)
 
-        var[np.isnan(var)] = 0
+        var[pd.isnull(var)] = 0
         nNAsGenes = datExpr.loc[gg, useSamples].isna().sum(axis=1)
         gg[gg] = np.logical_and(np.logical_and(nNAsGenes < (1 - minFraction) * nSamples, var > tol ** 2),
                                 nSamples - nNAsGenes >= minNSamples)
@@ -3544,8 +3544,8 @@ class WGCNA(GeneExp):
             for line in response.text.strip().split("\n"):
                 l = line.strip().split("\t")
 
-                res = res.append({'gene1': l[2], 'gene2': l[3], 'score': l[5]},
-                                 ignore_index=True)
+                tmp = pd.DataFrame({'gene1': l[2], 'gene2': l[3], 'score': l[5]}, index=[0])
+                res = pd.concat([res, tmp], ignore_index=True)
 
         sleep(1)
 
