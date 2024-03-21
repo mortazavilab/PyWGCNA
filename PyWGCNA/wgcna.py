@@ -259,13 +259,19 @@ class WGCNA(GeneExp):
 
         print("\tDone pre-processing..\n")
 
-    def findModules(self, **kwargs):
+    def findModules(self, kwargs_function={'cutreeHybrid': {'deepSplit': 2, 'pamRespectsDendro': False}}):
         """
         Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically
+
+        :param kwargs_function: dictionary where the keys are the name of the function and values are the dictionary contains parameter you want to change within function
+        :type kwargs_function: dict
         """
         print(f"{BOLD}{OKBLUE}Run WGCNA...{ENDC}")
 
         # Call the network topology analysis function
+        kwargs = dict()
+        if 'pickSoftThreshold' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['pickSoftThreshold']
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.to_df(), RsquaredCut=self.RsquaredCut,
                                                        MeanCut=self.MeanCut, powerVector=self.powers,
                                                        networkType=self.networkType, **kwargs)
@@ -294,13 +300,19 @@ class WGCNA(GeneExp):
             fig.savefig(f"{self.outputPath}figures/summary_power.{self.figureType}")
 
         # Set Power
-        self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType)
+        kwargs = dict()
+        if 'adjacency' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['adjacency']
+        self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType, **kwargs)
         self.adjacency = pd.DataFrame(self.adjacency,
                                       columns=self.datExpr.to_df().columns,
                                       index=self.datExpr.to_df().columns)
 
         # Turn adjacency into topological overlap
-        self.TOM = WGCNA.TOMsimilarity(self.adjacency.to_numpy(), TOMType=self.TOMType)
+        kwargs = dict()
+        if 'TOMsimilarity' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['TOMsimilarity']
+        self.TOM = WGCNA.TOMsimilarity(self.adjacency.to_numpy(), TOMType=self.TOMType, **kwargs)
         self.TOM.columns = self.datExpr.to_df().columns
         self.TOM.index = self.datExpr.to_df().columns
         dissTOM = 1 - self.TOM
@@ -310,17 +322,23 @@ class WGCNA(GeneExp):
         # Call the hierarchical clustering function
         self.geneTree = linkage(a, method="average")
 
-        # Module identification using dynamic tree cut:
-        # dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
-        #                                 minClusterSize=self.minModuleSize, **kwargs)
-        dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, deepSplit=2, pamRespectsDendro=False,
-                                         minClusterSize=self.minModuleSize, **kwargs)
+        # Module identification using dynamic tree cut
+        kwargs = dict()
+        if 'cutreeHybrid' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['cutreeHybrid']
+        dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, minClusterSize=self.minModuleSize, **kwargs)
 
         # Convert numeric labels into colors
-        self.datExpr.var['dynamicColors'] = WGCNA.labels2colors(labels=dynamicMods)
+        kwargs = dict()
+        if 'labels2colors' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['labels2colors']
+        self.datExpr.var['dynamicColors'] = WGCNA.labels2colors(labels=dynamicMods, **kwargs)
 
         # Calculate eigengenes
-        MEList = WGCNA.moduleEigengenes(expr=self.datExpr.to_df(), colors=self.datExpr.var['dynamicColors'])
+        kwargs = dict()
+        if 'moduleEigengenes' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['moduleEigengenes']
+        MEList = WGCNA.moduleEigengenes(expr=self.datExpr.to_df(), colors=self.datExpr.var['dynamicColors'], **kwargs)
 
         self.MEs = MEList['eigengenes']
         if 'MEgrey' in self.MEs.columns:
@@ -345,8 +363,11 @@ class WGCNA(GeneExp):
                 plt.savefig(f"{self.outputPath}figures/eigenesgenes.{self.figureType}")
 
             # Call an automatic merging function
+            kwargs = dict()
+            if 'mergeCloseModules' in list(kwargs_function.keys()):
+                kwargs = kwargs_function['mergeCloseModules']
             merge = WGCNA.mergeCloseModules(self.datExpr.to_df(), self.datExpr.var['dynamicColors'],
-                                            cutHeight=self.MEDissThres)
+                                            cutHeight=self.MEDissThres, **kwargs)
             # The merged module colors; Rename to moduleColors
             self.datExpr.var['moduleColors'] = merge['colors']
         else:
@@ -360,10 +381,17 @@ class WGCNA(GeneExp):
         self.MEs = merge['newMEs']
 
         # Recalculate MEs with color labels
-        self.datME = WGCNA.moduleEigengenes(self.datExpr.to_df(), self.datExpr.var['moduleColors'])['eigengenes']
+        kwargs = dict()
+        if 'moduleEigengenes' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['moduleEigengenes']
+        self.datME = WGCNA.moduleEigengenes(self.datExpr.to_df(), self.datExpr.var['moduleColors'], **kwargs)['eigengenes']
         if 'MEgrey' in self.datME.columns:
             self.datME.drop(['MEgrey'], axis=1, inplace=True)
-        self.MEs = WGCNA.orderMEs(self.datME)
+
+        kwargs = dict()
+        if 'orderMEs' in list(kwargs_function.keys()):
+            kwargs = kwargs_function['orderMEs']
+        self.MEs = WGCNA.orderMEs(self.datME, **kwargs)
 
         print("\tDone running WGCNA..\n")
 
@@ -3025,7 +3053,10 @@ class WGCNA(GeneExp):
 
         height_ratios = []
         for m in metadata:
-            height_ratios.append(len(list(self.metadataColors[m].keys())))
+            if isinstance(self.metadataColors[m], dict):
+                height_ratios.append(len(list(self.metadataColors[m].keys())))
+            else:
+                height_ratios.append(1)
         height_ratios.reverse()
 
         modules = np.unique(self.datExpr.var['moduleColors']).tolist()
@@ -3084,16 +3115,38 @@ class WGCNA(GeneExp):
                     x = ind
                     y = np.repeat(3000 * metadata.index(m), len(ind))
                     color = cat[m].values
-                    for n in list(self.metadataColors[m].keys()):
-                        color = np.where(color == n, self.metadataColors[m][n], color)
-                        patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
-                        handles.append(patch)
-                    if m != colorBar:
-                        axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
-                    ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
-                    ax_legend.legend(title=m, handles=handles)
-                    ax_legend.axis('off')
-                    fig.add_subplot(ax_legend)
+                    if type(self.metadataColors[m]) == dict:
+                        for n in list(self.metadataColors[m].keys()):
+                            color = np.where(color == n, self.metadataColors[m][n], color)
+                            patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
+                            handles.append(patch)
+                        if m != colorBar:
+                            axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
+                        ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                        ax_legend.legend(title=m, handles=handles)
+                        ax_legend.axis('off')
+                        fig.add_subplot(ax_legend)
+                    else:
+                        cat[m] = cat[m].astype('float')
+                        color = cat[m].values
+                        axs[0, 0].scatter(x, y, c=color,
+                                          cmap=self.metadataColors[m].get_cmap(),
+                                          s=1600, marker='s')
+
+                        ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                        clb = fig.colorbar(mappable=self.metadataColors[m],
+                                           ax=ax_legend,
+                                           orientation='horizontal',
+                                           fraction=0.9)
+                        clb.ax.set_title(m.capitalize())
+                        ax_legend.axis('off')
+                        fig.add_subplot(ax_legend)
+                    # if m != colorBar:
+                    #     axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
+                    # ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                    # ax_legend.legend(title=m, handles=handles)
+                    # ax_legend.axis('off')
+                    # fig.add_subplot(ax_legend)
 
                 axs[0, 0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
                 axs[0, 0].set_ylim(-2000, np.max(y) + 2000)
