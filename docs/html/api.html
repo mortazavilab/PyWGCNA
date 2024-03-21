@@ -550,8 +550,13 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="PyWGCNA.wgcna.WGCNA.findModules">
-<span class="sig-name descname"><span class="pre">findModules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.findModules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.findModules" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">findModules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'cutreeHybrid':</span> <span class="pre">{'deepSplit':</span> <span class="pre">2,</span> <span class="pre">'pamRespectsDendro':</span> <span class="pre">False}}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PyWGCNA/wgcna.html#WGCNA.findModules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#PyWGCNA.wgcna.WGCNA.findModules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs_function</strong> (<em>dict</em>) – dictionary where the keys are the name of the function and values are the dictionary contains parameter you want to change within function</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
