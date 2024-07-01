@@ -2939,7 +2939,10 @@ class WGCNA(GeneExp):
 
         height_ratios = []
         for m in metadata:
-            height_ratios.append(len(list(self.metadataColors[m].keys())))
+            if isinstance(self.metadataColors[m], dict):
+                height_ratios.append(len(list(self.metadataColors[m].keys())))
+            else:
+                height_ratios.append(1)
         height_ratios.reverse()
 
         modules = np.unique(self.datExpr.var['moduleColors']).tolist()
@@ -2982,15 +2985,28 @@ class WGCNA(GeneExp):
                     x = ind
                     y = np.repeat(3000 * metadata.index(m), len(ind))
                     color = sampleInfo[m].values
-                    for n in list(self.metadataColors[m].keys()):
-                        color = np.where(color == n, self.metadataColors[m][n], color)
-                        patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
-                        handles.append(patch)
-                    axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
-                    ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
-                    ax_legend.legend(title=m, handles=handles)
-                    ax_legend.axis('off')
-                    fig.add_subplot(ax_legend)
+                    if type(self.metadataColors[m]) == dict:
+                        for n in list(self.metadataColors[m].keys()):
+                            color = np.where(color == n, self.metadataColors[m][n], color)
+                            patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
+                            handles.append(patch)
+                        axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
+                        ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                        ax_legend.legend(title=m, handles=handles)
+                        ax_legend.axis('off')
+                        fig.add_subplot(ax_legend)
+                    else:
+                        axs[0, 0].scatter(x, y, c=color, cmap=self.metadataColors[m].get_cmap(),
+                                              s=1600, marker='s')
+
+                        ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
+                        clb = fig.colorbar(mappable=self.metadataColors[m],
+                                               ax=ax_legend,
+                                               orientation='horizontal',
+                                               fraction=0.9)
+                        clb.ax.set_title(m.capitalize())
+                        ax_legend.axis('off')
+                        fig.add_subplot(ax_legend)
 
                 axs[0, 0].set_title(f"Module Eigengene for {moduleName}", size=28, fontweight="bold")
                 axs[0, 0].set_ylim(-2000, np.max(y) + 2000)
