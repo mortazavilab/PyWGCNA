@@ -377,7 +377,7 @@ class Comparison:
         elif bubble_size == "fraction":
             size = self.fraction.copy(deep=True)
         else:
-            sys.exit("Color is not correct!")
+            sys.exit(f"bubble_size={bubble_size} is not correct!")
         np.fill_diagonal(size.values, 0)
 
         P_value[size == 0] = np.nan
@@ -417,6 +417,10 @@ class Comparison:
         sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
         sm.set_array([])
 
+        # Remove the legend and add a colorbar
+        ax.get_legend().remove()
+        fig.colorbar(sm, shrink=0.25, label='-log10(P_value)', ax=ax)
+
         fig.canvas.draw()
 
         if color is not None:
@@ -439,24 +443,26 @@ class Comparison:
         ax.set_xlabel('')
         ax.set_ylabel('')
 
-        # Remove the legend and add a colorbar
-        ax.get_legend().remove()
-        ax.figure.colorbar(sm, shrink=0.25, label='-log10(P_value)')
+        if bubble_size == "jaccard_similarity":
+            legend_title = "Jaccard Index"
+        elif bubble_size == "fraction":
+            legend_title = "Fraction"
 
         handles, labels = ax.get_legend_handles_labels()
         entries_to_skip = labels.index('size') + 1
         handles = handles[entries_to_skip:]
         labels = labels[entries_to_skip:]
-        for h in handles[1:]:
-            sizes = [s for s in h.get_sizes()]
-            h.set_sizes(sizes)
+        #for h in handles[1:]:
+        #    sizes = [s for s in h.get_sizes()]
+        #    h.set_sizes(sizes)
         labels = labels[:1] + [f'{float(lab):.2f}' for lab in labels[1:]]
         legend_size = ax.legend(handles, labels,
-                                title=bubble_size,
-                                bbox_to_anchor=(1.04, 1),
+                                title=legend_title,
+                                bbox_to_anchor=(1, 1),
                                 loc=2,
                                 borderaxespad=0.,
-                                frameon=False)
+                                frameon=False, 
+                                title_fontsize=15)
         plt.gca().add_artist(legend_size)
 
         legend_elements = []
@@ -466,11 +472,12 @@ class Comparison:
                 legend_elements.append(tmp)
 
             ax.legend(handles=legend_elements,
-                      title='networks',
+                      title='Networks',
                       bbox_to_anchor=(1.04, 0),
                       loc=3,
                       borderaxespad=0.,
-                      frameon=False)
+                      frameon=False, 
+                      title_fontsize=15)
 
         if save:
             plt.savefig(f"{file_name}.{plot_format}")
