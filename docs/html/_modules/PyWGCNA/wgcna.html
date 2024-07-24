@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PyWGCNA.wgcna &#8212; PyWGCNA  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css?v=4468db6d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
 <meta charset='utf-8'>
@@ -102,7 +100,18 @@
 
 <div class="container">
   <div class="row">
-    <div class="body col-md-12 content" role="main">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
       
   <h1>Source code for PyWGCNA.wgcna</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -173,8 +182,10 @@
 <span class="n">BOLD</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1m&quot;</span>
 <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[4m&quot;</span>
 
-<div class="viewcode-block" id="WGCNA"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA">[docs]</a><span class="k">class</span> <span class="nc">WGCNA</span><span class="p">(</span><span class="n">GeneExp</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="WGCNA">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA">[docs]</a>
+<span class="k">class</span> <span class="nc">WGCNA</span><span class="p">(</span><span class="n">GeneExp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class used to do weighted gene co-expression network analysis.</span>
 
 <span class="sd">    :param name: name of the WGCNA we used to visualize data (default: &#39;WGCNA&#39;)</span>
@@ -310,8 +321,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">figureType</span> <span class="o">=</span> <span class="n">figureType</span>
 
-<div class="viewcode-block" id="WGCNA.preprocess"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="WGCNA.preprocess">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.preprocess">[docs]</a>
+    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Preprocessing PyWGCNA object including removing obvious outlier on genes and samples</span>
 
 <span class="sd">        :param show: indicate if you want to show your plot or not (if you put this to False it will not either show and save the plot)</span>
@@ -330,14 +343,14 @@
             <span class="c1"># Optionally, print the gene and sample names that were removed:</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">goodGenes</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">goodGenes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">goodGenes</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">goodGenes</span><span class="p">)</span><span class="si">}</span><span class="s2"> gene(s) detected as an outlier!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">goodGenes</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">goodGenes</span><span class="p">)</span><span class="si">}</span><span class="s2"> gene(s) detected as an outlier!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2">Removing genes: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span><span class="p">[[</span><span class="ow">not</span> <span class="n">goodGene</span> <span class="k">for</span> <span class="n">goodGene</span> <span class="ow">in</span> <span class="n">goodGenes</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2">Removing genes: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">index</span><span class="p">[[</span><span class="ow">not</span><span class="w"> </span><span class="n">goodGene</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">goodGene</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">goodGenes</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">goodSamples</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">goodSamples</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">goodSamples</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">goodSamples</span><span class="p">)</span><span class="si">}</span><span class="s2"> sample(s) detected as an outlier!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">goodSamples</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">goodSamples</span><span class="p">)</span><span class="si">}</span><span class="s2"> sample(s) detected as an outlier!</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2">Removing samples: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">[[</span><span class="ow">not</span> <span class="n">goodSample</span> <span class="k">for</span> <span class="n">goodSample</span> <span class="ow">in</span> <span class="n">goodSamples</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OKGREEN</span><span class="si">}</span><span class="s2">Removing samples: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">[[</span><span class="ow">not</span><span class="w"> </span><span class="n">goodSample</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">goodSample</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">goodSamples</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># Remove the offending genes and samples from the data:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="p">[</span><span class="n">goodSamples</span><span class="p">,</span> <span class="n">goodGenes</span><span class="p">]</span>
 
@@ -366,8 +379,11 @@
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Done pre-processing..</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.findModules"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.findModules">[docs]</a>    <span class="k">def</span> <span class="nf">findModules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs_function</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cutreeHybrid&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;deepSplit&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;pamRespectsDendro&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.findModules">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.findModules">[docs]</a>
+    <span class="k">def</span> <span class="nf">findModules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs_function</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cutreeHybrid&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;deepSplit&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;pamRespectsDendro&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clustering genes through original WGCNA pipeline: 1.pick soft threshold 2.calculating adjacency matrix 3.calculating TOM similarity matrix 4.cluster genes base of dissTOM 5.merge similar cluster dynamically</span>
 
 <span class="sd">        :param kwargs_function: dictionary where the keys are the name of the function and values are the dictionary contains parameter you want to change within function</span>
@@ -502,8 +518,11 @@
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Done running WGCNA..</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.runWGCNA"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.runWGCNA">[docs]</a>    <span class="k">def</span> <span class="nf">runWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.runWGCNA">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.runWGCNA">[docs]</a>
+    <span class="k">def</span> <span class="nf">runWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Preprocess and find modules</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">WGCNA</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -512,8 +531,11 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="WGCNA.analyseWGCNA"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.analyseWGCNA">[docs]</a>    <span class="k">def</span> <span class="nf">analyseWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;two-sided&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.analyseWGCNA">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.analyseWGCNA">[docs]</a>
+    <span class="k">def</span> <span class="nf">analyseWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;two-sided&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Analysing results: 1.calculating module trait relationship 2.plotting module heatmap eigengene 3.finding GO term for each module</span>
 
 <span class="sd">        :param order: indicate in which order metadata will show up in plots (should same as metadata name in anndata)</span>
@@ -580,9 +602,12 @@
                                                         <span class="n">moduleName</span><span class="o">=</span><span class="n">module</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Done..</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.replaceMissing"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.replaceMissing">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.replaceMissing">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.replaceMissing">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">replaceMissing</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">replaceWith</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Replacing missing (NA) value with appropriate value (for integer number replace with 0 and for string replace with &quot;&quot;)</span>
 
 <span class="sd">        :param x: value want to replace (single item)</span>
@@ -603,9 +628,12 @@
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">replaceWith</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span></div>
 
-<div class="viewcode-block" id="WGCNA.checkAndScaleWeights"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkAndScaleWeights">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.checkAndScaleWeights">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkAndScaleWeights">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkAndScaleWeights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">scaleByMax</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        check and scale weights of gene expression</span>
 <span class="sd">        :param weights: weights of gene expression</span>
 <span class="sd">        :type weights: pandas dataframe</span>
@@ -638,11 +666,14 @@
 
         <span class="k">return</span> <span class="n">weights</span></div>
 
+
     <span class="c1"># Check that all genes and samples have sufficiently low numbers of missing values.</span>
-<div class="viewcode-block" id="WGCNA.goodSamplesGenes"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.goodSamplesGenes">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.goodSamplesGenes">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.goodSamplesGenes">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">goodSamplesGenes</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minFraction</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">minNSamples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minNGenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">minRelativeWeight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks data for missing entries, entries with weights below a threshold, and zero-variance genes. If necessary, the filtering is iterated.</span>
 
 <span class="sd">        :param datExpr:expression data. A data frame in which columns are samples and rows are gene.</span>
@@ -688,11 +719,14 @@
 
         <span class="k">return</span> <span class="n">goodGenes</span><span class="p">,</span> <span class="n">goodSamples</span><span class="p">,</span> <span class="n">allOK</span></div>
 
+
     <span class="c1"># Filter genes with too many missing entries</span>
-<div class="viewcode-block" id="WGCNA.goodGenesFun"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.goodGenesFun">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.goodGenesFun">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.goodGenesFun">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">goodGenesFun</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useGenes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minFraction</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                      <span class="n">minNSamples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minNGenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minRelativeWeight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check data for missing entries and returns a list of genes that have non-zero variance</span>
 
 <span class="sd">        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.</span>
@@ -776,11 +810,14 @@
 
         <span class="k">return</span> <span class="n">gg</span></div>
 
+
     <span class="c1"># Filter samples with too many missing entries</span>
-<div class="viewcode-block" id="WGCNA.goodSamplesFun"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.goodSamplesFun">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.goodSamplesFun">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.goodSamplesFun">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">goodSamplesFun</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useGenes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minFraction</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                        <span class="n">minNSamples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minNGenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">minRelativeWeight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check data for missing entries and returns a list of samples that have non-zero variance</span>
 
 <span class="sd">        :param datExpr:expression data. A data frame in which columns are genes and rows ar samples.</span>
@@ -839,9 +876,12 @@
 
         <span class="k">return</span> <span class="n">goodSamples</span></div>
 
-<div class="viewcode-block" id="WGCNA.hclust"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.hclust">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.hclust">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.hclust">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">hclust</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Hierarchical cluster analysis on a set of dissimilarities and methods for analyzing it.</span>
 
 <span class="sd">        :param d: a dissimilarity structure as produced by &#39;pdist&#39;.</span>
@@ -864,10 +904,13 @@
 
         <span class="k">return</span> <span class="n">dendrogram</span></div>
 
+
     <span class="c1"># Determine cluster under the line</span>
-<div class="viewcode-block" id="WGCNA.cutree"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.cutree">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.cutree">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.cutree">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">cutree</span><span class="p">(</span><span class="n">sampleTree</span><span class="p">,</span> <span class="n">cutHeight</span><span class="o">=</span><span class="mf">50000.0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given a linkage matrix Z, return the cut tree. remove samples/genes/modules base on hierarchical clustering</span>
 
 <span class="sd">        :param sampleTree: The linkage matrix.</span>
@@ -882,13 +925,16 @@
 
         <span class="k">return</span> <span class="n">cutTree</span></div>
 
+
     <span class="c1"># Call the network topology analysis function</span>
-<div class="viewcode-block" id="WGCNA.pickSoftThreshold"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.pickSoftThreshold">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.pickSoftThreshold">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.pickSoftThreshold">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">pickSoftThreshold</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dataIsExpr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">RsquaredCut</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">MeanCut</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">powerVector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">nBreaks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                           <span class="n">blockSize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">networkType</span><span class="o">=</span><span class="s2">&quot;unsigned&quot;</span><span class="p">,</span> <span class="n">moreNetworkConcepts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                           <span class="n">gcInterval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Analysis of scale free topology for multiple soft thresholding powers.</span>
 
 <span class="sd">        :param data: expression data in a matrix or data frame. Rows correspond to samples and columns to genes.</span>
@@ -1054,9 +1100,12 @@
 
         <span class="k">return</span> <span class="n">powerEstimate</span><span class="p">,</span> <span class="n">datout</span></div>
 
-<div class="viewcode-block" id="WGCNA.checkSimilarity"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkSimilarity">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.checkSimilarity">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkSimilarity">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkSimilarity</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        check similarity matrix format is correct</span>
 
 <span class="sd">        :param adjMat: data we want to be checked</span>
@@ -1084,9 +1133,12 @@
         <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">adjMat</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">min</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">adjMat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">):</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">((</span><span class="s2">&quot;some entries are not between&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="s2">&quot;and&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="WGCNA.calBlockSize"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.calBlockSize">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.calBlockSize">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.calBlockSize">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calBlockSize</span><span class="p">(</span><span class="n">matrixSize</span><span class="p">,</span> <span class="n">rectangularBlocks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxMemoryAllocation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overheadFactor</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        find suitable block size for calculating soft power threshold</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">maxMemoryAllocation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1103,10 +1155,13 @@
 
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">matrixSize</span><span class="p">,</span> <span class="n">blockSz</span><span class="p">)</span></div>
 
+
     <span class="c1"># Calculation of fitting statistics for evaluating scale free topology fit.</span>
-<div class="viewcode-block" id="WGCNA.scaleFreeFitIndex"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.scaleFreeFitIndex">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.scaleFreeFitIndex">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.scaleFreeFitIndex">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">scaleFreeFitIndex</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nBreaks</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        calculates several indices (fitting statistics) for evaluating scale free topology fit.</span>
 
 <span class="sd">        :param k: numeric list whose components contain non-negative values</span>
@@ -1143,10 +1198,13 @@
                               <span class="s1">&#39;truncatedExponentialAdjRsquared&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">model2</span><span class="o">.</span><span class="n">rsquared_adj</span><span class="p">]})</span>
         <span class="k">return</span> <span class="n">dfout</span></div>
 
-<div class="viewcode-block" id="WGCNA.adjacency"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.adjacency">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.adjacency">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.adjacency">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">adjacency</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">selectCols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">adjacencyType</span><span class="o">=</span><span class="s2">&quot;unsigned&quot;</span><span class="p">,</span> <span class="n">power</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">corOptions</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">weightArgNames</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates (correlation or distance) network adjacency from given expression data or from a similarity</span>
 
 <span class="sd">        :param datExpr: data frame containing expression data. Columns correspond to genes and rows to samples.</span>
@@ -1210,9 +1268,12 @@
 
         <span class="k">return</span> <span class="n">cor_mat</span> <span class="o">**</span> <span class="n">power</span></div>
 
-<div class="viewcode-block" id="WGCNA.checkAdjMat"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkAdjMat">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.checkAdjMat">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkAdjMat">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkAdjMat</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        check adjacency matrix format is correct</span>
 
 <span class="sd">        :param adjMat: data we want to be checked</span>
@@ -1237,6 +1298,7 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">adjMat</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">min</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">adjMat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">((</span><span class="s2">&quot;some entries are not between&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="s2">&quot;and&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">))</span></div>
 
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">TomSimilarityFromAdj</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="n">TOMDenom</span><span class="p">,</span> <span class="n">TOMType</span><span class="p">):</span>
         <span class="c1"># Prepare adjacency</span>
@@ -1256,9 +1318,11 @@
         <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">tom</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tom</span>
 
-<div class="viewcode-block" id="WGCNA.TOMsimilarity"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.TOMsimilarity">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.TOMsimilarity">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.TOMsimilarity">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">TOMsimilarity</span><span class="p">(</span><span class="n">adjMat</span><span class="p">,</span> <span class="n">TOMType</span><span class="o">=</span><span class="s2">&quot;signed&quot;</span><span class="p">,</span> <span class="n">TOMDenom</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculation of the topological overlap matrix, and the corresponding dissimilarity, from a given adjacency matrix</span>
 
 <span class="sd">        :param adjMat: adjacency matrix, that is a square, symmetric matrix with entries between 0 and 1 (negative values are allowed if TOMType==&quot;signed&quot;).</span>
@@ -1291,6 +1355,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Done..</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tom</span><span class="p">)</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
@@ -1336,7 +1401,9 @@
 
         <span class="k">return</span> <span class="n">merges</span>
 
-<div class="viewcode-block" id="WGCNA.cutreeHybrid"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.cutreeHybrid">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.cutreeHybrid">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.cutreeHybrid">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">cutreeHybrid</span><span class="p">(</span><span class="n">dendro</span><span class="p">,</span> <span class="n">distM</span><span class="p">,</span> <span class="n">cutHeight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minClusterSize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">deepSplit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                      <span class="n">maxCoreScatter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minGap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxAbsCoreScatter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">minAbsGap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minSplitHeight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minAbsSplitHeight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1345,7 +1412,7 @@
                      <span class="n">assumeSimpleExternalSpecification</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pamStage</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                      <span class="n">pamRespectsDendro</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">useMedoids</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxPamDist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">respectSmallClusters</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect clusters in a dendorgram produced by the function hclust.</span>
 
 <span class="sd">        :param dendro: a hierarchical clustering dendorgram such as one returned by hclust.</span>
@@ -1961,9 +2028,12 @@
         <span class="n">OrdNumLabs</span><span class="o">.</span><span class="n">Value</span> <span class="o">=</span> <span class="n">OrdNumLabs</span><span class="o">.</span><span class="n">Value</span> <span class="o">-</span> <span class="n">UnlabeledExist</span>
         <span class="k">return</span> <span class="n">OrdNumLabs</span></div>
 
-<div class="viewcode-block" id="WGCNA.labels2colors"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.labels2colors">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.labels2colors">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.labels2colors">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">labels2colors</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">zeroIsGrey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorSeq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">naColor</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts a vector or array of numerical labels into a corresponding vector or array of colors corresponding to the labels.</span>
 
 <span class="sd">        :param labels: list or matrix of non-negative integer or other (such as character) labels.</span>
@@ -2021,10 +2091,13 @@
 
         <span class="k">return</span> <span class="n">colors</span></div>
 
-<div class="viewcode-block" id="WGCNA.moduleEigengenes"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.moduleEigengenes">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.moduleEigengenes">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.moduleEigengenes">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">moduleEigengenes</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">impute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nPC</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;along average&quot;</span><span class="p">,</span> <span class="n">excludeGrey</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">grey</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
                          <span class="n">subHubs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">softPower</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">scaleVar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trapErrors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates module eigengenes (1st principal component) of modules in a given single dataset.</span>
 
 <span class="sd">        :param expr: Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).</span>
@@ -2221,6 +2294,7 @@
                 <span class="s2">&quot;validMEs&quot;</span><span class="p">:</span> <span class="n">validMEs</span><span class="p">,</span> <span class="s2">&quot;validColors&quot;</span><span class="p">:</span> <span class="n">validColors</span><span class="p">,</span> <span class="s2">&quot;allOK&quot;</span><span class="p">:</span> <span class="n">allOK</span><span class="p">,</span> <span class="s2">&quot;allPC&quot;</span><span class="p">:</span> <span class="n">allPC</span><span class="p">,</span> <span class="s2">&quot;isPC&quot;</span><span class="p">:</span> <span class="n">isPC</span><span class="p">,</span>
                 <span class="s2">&quot;isHub&quot;</span><span class="p">:</span> <span class="n">isHub</span><span class="p">,</span> <span class="s2">&quot;validAEs&quot;</span><span class="p">:</span> <span class="n">validAEs</span><span class="p">,</span> <span class="s2">&quot;allAEOK&quot;</span><span class="p">:</span> <span class="n">allAEOK</span><span class="p">}</span></div>
 
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">permissiveDim</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
@@ -2228,9 +2302,11 @@
             <span class="k">return</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">d</span>
 
-<div class="viewcode-block" id="WGCNA.checkSets"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkSets">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.checkSets">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.checkSets">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">checkSets</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">checkStructure</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks whether given sets have the correct format and retrieves dimensions.</span>
 
 <span class="sd">        :param data: A dict of lists; in each list there must be a component named data whose content is a matrix or dataframe or array of dimension 2.</span>
@@ -2282,9 +2358,12 @@
                 <span class="n">nSamples</span><span class="p">[</span><span class="nb">set</span><span class="p">]</span> <span class="o">=</span> <span class="n">WGCNA</span><span class="o">.</span><span class="n">permissiveDim</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="nb">set</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;nSets&quot;</span><span class="p">:</span> <span class="n">nSets</span><span class="p">,</span> <span class="s2">&quot;nGenes&quot;</span><span class="p">:</span> <span class="n">nGenes</span><span class="p">,</span> <span class="s2">&quot;nSamples&quot;</span><span class="p">:</span> <span class="n">nSamples</span><span class="p">,</span> <span class="s2">&quot;structureOK&quot;</span><span class="p">:</span> <span class="n">structureOK</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="WGCNA.fixDataStructure"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.fixDataStructure">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.fixDataStructure">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.fixDataStructure">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">fixDataStructure</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encapsulates single-set data in a wrapper that makes the data suitable for functions working on multiset data collections.</span>
 
 <span class="sd">        :param data: A dataframe, matrix or array with two dimensions to be encapsulated.</span>
@@ -2299,11 +2378,14 @@
             <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">}}</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
-<div class="viewcode-block" id="WGCNA.multiSetMEs"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.multiSetMEs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.multiSetMEs">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.multiSetMEs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">multiSetMEs</span><span class="p">(</span><span class="n">exprData</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">universalColors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useGenes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">impute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nPC</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                     <span class="n">align</span><span class="o">=</span><span class="s2">&quot;along average&quot;</span><span class="p">,</span> <span class="n">excludeGrey</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">subHubs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trapErrors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">softPower</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
                     <span class="n">grey</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates module eigengenes for several sets.</span>
 
 <span class="sd">        :param exprData: Expression data in a multi-set format</span>
@@ -2417,9 +2499,12 @@
         <span class="c1"># names(MEs) = names(exprData)</span>
         <span class="k">return</span> <span class="n">MEs</span></div>
 
-<div class="viewcode-block" id="WGCNA.consensusMEDissimilarityMajor"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.consensusMEDissimilarityMajor">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.consensusMEDissimilarityMajor">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.consensusMEDissimilarityMajor">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">consensusMEDissimilarityMajor</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">useAbs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;consensus&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates consensus dissimilarity (1-cor) of given module eigengenes realized in several sets.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;consensus&quot;</span><span class="p">,</span> <span class="s2">&quot;majority&quot;</span><span class="p">]</span>
@@ -2454,6 +2539,7 @@
 
         <span class="k">return</span> <span class="n">ConsDiss</span></div>
 
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">clustOrder</span><span class="p">(</span><span class="n">distM</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="s2">&quot;MEgrey&quot;</span><span class="p">):</span>
         <span class="n">distNames</span> <span class="o">=</span> <span class="n">distM</span><span class="o">.</span><span class="n">index</span>
@@ -2487,9 +2573,11 @@
                 <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">order</span>
 
-<div class="viewcode-block" id="WGCNA.orderMEs"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.orderMEs">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.orderMEs">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.orderMEs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">orderMEs</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="s2">&quot;MEgrey&quot;</span><span class="p">,</span> <span class="n">orderBy</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.</span>
 
 <span class="sd">        :param MEs: Module eigengenes in a multi-set format.</span>
@@ -2563,9 +2651,12 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">orderedMEs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="WGCNA.consensusOrderMEs"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.consensusOrderMEs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.consensusOrderMEs">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.consensusOrderMEs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">consensusOrderMEs</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">useAbs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="s2">&quot;MEgrey&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;consensus&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reorder given (eigen-)vectors such that similar ones (as measured by correlation) are next to each other.</span>
 
 <span class="sd">        :param MEs: Module eigengenes of several sets in a multi-set format</span>
@@ -2588,6 +2679,7 @@
         <span class="n">order</span> <span class="o">=</span> <span class="n">WGCNA</span><span class="o">.</span><span class="n">clustOrder</span><span class="p">(</span><span class="n">Diss</span><span class="p">,</span> <span class="n">greyLast</span><span class="p">,</span> <span class="n">greyName</span><span class="p">)</span>
         <span class="n">MEs</span> <span class="o">=</span> <span class="n">WGCNA</span><span class="o">.</span><span class="n">orderMEs</span><span class="p">(</span><span class="n">MEs</span><span class="p">,</span> <span class="n">greyLast</span><span class="o">=</span><span class="n">greyLast</span><span class="p">,</span> <span class="n">greyName</span><span class="o">=</span><span class="n">greyName</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="n">useSets</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">MEs</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">equalizeQuantilesFun</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">summaryType</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]):</span>
@@ -2646,12 +2738,14 @@
             <span class="n">Branches</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">TrueBranch</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">Branches</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="n">Branches</span>
 
-<div class="viewcode-block" id="WGCNA.mergeCloseModules"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.mergeCloseModules">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="WGCNA.mergeCloseModules">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.mergeCloseModules">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">mergeCloseModules</span><span class="p">(</span><span class="n">exprData</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">MEs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useSets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">impute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">checkDataFormat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                           <span class="n">unassdColor</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">useAbs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">equalizeQuantiles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">quantileSummary</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span>
                           <span class="n">consensusQuantile</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cutHeight</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">iterate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">relabel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">colorSeq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">getNewMEs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">getNewUnassdME</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trapErrors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merges modules in gene expression networks that are too close as measured by the correlation of their eigengenes.</span>
 
 <span class="sd">        :param exprData: Expression data, either a single data frame with rows corresponding to samples and columns to genes, or in a multi-set format.</span>
@@ -2850,8 +2944,11 @@
             <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;colors&quot;</span><span class="p">:</span> <span class="n">MergedNewColors</span><span class="p">,</span> <span class="s2">&quot;dendro&quot;</span><span class="p">:</span> <span class="n">Tree</span><span class="p">,</span> <span class="s2">&quot;oldDendro&quot;</span><span class="p">:</span> <span class="n">oldTree</span><span class="p">,</span> <span class="s2">&quot;cutHeight&quot;</span><span class="p">:</span> <span class="n">cutHeight</span><span class="p">,</span>
                     <span class="s2">&quot;oldMEs&quot;</span><span class="p">:</span> <span class="n">oldMEs</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="s2">&quot;newMEs&quot;</span><span class="p">:</span> <span class="n">newMEs</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="s2">&quot;allOK&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="WGCNA.saveWGCNA"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.saveWGCNA">[docs]</a>    <span class="k">def</span> <span class="nf">saveWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.saveWGCNA">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.saveWGCNA">[docs]</a>
+    <span class="k">def</span> <span class="nf">saveWGCNA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the current WGCNA in pickle format with the .p extension</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BOLD</span><span class="si">}{</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">Saving WGCNA as </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.p</span><span class="si">{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -2860,8 +2957,11 @@
         <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">picklefile</span><span class="p">)</span>
         <span class="n">picklefile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="WGCNA.getDatTraits"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getDatTraits">[docs]</a>    <span class="k">def</span> <span class="nf">getDatTraits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metaData</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.getDatTraits">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getDatTraits">[docs]</a>
+    <span class="k">def</span> <span class="nf">getDatTraits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metaData</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get data trait module base on samples information</span>
 
 <span class="sd">        :return: a dataframe contains information in suitable format for plotting module trait relationship heatmap</span>
@@ -2892,13 +2992,16 @@
 
         <span class="k">return</span> <span class="n">datTraits</span></div>
 
-<div class="viewcode-block" id="WGCNA.module_trait_relationships_heatmap"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.module_trait_relationships_heatmap">[docs]</a>    <span class="k">def</span> <span class="nf">module_trait_relationships_heatmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+
+<div class="viewcode-block" id="WGCNA.module_trait_relationships_heatmap">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.module_trait_relationships_heatmap">[docs]</a>
+    <span class="k">def</span> <span class="nf">module_trait_relationships_heatmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                            <span class="n">metaData</span><span class="p">,</span>
                                            <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;two-sided&#39;</span><span class="p">,</span>
                                            <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                            <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                            <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;module-traitRelationships&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot topic-trait relationship heatmap</span>
 
 <span class="sd">        :param metaData: traits you would like to see the relationship with topics (must be column name of datExpr.obs)</span>
@@ -2965,8 +3068,11 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">:</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outputPath</span><span class="si">}</span><span class="s2">figures/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">figureType</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.getModuleName"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getModuleName">[docs]</a>    <span class="k">def</span> <span class="nf">getModuleName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.getModuleName">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getModuleName">[docs]</a>
+    <span class="k">def</span> <span class="nf">getModuleName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get names of modules</span>
 
 <span class="sd">        :return: name of modules</span>
@@ -2974,8 +3080,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s1">&#39;moduleColors&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="WGCNA.getGeneModule"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getGeneModule">[docs]</a>    <span class="k">def</span> <span class="nf">getGeneModule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.getGeneModule">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getGeneModule">[docs]</a>
+    <span class="k">def</span> <span class="nf">getGeneModule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get list of genes corresponding to modules</span>
 
 <span class="sd">        :param moduleName: name of modules</span>
@@ -2994,8 +3103,11 @@
                 <span class="n">output</span><span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s1">&#39;moduleColors&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">color</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">output</span></div>
 
-<div class="viewcode-block" id="WGCNA.getModulesGene"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getModulesGene">[docs]</a>    <span class="k">def</span> <span class="nf">getModulesGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneIds</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.getModulesGene">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.getModulesGene">[docs]</a>
+    <span class="k">def</span> <span class="nf">getModulesGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneIds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get list of modules corresponding to gene(s)</span>
 
 <span class="sd">        :param geneIds: gene id</span>
@@ -3016,8 +3128,11 @@
 
         <span class="k">return</span> <span class="n">modules</span></div>
 
-<div class="viewcode-block" id="WGCNA.setMetadataColor"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.setMetadataColor">[docs]</a>    <span class="k">def</span> <span class="nf">setMetadataColor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">cmap</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.setMetadataColor">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.setMetadataColor">[docs]</a>
+    <span class="k">def</span> <span class="nf">setMetadataColor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">cmap</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        set color pallete for each group of metadata</span>
 
 <span class="sd">        :param col: name of metadata</span>
@@ -3031,8 +3146,11 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmap</span></div>
 
-<div class="viewcode-block" id="WGCNA.plotModuleEigenGene"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.plotModuleEigenGene">[docs]</a>    <span class="k">def</span> <span class="nf">plotModuleEigenGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.plotModuleEigenGene">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.plotModuleEigenGene">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotModuleEigenGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot module eigen gene figure in given module</span>
 
 <span class="sd">        :param moduleName: module name</span>
@@ -3046,7 +3164,10 @@
 
         <span class="n">height_ratios</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
-            <span class="n">height_ratios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">height_ratios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">height_ratios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">height_ratios</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
 
         <span class="n">modules</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s1">&#39;moduleColors&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -3081,7 +3202,8 @@
                     <span class="n">ax</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
                 <span class="n">ax_legend</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
                 <span class="n">ax_legend</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
-                <span class="n">axs_legend</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpecFromSubplotSpec</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">subplot_spec</span><span class="o">=</span><span class="n">ax_legend</span><span class="p">,</span>
+                <span class="n">axs_legend</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpecFromSubplotSpec</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span>
+                                                              <span class="n">subplot_spec</span><span class="o">=</span><span class="n">ax_legend</span><span class="o">.</span><span class="n">get_subplotspec</span><span class="p">(),</span>
                                                               <span class="n">height_ratios</span><span class="o">=</span><span class="n">height_ratios</span><span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
@@ -3089,15 +3211,28 @@
                     <span class="n">x</span> <span class="o">=</span> <span class="n">ind</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">3000</span> <span class="o">*</span> <span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">))</span>
                     <span class="n">color</span> <span class="o">=</span> <span class="n">sampleInfo</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-                    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-                        <span class="n">color</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">color</span> <span class="o">==</span> <span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="n">n</span><span class="p">],</span> <span class="n">color</span><span class="p">)</span>
-                        <span class="n">patch</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="n">n</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-                        <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
-                    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
-                    <span class="n">ax_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Subplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axs_legend</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">m</span><span class="p">)])</span>
-                    <span class="n">ax_legend</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">handles</span><span class="o">=</span><span class="n">handles</span><span class="p">)</span>
-                    <span class="n">ax_legend</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
-                    <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">ax_legend</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                            <span class="n">color</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">color</span> <span class="o">==</span> <span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="n">n</span><span class="p">],</span> <span class="n">color</span><span class="p">)</span>
+                            <span class="n">patch</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="n">n</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+                            <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+                        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+                        <span class="n">ax_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Subplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axs_legend</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">m</span><span class="p">)])</span>
+                        <span class="n">ax_legend</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">handles</span><span class="o">=</span><span class="n">handles</span><span class="p">)</span>
+                        <span class="n">ax_legend</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+                        <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">ax_legend</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(),</span>
+                                              <span class="n">s</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+
+                        <span class="n">ax_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Subplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axs_legend</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">m</span><span class="p">)])</span>
+                        <span class="n">clb</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mappable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadataColors</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
+                                               <span class="n">ax</span><span class="o">=</span><span class="n">ax_legend</span><span class="p">,</span>
+                                               <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span>
+                                               <span class="n">fraction</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+                        <span class="n">clb</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">capitalize</span><span class="p">())</span>
+                        <span class="n">ax_legend</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+                        <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">ax_legend</span><span class="p">)</span>
 
                 <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Module Eigengene for </span><span class="si">{</span><span class="n">moduleName</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
                 <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">2000</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2000</span><span class="p">)</span>
@@ -3137,8 +3272,11 @@
 
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="WGCNA.barplotModuleEigenGene"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.barplotModuleEigenGene">[docs]</a>    <span class="k">def</span> <span class="nf">barplotModuleEigenGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorBar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.barplotModuleEigenGene">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.barplotModuleEigenGene">[docs]</a>
+    <span class="k">def</span> <span class="nf">barplotModuleEigenGene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorBar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        bar plot of module eigen gene figure in given module</span>
 
 <span class="sd">        :param moduleName: module name</span>
@@ -3292,8 +3430,11 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">axs</span></div>
 
-<div class="viewcode-block" id="WGCNA.functional_enrichment_analysis"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.functional_enrichment_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">functional_enrichment_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">sets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.functional_enrichment_analysis">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.functional_enrichment_analysis">[docs]</a>
+    <span class="k">def</span> <span class="nf">functional_enrichment_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">sets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Doing functional enrichment analysis including GO, KEGG and REACTOME</span>
 
 <span class="sd">        :param type: indicate the type of databases which it should be one of &quot;GO&quot;, &quot;KEGG&quot;, &quot;REACTOME&quot;</span>
@@ -3364,14 +3505,17 @@
                                           <span class="n">p_value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">p_value</span><span class="p">))</span>
 
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">numGeneModule</span> <span class="o">-</span> <span class="n">token_result</span><span class="p">[</span><span class="s1">&#39;identifiersNotFound&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> out of </span><span class="si">{</span><span class="n">numGeneModule</span><span class="si">}</span><span class="s2"> genes (identifiers) in the sample were found in Reactome.&quot;</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">numGeneModule</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">token_result</span><span class="p">[</span><span class="s1">&#39;identifiersNotFound&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> out of </span><span class="si">{</span><span class="n">numGeneModule</span><span class="si">}</span><span class="s2"> genes (identifiers) in the sample were found in Reactome.&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token_result</span><span class="p">[</span><span class="s1">&#39;resourceSummary&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;pathways&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> pathways were hit by at least one of them, which </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">token_result</span><span class="p">[</span><span class="s1">&#39;pathways&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> of them have p-value less than </span><span class="si">{</span><span class="n">p_value</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Report was saved </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outputPath</span><span class="si">}</span><span class="s2">figures/</span><span class="si">{</span><span class="nb">type</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">figureType</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;For more information please visit https://reactome.org/PathwayBrowser/#/DTAB=AN&amp;ANALYSIS=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.updateGeneInfo"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.updateGeneInfo">[docs]</a>    <span class="k">def</span> <span class="nf">updateGeneInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.updateGeneInfo">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.updateGeneInfo">[docs]</a>
+    <span class="k">def</span> <span class="nf">updateGeneInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add/update genes info in datExpr and geneExpr anndata</span>
 
 <span class="sd">        :param geneInfo: gene information table you want to add to your data</span>
@@ -3385,8 +3529,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span> <span class="o">=</span> <span class="n">GeneExp</span><span class="o">.</span><span class="n">updateGeneInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="p">,</span> <span class="n">geneInfo</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span> <span class="o">=</span> <span class="n">GeneExp</span><span class="o">.</span><span class="n">updateGeneInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">geneInfo</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.updateSampleInfo"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.updateSampleInfo">[docs]</a>    <span class="k">def</span> <span class="nf">updateSampleInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.updateSampleInfo">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.updateSampleInfo">[docs]</a>
+    <span class="k">def</span> <span class="nf">updateSampleInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add/update metadata in datExpr and geneExpr anndata</span>
 
 <span class="sd">        :param sampleInfo: Sample information table you want to add to your data</span>
@@ -3400,10 +3547,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span> <span class="o">=</span> <span class="n">GeneExp</span><span class="o">.</span><span class="n">updateSampleInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span> <span class="o">=</span> <span class="n">GeneExp</span><span class="o">.</span><span class="n">updateSampleInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.softConnectivity"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.softConnectivity">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.softConnectivity">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.softConnectivity">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">softConnectivity</span><span class="p">(</span><span class="n">datExpr</span><span class="p">,</span> <span class="n">corOptions</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;unsigned&quot;</span><span class="p">,</span> <span class="n">power</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">blockSize</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span>
                          <span class="n">minNSamples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given expression data or a similarity, the function constructs the adjacency matrix and for each node calculates its connectivity, that is the sum of the adjacency to the other nodes.</span>
 
 <span class="sd">        :param datExpr: a data frame containing the expression data, with rows corresponding to samples and columns to genes.</span>
@@ -3461,9 +3611,12 @@
             <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">k</span></div>
 
-<div class="viewcode-block" id="WGCNA.intramodularConnectivity"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.intramodularConnectivity">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.intramodularConnectivity">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.intramodularConnectivity">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">intramodularConnectivity</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">scaleByMax</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates intramodular connectivity, i.e., connectivity of nodes to other nodes within the same module.</span>
 
 <span class="sd">        :param mat: adjacency which should be a square, symmetric matrix with entries between 0 and 1.</span>
@@ -3511,8 +3664,11 @@
             <span class="n">res</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
         <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="WGCNA.CalculateSignedKME"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.CalculateSignedKME">[docs]</a>    <span class="k">def</span> <span class="nf">CalculateSignedKME</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exprWeights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">MEWeights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.CalculateSignedKME">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.CalculateSignedKME">[docs]</a>
+    <span class="k">def</span> <span class="nf">CalculateSignedKME</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exprWeights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">MEWeights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculation of (signed) eigengene-based connectivity, also known as module membership.</span>
 
 <span class="sd">        :param exprWeights: optional weight matrix of observation weights for datExpr, of the same dimensions as datExpr</span>
@@ -3551,8 +3707,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">signedKME</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">datExpr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">datExpr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:],</span>
                                       <span class="n">index</span><span class="o">=</span><span class="n">datExpr</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">col</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.CoexpressionModulePlot"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.CoexpressionModulePlot">[docs]</a>    <span class="k">def</span> <span class="nf">CoexpressionModulePlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">,</span> <span class="n">numGenes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">numConnections</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">minTOM</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.CoexpressionModulePlot">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.CoexpressionModulePlot">[docs]</a>
+    <span class="k">def</span> <span class="nf">CoexpressionModulePlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modules</span><span class="p">,</span> <span class="n">numGenes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">numConnections</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">minTOM</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot Coexpression for given module</span>
 
 <span class="sd">        :param modules: name of modules you like to plot</span>
@@ -3630,8 +3789,11 @@
 
         <span class="n">net</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outputPath</span><span class="si">}</span><span class="s2">figures/network/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.PPI_network"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.PPI_network">[docs]</a>    <span class="k">def</span> <span class="nf">PPI_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">moduleName</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.PPI_network">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.PPI_network">[docs]</a>
+    <span class="k">def</span> <span class="nf">PPI_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">moduleName</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        retrieve an image of a STRING network of a neighborhood surrounding one or more proteins or ask STRING to show only the network of interactions between your input proteins.</span>
 
 <span class="sd">        :param species: NCBI taxon identifiers (e.g. Human is 9606, see: https://string-db.org/cgi/input.pl?input_page_active_form=organisms).</span>
@@ -3683,10 +3845,13 @@
                                     <span class="n">request_url</span><span class="o">=</span><span class="n">request_url</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="WGCNA.request_PPI_subset"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.request_PPI_subset">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.request_PPI_subset">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.request_PPI_subset">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">request_PPI_subset</span><span class="p">(</span><span class="n">params</span><span class="p">,</span>
                            <span class="n">request_url</span><span class="o">=</span><span class="s1">&#39;https://version-11-5.string-db.org/api/tsv-no-header/interaction_partners&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        request STRING to find genes interact with our gene list base</span>
 
 <span class="sd">        :param request_url: suitable url for using STRING API</span>
@@ -3711,10 +3876,13 @@
 
         <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="WGCNA.request_PPI"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.request_PPI">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.request_PPI">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.request_PPI">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">request_PPI</span><span class="p">(</span><span class="n">genes</span><span class="p">,</span>
                     <span class="n">species</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Getting all the STRING interaction partners of the protein set</span>
 
 <span class="sd">        :param genes: list of genes you want to find interaction for</span>
@@ -3755,12 +3923,15 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">gene1</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="si">}</span><span class="s2"> genes out of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">genes</span><span class="p">)</span><span class="si">}</span><span class="s2"> genes have PPI.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="WGCNA.request_PPI_image"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.request_PPI_image">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="WGCNA.request_PPI_image">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.request_PPI_image">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">request_PPI_image</span><span class="p">(</span><span class="n">params</span><span class="p">,</span>
                           <span class="n">genes</span><span class="p">,</span>
                           <span class="n">file_name</span><span class="p">,</span>
                           <span class="n">request_url</span><span class="o">=</span><span class="s1">&#39;https://version-11-5.string-db.org/api/image/network&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot PPI interaction along with link that direct you to the STRING webpage</span>
 
 <span class="sd">        :param params: parameters for requesting</span>
@@ -3787,8 +3958,11 @@
 
         <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WGCNA.top_n_hub_genes"><a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.top_n_hub_genes">[docs]</a>    <span class="k">def</span> <span class="nf">top_n_hub_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WGCNA.top_n_hub_genes">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.wgcna.WGCNA.top_n_hub_genes">[docs]</a>
+    <span class="k">def</span> <span class="nf">top_n_hub_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moduleName</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        find top n hub genes based on connectivity in given module</span>
 
 <span class="sd">        :param moduleName: name of module you want to top n hub genes</span>
@@ -3818,7 +3992,9 @@
         <span class="n">hub_genes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">hub_genes</span><span class="p">,</span> <span class="n">datExpr</span><span class="o">.</span><span class="n">var</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">hub_genes</span> <span class="o">=</span> <span class="n">hub_genes</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">n</span><span class="p">,</span> <span class="p">:]</span>
 
-        <span class="k">return</span> <span class="n">hub_genes</span></div></div>
+        <span class="k">return</span> <span class="n">hub_genes</span></div>
+</div>
+
 </pre></div>
 
     </div>
@@ -3833,7 +4009,7 @@
     </p>
     <p>
         &copy; Copyright 2022, Narges Rezaie.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.7.<br/>
     </p>
   </div>
 </footer>

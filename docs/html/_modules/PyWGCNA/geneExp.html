@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PyWGCNA.geneExp &#8212; PyWGCNA  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css?v=4468db6d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
 <meta charset='utf-8'>
@@ -102,7 +100,18 @@
 
 <div class="container">
   <div class="row">
-    <div class="body col-md-12 content" role="main">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
       
   <h1>Source code for PyWGCNA.geneExp</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -115,8 +124,10 @@
 <span class="n">np</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GeneExp"><a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp">[docs]</a><span class="k">class</span> <span class="nc">GeneExp</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GeneExp">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp">[docs]</a>
+<span class="k">class</span> <span class="nc">GeneExp</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class used to creat gene expression anndata along data trait including both genes and samples information.</span>
 
 <span class="sd">    :param species: species of the data you use i.e mouse, human</span>
@@ -175,9 +186,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">geneExpr</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">expressionList</span><span class="p">,</span> <span class="n">obs</span><span class="o">=</span><span class="n">sampleInfo</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">geneInfo</span><span class="p">)</span>
 
-<div class="viewcode-block" id="GeneExp.updateGeneInfo"><a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp.updateGeneInfo">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="GeneExp.updateGeneInfo">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp.updateGeneInfo">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">updateGeneInfo</span><span class="p">(</span><span class="n">geneExpr</span><span class="p">,</span> <span class="n">geneInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add/update genes info in expr anndata</span>
 
 <span class="sd">        :param geneExpr: gene expression data along with sample and genes/transcript information</span>
@@ -208,9 +221,12 @@
 
         <span class="k">return</span> <span class="n">geneExpr</span></div>
 
-<div class="viewcode-block" id="GeneExp.updateSampleInfo"><a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp.updateSampleInfo">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="GeneExp.updateSampleInfo">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.geneExp.GeneExp.updateSampleInfo">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">updateSampleInfo</span><span class="p">(</span><span class="n">geneExpr</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add/update metadata in expr anndata</span>
 
 <span class="sd">        :param geneExpr: gene expression data along with sample and genes/transcript information</span>
@@ -239,7 +255,9 @@
         <span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">same_columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">sampleInfo</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneExpr</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
 
-        <span class="k">return</span> <span class="n">geneExpr</span></div></div>
+        <span class="k">return</span> <span class="n">geneExpr</span></div>
+</div>
+
 </pre></div>
 
     </div>
@@ -254,7 +272,7 @@
     </p>
     <p>
         &copy; Copyright 2022, Narges Rezaie.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.7.<br/>
     </p>
   </div>
 </footer>

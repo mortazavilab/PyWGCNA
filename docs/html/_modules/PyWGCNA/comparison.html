@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PyWGCNA.comparison &#8212; PyWGCNA  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bootstrap-sphinx.css?v=4468db6d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
 <meta charset='utf-8'>
@@ -102,7 +100,18 @@
 
 <div class="container">
   <div class="row">
-    <div class="body col-md-12 content" role="main">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
       
   <h1>Source code for PyWGCNA.comparison</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -133,8 +142,10 @@
 <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[4m&quot;</span>
 
 
-<div class="viewcode-block" id="Comparison"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison">[docs]</a><span class="k">class</span> <span class="nc">Comparison</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Comparison">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison">[docs]</a>
+<span class="k">class</span> <span class="nc">Comparison</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class used to compare PyWGCNA to another PyWGCNA or any gene marker table</span>
 
 <span class="sd">    :param geneModules: gene modules of networks</span>
@@ -155,8 +166,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">P_value</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fraction</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Comparison.calculateJaccardSimilarity"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.calculateJaccardSimilarity">[docs]</a>    <span class="k">def</span> <span class="nf">calculateJaccardSimilarity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Comparison.calculateJaccardSimilarity">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.calculateJaccardSimilarity">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculateJaccardSimilarity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate jaccard similarity matrix along multiple networks</span>
 
 <span class="sd">        :return: dataframe containing jaccard similarity between all modules in all PyWGCNA objects</span>
@@ -193,8 +206,11 @@
 
         <span class="k">return</span> <span class="n">jaccard_similarity</span></div>
 
-<div class="viewcode-block" id="Comparison.calculateFraction"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.calculateFraction">[docs]</a>    <span class="k">def</span> <span class="nf">calculateFraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Comparison.calculateFraction">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.calculateFraction">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculateFraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate common fraction along multiple networks</span>
 
 <span class="sd">        :return: dataframe containing fraction between all modules in all netwroks</span>
@@ -230,8 +246,11 @@
 
         <span class="k">return</span> <span class="n">fraction</span></div>
 
-<div class="viewcode-block" id="Comparison.calculatePvalue"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.calculatePvalue">[docs]</a>    <span class="k">def</span> <span class="nf">calculatePvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Comparison.calculatePvalue">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.calculatePvalue">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculatePvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate pvalue of fraction along multiple networks</span>
 
 <span class="sd">        :return: dataframe containing pvalue between all modules in all netwroks</span>
@@ -275,15 +294,21 @@
 
         <span class="k">return</span> <span class="n">pvalue</span></div>
 
-<div class="viewcode-block" id="Comparison.compareNetworks"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.compareNetworks">[docs]</a>    <span class="k">def</span> <span class="nf">compareNetworks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Comparison.compareNetworks">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.compareNetworks">[docs]</a>
+    <span class="k">def</span> <span class="nf">compareNetworks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        compare Networks</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculateJaccardSimilarity</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculateFraction</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculatePvalue</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Comparison.plotHeatmapComparison"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.plotHeatmapComparison">[docs]</a>    <span class="k">def</span> <span class="nf">plotHeatmapComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+
+<div class="viewcode-block" id="Comparison.plotHeatmapComparison">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.plotHeatmapComparison">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotHeatmapComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">color</span><span class="o">=</span><span class="s2">&quot;jaccard_similarity&quot;</span><span class="p">,</span>
                               <span class="n">row_cluster</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                               <span class="n">col_cluster</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -291,7 +316,7 @@
                               <span class="n">plot_show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                               <span class="n">plot_format</span><span class="o">=</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span>
                               <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;heatmap_comparison&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot heatmap comparison</span>
 
 <span class="sd">        :param color: how to color heatmap (options: jaccard_similarity or fraction) default: jaccard_similarity</span>
@@ -347,7 +372,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Comparison.plotJaccardSimilarity"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.plotJaccardSimilarity">[docs]</a>    <span class="k">def</span> <span class="nf">plotJaccardSimilarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+
+<div class="viewcode-block" id="Comparison.plotJaccardSimilarity">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.plotJaccardSimilarity">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotJaccardSimilarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                               <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
                               <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -355,7 +383,7 @@
                               <span class="n">plot_show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                               <span class="n">plot_format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
                               <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;jaccard_similarity&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot jaccard similarity matrix as a network</span>
 
 <span class="sd">        :param color: if you want to color nodes for each networks separately</span>
@@ -433,7 +461,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Comparison.plotBubbleComparison"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.plotBubbleComparison">[docs]</a>    <span class="k">def</span> <span class="nf">plotBubbleComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+
+<div class="viewcode-block" id="Comparison.plotBubbleComparison">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.plotBubbleComparison">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotBubbleComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                              <span class="n">bubble_size</span><span class="o">=</span><span class="s2">&quot;jaccard_similarity&quot;</span><span class="p">,</span>
                              <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
                              <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -444,7 +475,7 @@
                              <span class="n">plot_show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                              <span class="n">plot_format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
                              <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;bubble_comparison&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        plot comparison matrix as a bubble plot</span>
 
 <span class="sd">        :param bubble_size: which information you want to use for size of bubble (options: jaccard_similarity or fraction) default: jaccard_similarity</span>
@@ -484,7 +515,7 @@
         <span class="k">elif</span> <span class="n">bubble_size</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
             <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fraction</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Color is not correct!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bubble_size=</span><span class="si">{</span><span class="n">bubble_size</span><span class="si">}</span><span class="s2"> is not correct!&quot;</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="n">P_value</span><span class="p">[</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -524,6 +555,10 @@
         <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
         <span class="n">sm</span><span class="o">.</span><span class="n">set_array</span><span class="p">([])</span>
 
+        <span class="c1"># Remove the legend and add a colorbar</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;-log10(P_value)&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+
         <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -546,24 +581,26 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-        <span class="c1"># Remove the legend and add a colorbar</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;-log10(P_value)&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bubble_size</span> <span class="o">==</span> <span class="s2">&quot;jaccard_similarity&quot;</span><span class="p">:</span>
+            <span class="n">legend_title</span> <span class="o">=</span> <span class="s2">&quot;Jaccard Index&quot;</span>
+        <span class="k">elif</span> <span class="n">bubble_size</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+            <span class="n">legend_title</span> <span class="o">=</span> <span class="s2">&quot;Fraction&quot;</span>
 
         <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
         <span class="n">entries_to_skip</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">handles</span> <span class="o">=</span> <span class="n">handles</span><span class="p">[</span><span class="n">entries_to_skip</span><span class="p">:]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">entries_to_skip</span><span class="p">:]</span>
-        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">handles</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-            <span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">get_sizes</span><span class="p">()]</span>
-            <span class="n">h</span><span class="o">.</span><span class="n">set_sizes</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span>
+        <span class="c1">#for h in handles[1:]:</span>
+        <span class="c1">#    sizes = [s for s in h.get_sizes()]</span>
+        <span class="c1">#    h.set_sizes(sizes)</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
         <span class="n">legend_size</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span>
-                                <span class="n">title</span><span class="o">=</span><span class="n">bubble_size</span><span class="p">,</span>
-                                <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.04</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                <span class="n">title</span><span class="o">=</span><span class="n">legend_title</span><span class="p">,</span>
+                                <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                                 <span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                                 <span class="n">borderaxespad</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
-                                <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                                <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                                <span class="n">title_fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">legend_size</span><span class="p">)</span>
 
         <span class="n">legend_elements</span> <span class="o">=</span> <span class="p">[]</span>
@@ -573,11 +610,12 @@
                 <span class="n">legend_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
             <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">legend_elements</span><span class="p">,</span>
-                      <span class="n">title</span><span class="o">=</span><span class="s1">&#39;networks&#39;</span><span class="p">,</span>
+                      <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Networks&#39;</span><span class="p">,</span>
                       <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.04</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
                       <span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                       <span class="n">borderaxespad</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
-                      <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                      <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                      <span class="n">title_fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">plot_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -586,9 +624,12 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Comparison.jaccard"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.jaccard">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Comparison.jaccard">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.jaccard">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">jaccard</span><span class="p">(</span><span class="n">list1</span><span class="p">,</span> <span class="n">list2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate jaccard similarity matrix for two lists</span>
 
 <span class="sd">        :param list1: first list containing the data</span>
@@ -603,8 +644,11 @@
         <span class="n">union</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">list1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">list2</span><span class="p">))</span> <span class="o">-</span> <span class="n">intersection</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span> <span class="o">/</span> <span class="n">union</span></div>
 
-<div class="viewcode-block" id="Comparison.saveComparison"><a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.saveComparison">[docs]</a>    <span class="k">def</span> <span class="nf">saveComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;comparison&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Comparison.saveComparison">
+<a class="viewcode-back" href="../../api.html#PyWGCNA.comparison.Comparison.saveComparison">[docs]</a>
+    <span class="k">def</span> <span class="nf">saveComparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;comparison&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        save comparison object as comparison.p near to the script</span>
 
 <span class="sd">        :param name: name of the pickle file (default: comparison.p)</span>
@@ -615,7 +659,9 @@
 
         <span class="n">picklefile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.p&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
         <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">picklefile</span><span class="p">)</span>
-        <span class="n">picklefile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+        <span class="n">picklefile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</div>
+
 </pre></div>
 
     </div>
@@ -630,7 +676,7 @@
     </p>
     <p>
         &copy; Copyright 2022, Narges Rezaie.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.7.<br/>
     </p>
   </div>
 </footer>
