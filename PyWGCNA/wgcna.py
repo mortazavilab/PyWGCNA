@@ -3123,7 +3123,8 @@ class WGCNA(GeneExp):
                     ax.remove()
                 ax_legend = fig.add_subplot(gs[:, 1])
                 ax_legend.axis('off')
-                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, subplot_spec=ax_legend,
+                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, 
+                                                              subplot_spec=ax_legend.get_subplotspec(),
                                                               height_ratios=height_ratios)
 
                 ind = [i for i in range(cat.shape[0])]
