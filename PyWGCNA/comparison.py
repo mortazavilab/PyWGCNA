@@ -114,7 +114,7 @@ class Comparison:
                             list2 = self.geneModules[network2].index[
                                 self.geneModules[network2].moduleColors == module2].tolist()
                             num = np.intersect1d(list1, list2)
-                            fraction.loc[f"{network1}:{module1}", f"{network2}:{module2}"] = len(num) / len(list2) * 100
+                            fraction.loc[f"{network1}:{module1}", f"{network2}:{module2}"] = len(num) / len(list2)
                 else:
                     modules = self.geneModules[network1].moduleColors.unique().tolist()
                     for module in modules:
@@ -123,11 +123,13 @@ class Comparison:
 
         return fraction
 
-    def calculatePvalue(self):
+    def calculatePvalue(self, alternative='greater'):
         """
-        Calculate pvalue of fraction along multiple networks
-
-        :return: dataframe containing pvalue between all modules in all netwroks
+        Calculate pvalue of modules overlap along multiple networks using fisher exact test
+        
+        :param alternative: {'two-sided', 'less', 'greater'}, alternative hypothesis, use 'greater' to detect overlapping modules, 'less' to detect mutually exclusive modules, 'two-sided' to detect both (default: greater)
+        :type alternative: str
+        :return: dataframe containing pvalue between all modules in all networks
         :rtype: pandas dataframe
         """
 
@@ -158,11 +160,11 @@ class Comparison:
                             list2 = self.geneModules[network2].index[
                                 self.geneModules[network2].moduleColors == module2].tolist()
                             number = self.fraction.loc[f"{network1}:{module1}", f"{network2}:{module2}"] * len(
-                                list2) / 100
+                                list2)
                             table = np.array(
                                 [[nGenes - len(list1) - len(list2) + number, len(list1) - number],
                                  [len(list2) - number, number]])
-                            oddsr, p = fisher_exact(table, alternative='two-sided')
+                            oddsr, p = fisher_exact(table, alternative=alternative)
                             pvalue.loc[f"{network1}:{module1}", f"{network2}:{module2}"] = p
         self.P_value = pvalue
 
