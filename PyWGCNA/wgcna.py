@@ -82,7 +82,7 @@ class WGCNA(GeneExp):
     :type outputPath: str
     :param anndata: if the expression data is in anndata format you should pass it through this parameter. X should be expression matrix. var is a gene information and obs is a sample information.
     :type anndata: anndata
-    :param geneExp: expression matrix which genes are in the rows and samples are columns
+    :param geneExp: expression matrix which genes are in the columns and samples are rows
     :type geneExp: pandas dataframe
     :param geneExpPath: path of expression matrix
     :type geneExpPath: str
@@ -1749,7 +1749,7 @@ class WGCNA(GeneExp):
                     if nSmallClusters > 0:
                         if pamRespectsDendro:
                             for sclust in SmallLabLevs[SmallLabLevs != 0]:
-                                InCluster = list(range(nPoints))[SmallLabels == sclust]
+                                InCluster = np.where(SmallLabels == sclust)[0].tolist()
                                 onBr = pd.unique(onBranch[InCluster])
                                 if len(onBr) > 1:
                                     msg = "Internal error: objects in a small cluster are marked to belong\n" \
@@ -1795,23 +1795,25 @@ class WGCNA(GeneExp):
 
                 Unlabeled = np.where(Colors == 0)[0].tolist()
                 if len(Unlabeled) > 0:
-                    if pamRespectsDendro:
-                        unlabOnBranch = Unlabeled[onBranch[Unlabeled] > 0]
-                        for obj in unlabOnBranch:
+                    for obj in Unlabeled:
+                        if pamRespectsDendro:
                             onBr = onBranch[obj]
-                            basicOnBranch = branch_basicClusters[onBr - 1]
-                            labelsOnBranch = branchLabels[basicOnBranch]
-                            useObjects = ColorsX in np.unique(labelsOnBranch)
-                            useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
-                            UnassdToClustDist = distM.iloc[useObjects, obj].groupby(
-                                'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
-                            nearest = UnassdToClustDist.idxmin().astype(int) - 1
-                            NearestClusterDist = UnassdToClustDist[nearest]
-                            nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
-                            if np.logical_or(np.all(NearestClusterDist < ClusterDiam[nearest]),
+                            if onBr > 0:
+                                basicOnBranch = branch_basicClusters[onBr - 1]
+                                labelsOnBranch = branchLabels[basicOnBranch - 1]
+                                useObjects = ColorsX in np.unique(labelsOnBranch)
+                                useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
+                                UnassdToClustDist = distM.iloc[useObjects, obj].groupby(
+                                    'useColorsFac').mean()  # tapply(distM[useObjects, obj], useColorsFac, mean)
+                                nearest = UnassdToClustDist.idxmin().astype(int) - 1
+                                NearestClusterDist = UnassdToClustDist[nearest]
+                                nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
+                                if np.logical_or(np.all(NearestClusterDist < ClusterDiam[nearest]),
                                              NearestClusterDist < maxPamDist).tolist()[0]:
-                                Colors[obj] = nearest
-                                nPAMed = nPAMed + 1
+                                    Colors[obj] = nearest
+                                    nPAMed = nPAMed + 1
+                            else:
+                                labelsOnBranch = None
                     else:
                         useObjects = np.where(ColorsX != 0)[0].tolist()
                         useColorsFac = ColorsX[useObjects]  # pd.Categorical(ColorsX[useObjects])
