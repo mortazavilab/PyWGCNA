@@ -171,7 +171,7 @@ class WGCNA(GeneExp):
                  powers=None, RsquaredCut=0.9, MeanCut=100,
                  networkType="signed hybrid", TOMType="signed",
                  minModuleSize=50, naColor="grey", cut=float('inf'),
-                 MEDissThres=0.2,
+                 MEDissThres=0.2, spearman = False,
                  species=None, level='gene', anndata=None, geneExp=None,
                  geneExpPath=None, sep=' ',
                  save=False, outputPath=None):
@@ -198,6 +198,7 @@ class WGCNA(GeneExp):
         self.datTraits = None
 
         self.networkType = networkType
+        self.spearman = spearman
 
         # Choose a set of soft-thresholding powers
         self.RsquaredCut = RsquaredCut
@@ -287,7 +288,8 @@ class WGCNA(GeneExp):
         # Call the network topology analysis function
         self.power, self.sft = WGCNA.pickSoftThreshold(self.datExpr.X, RsquaredCut=self.RsquaredCut,
                                                        MeanCut=self.MeanCut, powerVector=self.powers,
-                                                       networkType=self.networkType)
+                                                       networkType=self.networkType,
+                                                       spearman = self.spearman)
 
         fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
         ax[0].plot(self.sft['Power'], -1 * np.sign(self.sft['slope']) * self.sft['SFT.R.sq'], 'o')
@@ -313,7 +315,8 @@ class WGCNA(GeneExp):
             fig.savefig(self.outputPath + '/figures/summarypower.png')
 
         # Set Power
-        self.adjacency = WGCNA.adjacency(self.datExpr.X, power=self.power, adjacencyType=self.networkType)
+        self.adjacency = WGCNA.adjacency(self.datExpr.X, power=self.power, adjacencyType=self.networkType,
+                                         spearman = self.spearman)
 
         # Turn adjacency into topological overlap
         self.TOM = WGCNA.TOMsimilarity(self.adjacency, TOMType=self.TOMType)
@@ -338,7 +341,11 @@ class WGCNA(GeneExp):
         if 'MEgrey' in self.MEs.columns:
             self.MEs.drop(['MEgrey'], axis=1, inplace=True)
         # Calculate dissimilarity of module eigengenes
-        MEDiss = pd.DataFrame(1 - np.corrcoef(self.MEs, rowvar=False), index=self.MEs.columns, columns=self.MEs.columns)
+        if self.spearman:
+            MEDiss =  1 - self.MEs.corr(method='spearman')
+        else:
+            MEDiss = 1 - self.MEs.corr()
+
         # Cluster module eigengenes
         a = squareform(MEDiss, checks=False)
         METree = WGCNA.hclust(a, method="average")
@@ -639,7 +646,7 @@ class WGCNA(GeneExp):
     @staticmethod
     def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, MeanCut=100, powerVector=None, nBreaks=10,
                           blockSize=None, corOptions=None, networkType="unsigned", moreNetworkConcepts=False,
-                          gcInterval=None):
+                          gcInterval=None, spearman = False):
         if powerVector is None:
             powerVector = list(range(1, 11)) + list(range(1, 21, 2))
         powerVector = np.sort(powerVector)
@@ -654,6 +661,9 @@ class WGCNA(GeneExp):
 
         print(f"{OKCYAN}pickSoftThreshold: calculating connectivity for given powers...{ENDC}")
 
+        if spearman and dataIsExpr:
+            # use spearman(x) = pearson(rank(x))
+            data = data.rank()
         if not dataIsExpr:
             WGCNA.checkSimilarity(data)
             if any(np.diag(data) != 1):
@@ -843,7 +853,7 @@ class WGCNA(GeneExp):
 
     @staticmethod
     def adjacency(datExpr, selectCols=None, adjacencyType="unsigned", power=6, corOptions=pd.DataFrame(), weights=None,
-                  weightArgNames=None):
+                  weightArgNames=None, spearman = False):
         print(f"{OKCYAN}calculating adjacency matrix ...{ENDC}")
         if weightArgNames is None:
             weightArgNames = ["weights.x", "weights.y"]
@@ -869,7 +879,8 @@ class WGCNA(GeneExp):
                 weightOpt = pd.DataFrame()
             else:
                 weightOpt = ""
-
+        if spearman:
+            datExpr = datExpr.rank()
         if selectCols is None:
             cor_mat = np.corrcoef(
                 datExpr.T)  # cor_mat = do.call(corFnc.fnc, c(list(x = datExpr), weightOpt, corOptions))
