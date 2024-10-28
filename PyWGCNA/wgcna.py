@@ -66,6 +66,7 @@ ENDC = "\033[0m"
 BOLD = "\033[1m"
 UNDERLINE = "\033[4m"
 
+
 class WGCNA(GeneExp):
     """
     A class used to do weighted gene co-expression network analysis.
@@ -303,7 +304,8 @@ class WGCNA(GeneExp):
         kwargs = dict()
         if 'adjacency' in list(kwargs_function.keys()):
             kwargs = kwargs_function['adjacency']
-        self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType, **kwargs)
+        self.adjacency = WGCNA.adjacency(self.datExpr.to_df(), power=self.power, adjacencyType=self.networkType,
+                                         **kwargs)
         self.adjacency = pd.DataFrame(self.adjacency,
                                       columns=self.datExpr.to_df().columns,
                                       index=self.datExpr.to_df().columns)
@@ -326,7 +328,8 @@ class WGCNA(GeneExp):
         kwargs = dict()
         if 'cutreeHybrid' in list(kwargs_function.keys()):
             kwargs = kwargs_function['cutreeHybrid']
-        dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, minClusterSize=self.minModuleSize, **kwargs)
+        dynamicMods = WGCNA.cutreeHybrid(dendro=self.geneTree, distM=dissTOM, minClusterSize=self.minModuleSize,
+                                         **kwargs)
 
         # Convert numeric labels into colors
         kwargs = dict()
@@ -384,7 +387,8 @@ class WGCNA(GeneExp):
         kwargs = dict()
         if 'moduleEigengenes' in list(kwargs_function.keys()):
             kwargs = kwargs_function['moduleEigengenes']
-        self.datME = WGCNA.moduleEigengenes(self.datExpr.to_df(), self.datExpr.var['moduleColors'], **kwargs)['eigengenes']
+        self.datME = WGCNA.moduleEigengenes(self.datExpr.to_df(), self.datExpr.var['moduleColors'], **kwargs)[
+            'eigengenes']
         if 'MEgrey' in self.datME.columns:
             self.datME.drop(['MEgrey'], axis=1, inplace=True)
 
@@ -778,9 +782,8 @@ class WGCNA(GeneExp):
     # Call the network topology analysis function
     @staticmethod
     def pickSoftThreshold(data, dataIsExpr=True, weights=None, RsquaredCut=0.9, MeanCut=100, powerVector=None,
-                          nBreaks=10,
-                          blockSize=None, corOptions=None, networkType="unsigned", moreNetworkConcepts=False,
-                          gcInterval=None):
+                          nBreaks=10, blockSize=None, corOptions=None, networkType="unsigned",
+                          moreNetworkConcepts=False, gcInterval=None):
         """
         Analysis of scale free topology for multiple soft thresholding powers.
 
@@ -971,11 +974,11 @@ class WGCNA(GeneExp):
         if dim[0] != dim[1]:
             sys.exit("adjacency is not square")
 
-        if all(np.max(np.abs(adjMat - adjMat.transpose())) > 1e-12):
+        if np.max(np.abs(adjMat - adjMat.transpose())) > 1e-12:
             sys.exit("adjacency is not symmetric")
 
-        if all(np.min(adjMat) < min) or all(np.max(adjMat) > max):
-            sys.exit(("some entries are not between", min, "and", max))
+        if np.min(adjMat) < min or np.max(adjMat) > max:
+            sys.exit(f"some entries are not between {min} and {max}.")
 
     @staticmethod
     def calBlockSize(matrixSize, rectangularBlocks=True, maxMemoryAllocation=None, overheadFactor=3):
@@ -1809,7 +1812,7 @@ class WGCNA(GeneExp):
                                 NearestClusterDist = UnassdToClustDist[nearest]
                                 nearestLabel = pd.to_numeric(useColorsFac.categories[nearest])
                                 if np.logical_or(np.all(NearestClusterDist < ClusterDiam[nearest]),
-                                             NearestClusterDist < maxPamDist).tolist()[0]:
+                                                 NearestClusterDist < maxPamDist).tolist()[0]:
                                     Colors[obj] = nearest
                                     nPAMed = nPAMed + 1
                             else:
@@ -2585,8 +2588,8 @@ class WGCNA(GeneExp):
         :type getNewUnassdME: bool
         :param trapErrors: Controls whether computational errors in calculating module eigengenes, their dissimilarity, and merging trees should be trapped. If TRUE, errors will be trapped and the function will return the input colors. If FALSE, errors will cause the function to stop. (defualt = False)
 
-        :return: A dictionaty contains: "colors": Color labels for the genes corresponding to merged modules. The function attempts to mimic the mode of the input colors: if the input colors is numeric, character and factor, respectively, so is the output. Note, however, that if the fnction performs relabeling, a standard sequence of labels will be used: integers starting at 1 if the input colors is numeric, and a sequence of color labels otherwise. "dendro": Hierarchical clustering dendrogram (average linkage) of the eigengenes of the most recently computed tree. If iterate was set TRUE, this will be the dendrogram of the merged modules, otherwise it will be the dendrogram of the original modules. "oldDendro": Hierarchical clustering dendrogram (average linkage) of the eigengenes of the original modules. "cutHeight": The input cutHeight. "oldMEs": Module eigengenes of the original modules in the sets given by useSets. "newMEs": Module eigengenes of the merged modules in the sets given by useSets. "allOK": A boolean set to TRUE.
-        :raises trapErrors==TRUE: A dictionaty contains: "colors": A copy of the input colors. "allOK": a boolean set to FALSE.
+        :return: A dictionary contains: "colors": Color labels for the genes corresponding to merged modules. The function attempts to mimic the mode of the input colors: if the input colors is numeric, character and factor, respectively, so is the output. Note, however, that if the fnction performs relabeling, a standard sequence of labels will be used: integers starting at 1 if the input colors is numeric, and a sequence of color labels otherwise. "dendro": Hierarchical clustering dendrogram (average linkage) of the eigengenes of the most recently computed tree. If iterate was set TRUE, this will be the dendrogram of the merged modules, otherwise it will be the dendrogram of the original modules. "oldDendro": Hierarchical clustering dendrogram (average linkage) of the eigengenes of the original modules. "cutHeight": The input cutHeight. "oldMEs": Module eigengenes of the original modules in the sets given by useSets. "newMEs": Module eigengenes of the merged modules in the sets given by useSets. "allOK": A boolean set to TRUE.
+        :raises trapErrors==TRUE: A dictionary contains: "colors": A copy of the input colors. "allOK": a boolean set to FALSE.
         :rtype: dict
         """
         if all(isinstance(x, int) for x in colors):
@@ -2751,7 +2754,7 @@ class WGCNA(GeneExp):
         """
         print(f"{BOLD}{OKBLUE}Saving WGCNA as {self.name}.p{ENDC}")
 
-        picklefile = open(self.outputPath + self.name + '.p', 'wb')
+        picklefile = open(f"{self.outputPath}{self.name}.p", 'wb')
         pickle.dump(self, picklefile)
         picklefile.close()
 
@@ -3000,13 +3003,13 @@ class WGCNA(GeneExp):
                         fig.add_subplot(ax_legend)
                     else:
                         axs[0, 0].scatter(x, y, c=color, cmap=self.metadataColors[m].get_cmap(),
-                                              s=1600, marker='s')
+                                          s=1600, marker='s')
 
                         ax_legend = plt.Subplot(fig, axs_legend[len(metadata) - 1 - metadata.index(m)])
                         clb = fig.colorbar(mappable=self.metadataColors[m],
-                                               ax=ax_legend,
-                                               orientation='horizontal',
-                                               fraction=0.9)
+                                           ax=ax_legend,
+                                           orientation='horizontal',
+                                           fraction=0.9)
                         clb.ax.set_title(m.capitalize())
                         ax_legend.axis('off')
                         fig.add_subplot(ax_legend)
@@ -3125,7 +3128,7 @@ class WGCNA(GeneExp):
                     ax.remove()
                 ax_legend = fig.add_subplot(gs[:, 1])
                 ax_legend.axis('off')
-                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1, 
+                axs_legend = gridspec.GridSpecFromSubplotSpec(len(metadata), 1,
                                                               subplot_spec=ax_legend.get_subplotspec(),
                                                               height_ratios=height_ratios)
 
