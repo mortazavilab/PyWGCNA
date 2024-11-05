@@ -1913,7 +1913,7 @@ class WGCNA(GeneExp):
 
         colors = np.empty(nLabels.shape[0], dtype=object)
         fin = [v is not None for v in nLabels.Value]
-        colors[np.where(not fin)[0].tolist()] = naColor
+        colors[np.where(np.logical_not(fin))[0].tolist()] = naColor
         finLabels = nLabels.loc[fin, :]
         colors[fin] = [extColorSeq[x] for x in finLabels.Value]
 
