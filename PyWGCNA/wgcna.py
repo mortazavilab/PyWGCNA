@@ -3249,7 +3249,7 @@ class WGCNA(GeneExp):
         elif type == "KEGG" and sets is None:
             sets = ["KEGG_2016"]
 
-        geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]
+        geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName].astype(str)
         geneModule = geneModule.fillna("").values.tolist()
 
         if type in ["GO", "KEGG"]:
