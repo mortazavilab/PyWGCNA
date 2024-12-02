@@ -14,7 +14,7 @@ from scipy.stats import t
 from scipy.stats import rankdata
 from statsmodels.formula.api import ols
 from matplotlib import colors as mcolors
-from sklearn.impute import KNNImputer
+from sklearn.impute import KNNImputer 
 from sklearn.preprocessing import scale
 import matplotlib.pyplot as plt
 import pickle
@@ -3093,7 +3093,7 @@ class WGCNA(GeneExp):
                 df['all'] = ''
                 for m in metadata:
                     df[m] = sampleInfo[m].values
-                    df[m] = df[m].astype(str).fillna("missing").str.replace('_', '-') # Replace underscores with dashes # PULL REQUEST
+                    df[m] = df[m].astype(str).str.replace('_', '-') # Replace underscores with dashes # PULL REQUEST
                     df['all'] = df['all'] + '_' + df[m].astype(str)
                 df['all'] = df['all'].apply(lambda x: x[1:])
                 cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
