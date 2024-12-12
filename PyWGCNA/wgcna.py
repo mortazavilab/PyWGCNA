@@ -3093,6 +3093,7 @@ class WGCNA(GeneExp):
                 df['all'] = ''
                 for m in metadata:
                     df[m] = sampleInfo[m].values
+                    df.sort_values(by=m, inplace=True)
                     df['all'] = df['all'] + '_' + df[m].astype(str)
                 df['all'] = df['all'].apply(lambda x: x[1:])
                 cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
@@ -3195,6 +3196,7 @@ class WGCNA(GeneExp):
                 for i in range(len(metadata)):
                     df = ME.copy(deep=True)
                     df[metadata[i]] = sampleInfo[metadata[i]].values
+                    df.sort_values(by=metadata[i], inplace=True)
                     palette = self.metadataColors[metadata[i]]
                     bar = sns.barplot(x=metadata[i], y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1,
                                       ax=axs[i])
