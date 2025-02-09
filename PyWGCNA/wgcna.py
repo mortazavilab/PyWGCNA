@@ -14,7 +14,7 @@ from scipy.stats import t
 from scipy.stats import rankdata
 from statsmodels.formula.api import ols
 from matplotlib import colors as mcolors
-from sklearn.impute import KNNImputer
+from sklearn.impute import KNNImputer 
 from sklearn.preprocessing import scale
 import matplotlib.pyplot as plt
 import pickle
@@ -3101,10 +3101,14 @@ class WGCNA(GeneExp):
                 for m in metadata:
                     df[m] = sampleInfo[m].values
                     df.sort_values(by=m, inplace=True)
+                    df[m] = df[m].astype(str).str.replace('_', '-') # Replace underscores with dashes
                     df['all'] = df['all'] + '_' + df[m].astype(str)
                 df['all'] = df['all'].apply(lambda x: x[1:])
                 cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
                 cat[metadata] = cat['all'].str.split('_', expand=True)
+                for col in cat.columns: # switch back dashes to underscores
+                    cat[col] = cat[col].str.replace('-', '_') # switch back dashes to underscores
+                df['all'] = df['all'].astype(str).str.replace('-', '_') # switch back dashes to underscores
                 ybar = df[['all', 'eigengeneExp']].groupby(['all']).mean()['eigengeneExp']
                 ebar = df[['all', 'eigengeneExp']].groupby(['all']).std()['eigengeneExp']
                 ybar = ybar.loc[cat['all']]
@@ -3258,7 +3262,7 @@ class WGCNA(GeneExp):
         elif type == "KEGG" and sets is None:
             sets = ["KEGG_2016"]
 
-        geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName]
+        geneModule = self.datExpr.var.gene_name[self.datExpr.var.moduleColors == moduleName].astype(str)
         geneModule = geneModule.fillna("").values.tolist()
 
         if type in ["GO", "KEGG"]:
