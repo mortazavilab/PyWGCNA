@@ -75,7 +75,7 @@ class WGCNA(GeneExp):
     :type name: str
     :param save: indicate if you want to save result of important steps in a figure directory (default: False)
     :type save: bool
-    :param species: species of the data you use i.e mouse, human
+    :param species: species of the data you use. Available species for Enrichr API: ‘Human’, ‘Mouse’, ‘Yeast’, ‘Fly’, ‘Fish’, ‘Worm’
     :type species: str
     :param level: which type of data you use including gene, transcript (default: gene)
     :type level: str
@@ -248,7 +248,9 @@ class WGCNA(GeneExp):
             plt.ylabel('Distances')
             plt.tight_layout()
             if self.save:
-                plt.savefig(f"{self.outputPath}figures/sample_clustering_cleaning.{self.figureType}")
+                plt.savefig(f"{self.outputPath}figures/"\
+                            f"{self.name}_sample_clustering_cleaning.{self.figureType}",
+                            bbox_inches='tight')
 
         # Determine cluster under the line
         clust = WGCNA.cutree(sampleTree, cutHeight=self.cut)
@@ -298,7 +300,8 @@ class WGCNA(GeneExp):
 
         fig.tight_layout()
         if self.save:
-            fig.savefig(f"{self.outputPath}figures/summary_power.{self.figureType}")
+            fig.savefig(f"{self.outputPath}figures/{self.name}_summary_power.{self.figureType}", \
+                        bbox_inches='tight')
 
         # Set Power
         kwargs = dict()
@@ -363,7 +366,8 @@ class WGCNA(GeneExp):
             plt.ylabel('')
             plt.tight_layout()
             if self.save:
-                plt.savefig(f"{self.outputPath}figures/eigenesgenes.{self.figureType}")
+                plt.savefig(f"{self.outputPath}figures/{self.name}_eigenesgenes.{self.figureType}", \
+                            bbox_inches='tight')
 
             # Call an automatic merging function
             kwargs = dict()
@@ -429,7 +433,7 @@ class WGCNA(GeneExp):
         self.module_trait_relationships_heatmap(metaData=self.datExpr.obs.columns.tolist(),
                                                 alternative=alternative,
                                                 show=show,
-                                                file_name='module-traitRelationships')
+                                                file_name=f'{self.name}_module-traitRelationships')
         print("\tDone..\n")
 
         print(f"{OKCYAN}Adding (signed) eigengene-based connectivity (module membership) ...{ENDC}")
@@ -2861,7 +2865,8 @@ class WGCNA(GeneExp):
         if not show:
             plt.close(fig)
         if self.save:
-            fig.savefig(f"{self.outputPath}figures/{file_name}.{self.figureType}")
+            fig.savefig(f"{self.outputPath}figures/{file_name}.{self.figureType}", \
+                        bbox_inches='tight')
 
     def getModuleName(self):
         """
@@ -3044,7 +3049,9 @@ class WGCNA(GeneExp):
                             ax=axs[1])
 
             if self.save:
-                fig.savefig(f"{self.outputPath}figures/module_heatmap_eigengene_{moduleName}.{self.figureType}")
+                fig.savefig(f"{self.outputPath}figures/"\
+                            f"{self.name}_module_heatmap_eigengene_{moduleName}.{self.figureType}", \
+                            bbox_inches='tight')
             if not show:
                 plt.close(fig)
             else:
@@ -3093,14 +3100,15 @@ class WGCNA(GeneExp):
                 df['all'] = ''
                 for m in metadata:
                     df[m] = sampleInfo[m].values
-                    df[m] = df[m].astype(str).str.replace('_', '-') # Replace underscores with dashes # PULL REQUEST
+                    df.sort_values(by=m, inplace=True)
+                    df[m] = df[m].astype(str).str.replace('_', '-') # Replace underscores with dashes
                     df['all'] = df['all'] + '_' + df[m].astype(str)
                 df['all'] = df['all'].apply(lambda x: x[1:])
                 cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
                 cat[metadata] = cat['all'].str.split('_', expand=True)
-                for col in cat.columns: # switch back dashes to underscores # PULL REQUEST
-                    cat[col] = cat[col].str.replace('-', '_') # switch back dashes to underscores # PULL REQUEST
-                df['all'] = df['all'].astype(str).str.replace('-', '_') # switch back dashes to underscores  # PULL REQUEST
+                for col in cat.columns: # switch back dashes to underscores
+                    cat[col] = cat[col].str.replace('-', '_') # switch back dashes to underscores
+                df['all'] = df['all'].astype(str).str.replace('-', '_') # switch back dashes to underscores
                 ybar = df[['all', 'eigengeneExp']].groupby(['all']).mean()['eigengeneExp']
                 ebar = df[['all', 'eigengeneExp']].groupby(['all']).std()['eigengeneExp']
                 ybar = ybar.loc[cat['all']]
@@ -3189,7 +3197,9 @@ class WGCNA(GeneExp):
                 axs[1, 0].set_ylabel('eigengeneExp')
                 axs[1, 0].set_facecolor('white')
                 fig.subplots_adjust(bottom=0.3)
-                fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
+                fig.savefig(f"{self.outputPath}figures/"\
+                            f"{self.name}_module_barplot_eigengene_{moduleName}.{self.figureType}", \
+                            bbox_inches='tight')
                 if not show:
                     plt.close(fig)
 
@@ -3199,6 +3209,7 @@ class WGCNA(GeneExp):
                 for i in range(len(metadata)):
                     df = ME.copy(deep=True)
                     df[metadata[i]] = sampleInfo[metadata[i]].values
+                    df.sort_values(by=metadata[i], inplace=True)
                     palette = self.metadataColors[metadata[i]]
                     bar = sns.barplot(x=metadata[i], y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1,
                                       ax=axs[i])
@@ -3206,7 +3217,9 @@ class WGCNA(GeneExp):
                         bar.set(ylabel=None)
 
                 if self.save:
-                    fig.savefig(f"{self.outputPath}figures/module_barplot_eigengene_{moduleName}.{self.figureType}")
+                    fig.savefig(f"{self.outputPath}figures/"\
+                                f"{self.name}_module_barplot_eigengene_{moduleName}.{self.figureType}", \
+                                bbox_inches='tight')
                 if not show:
                     plt.close(fig)
                 else:
@@ -3240,9 +3253,9 @@ class WGCNA(GeneExp):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return
 
-        if not os.path.exists(f"{self.outputPath}figures/{type}"):
-            print(f"{WARNING}{type} directory does not exist!\nCreating {type} directory!{ENDC}")
-            os.makedirs(f"{self.outputPath}figures/{type}")
+        if not os.path.exists(f"{self.outputPath}figures/{self.name}_{type}"):
+            print(f"{WARNING}{type} directory does not exist!\nCreating {self.name}_{type} directory!{ENDC}")
+            os.makedirs(f"{self.outputPath}figures/{self.name}_{type}")
 
         if type == "GO" and sets is None:
             sets = ["GO_Biological_Process_2021"]
@@ -3257,14 +3270,14 @@ class WGCNA(GeneExp):
                 enr = gp.enrichr(gene_list=geneModule,
                                  gene_sets=sets,
                                  organism=self.species,
-                                 outdir=f"{self.outputPath}figures/{type}/{file_name}",
+                                 outdir=f"{self.outputPath}figures/{self.name}_{type}/{file_name}",
                                  cutoff=p_value,
                                  **kwargs)
                 dotplot(enr.res2d,
                         title=f"Gene ontology in {moduleName} module",
                         cmap='viridis_r',
                         cutoff=p_value,
-                        ofname=f"{self.outputPath}figures/{type}/{file_name}.{self.figureType}")
+                        ofname=f"{self.outputPath}figures/{self.name}_{type}/{file_name}.{self.figureType}")
             except:
                 print(f"No enrich terms when cutoff = {p_value} in module {moduleName}")
         else:
@@ -3275,7 +3288,7 @@ class WGCNA(GeneExp):
                                           p_value=str(p_value))
             token = result['summary']['token']
             analysis.report(token,
-                            path=f"{self.outputPath}figures/{type}/",
+                            path=f"{self.outputPath}figures/{self.name}_{type}/",
                             file=f"{file_name}.{self.figureType}",
                             number='50',
                             species=self.species)
@@ -3287,7 +3300,7 @@ class WGCNA(GeneExp):
                 f"{numGeneModule - token_result['identifiersNotFound']} out of {numGeneModule} genes (identifiers) in the sample were found in Reactome.")
             print(
                 f"{token_result['resourceSummary'][0]['pathways']} pathways were hit by at least one of them, which {len(token_result['pathways'])} of them have p-value less than {p_value}.")
-            print(f"Report was saved {self.outputPath}figures/{type}/{file_name}.{self.figureType}!")
+            print(f"Report was saved {self.outputPath}figures/{self.name}_{type}/{file_name}.{self.figureType}!")
             print(f"For more information please visit https://reactome.org/PathwayBrowser/#/DTAB=AN&ANALYSIS={token}")
 
     def updateGeneInfo(self, geneInfo=None, path=None, sep=','):
