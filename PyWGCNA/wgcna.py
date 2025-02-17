@@ -793,7 +793,7 @@ class WGCNA(GeneExp):
 
         :param data: expression data in a matrix or data frame. Rows correspond to samples and columns to genes.
         :param data: pandas dataframe
-        :param dataIsExpr: should the data be interpreted as expression (or other numeric) data, or as a similarity matrix of network nodes?
+        :param dataIsExpr: should the data be interpreted as expression (or other numeric) data, or as a similarity matrix of network nodes
         :type dataIsExpr: bool
         :param weights: optional observation weights for data to be used in correlation calculation. A matrix of the same dimensions as datExpr, containing non-negative weights. Only used with Pearson correlation.
         :type weights: pandas dataframe
@@ -805,7 +805,7 @@ class WGCNA(GeneExp):
         :type powerVector: list of int
         :param nBreaks: number of bins in connectivity histograms (default = 10)
         :type nBreaks: int
-        :param blockSize: block size into which the calculation of connectivity should be broken up. If not given, a suitable value will be calculated using function blockSize and printed if verbose>0. If R runs into memory problems, decrease this value.
+        :param blockSize: block size into which the calculation of connectivity should be broken up. If not given, a suitable value will be calculated using function blockSize and printed if verbose>0. If you run into memory problems, decrease this value.
         :type blockSize: int
         :param corOptions: a list giving further options to the correlation function specified in corFnc.
         :type corOptions: list
@@ -3124,9 +3124,14 @@ class WGCNA(GeneExp):
 
                 if colorBar is None:
                     palette = "lightblue"
-                else:
+                elif type(colorBar) == dict:
                     palette = cat[[colorBar]].copy()
                     palette.replace(self.metadataColors[colorBar], inplace=True)
+                    palette = palette[colorBar].values
+                else:
+                    palette = cat[[colorBar]].copy()
+                    palette[[colorBar]] = palette[[colorBar]].astype('int')
+                    palette[colorBar] = palette[colorBar].apply(lambda x: mcolors.to_hex(self.metadataColors[colorBar].to_rgba(float(x))) if pd.notna(x) else "#FFFFFF")
                     palette = palette[colorBar].values
 
                 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(cat.shape[0] + 2, len(metadata) * 4),
