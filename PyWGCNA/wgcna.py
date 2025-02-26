@@ -2777,8 +2777,8 @@ class WGCNA(GeneExp):
                 continue
             data.iloc[:, i] = data.iloc[:, i].astype(str)
             if len(np.unique(data.iloc[:, i])) == 2:
-                datTraits[data.columns[i]] = data.iloc[:, i]
                 org = np.unique(data.iloc[:, i]).tolist()
+                datTraits[org[-1]] = data.iloc[:, i] # fix column name to be the last value (this is the relationship used in the heatmap)
                 rep = list(range(len(org)))
                 datTraits.replace(to_replace=org, value=rep,
                                   inplace=True)
@@ -3100,7 +3100,8 @@ class WGCNA(GeneExp):
                 df['all'] = ''
                 for m in metadata:
                     df[m] = sampleInfo[m].values
-                    df.sort_values(by=m, inplace=True)
+                    if len(metadata) == 1: # Sort is not compatible with multiple metadata table
+                        df.sort_values(by=m, inplace=True)
                     df[m] = df[m].astype(str).str.replace('_', '-') # Replace underscores with dashes
                     df['all'] = df['all'] + '_' + df[m].astype(str)
                 df['all'] = df['all'].apply(lambda x: x[1:])
@@ -3124,7 +3125,8 @@ class WGCNA(GeneExp):
 
                 if colorBar is None:
                     palette = "lightblue"
-                elif type(colorBar) == dict:
+                #elif type(colorBar) == dict: # # fixed colorBar its self is never a dictionary  
+                elif type(self.metadataColors[colorBar])==dict:
                     palette = cat[[colorBar]].copy()
                     palette.replace(self.metadataColors[colorBar], inplace=True)
                     palette = palette[colorBar].values
@@ -3214,7 +3216,8 @@ class WGCNA(GeneExp):
                 for i in range(len(metadata)):
                     df = ME.copy(deep=True)
                     df[metadata[i]] = sampleInfo[metadata[i]].values
-                    df.sort_values(by=metadata[i], inplace=True)
+                    if len(metadata) == 1: # Sort is not compatible with multiple metadata table
+                        df.sort_values(by=metadata[i], inplace=True)
                     palette = self.metadataColors[metadata[i]]
                     bar = sns.barplot(x=metadata[i], y="eigengeneExp", data=df, palette=palette, ci='sd', capsize=0.1,
                                       ax=axs[i])
@@ -3277,6 +3280,7 @@ class WGCNA(GeneExp):
                                  organism=self.species,
                                  outdir=f"{self.outputPath}figures/{self.name}_{type}/{file_name}",
                                  cutoff=p_value,
+                                 background=self.geneExpr.var.gene_name.astype(str).values.tolist(),# use only genes present in dataset a background to increase power
                                  **kwargs)
                 dotplot(enr.res2d,
                         title=f"Gene ontology in {moduleName} module",
