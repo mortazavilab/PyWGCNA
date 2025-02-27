@@ -2851,10 +2851,18 @@ class WGCNA(GeneExp):
                                                      tmp_pvalue.values.flatten())])) \
             .reshape(moduleTraitCor.T.shape)
 
-        sns.set(font_scale=1.5)
-        res = sns.heatmap(moduleTraitCor.T, annot=labels, fmt="", cmap='RdBu_r',
-                          vmin=-1, vmax=1, ax=ax, annot_kws={'size': 20, "weight": "bold"},
-                          xticklabels=xlabels, yticklabels=ylabels)
+        #sns.set(font_scale=1.5)
+        res = sns.heatmap(
+            moduleTraitCor.T, 
+            annot=labels, 
+            fmt="", 
+            cmap='RdBu_r',
+            vmin=-1, vmax=1, 
+            ax=ax, 
+            annot_kws={"weight": "bold"},
+            xticklabels=xlabels, yticklabels=ylabels,
+            square= True
+        )
         res.set_xticklabels(res.get_xmajorticklabels(), fontsize=20, fontweight="bold", rotation=90)
         res.set_yticklabels(res.get_ymajorticklabels(), fontsize=20, fontweight="bold")
         plt.yticks(rotation=0)
@@ -2921,11 +2929,11 @@ class WGCNA(GeneExp):
 
     def setMetadataColor(self, col, cmap):
         """
-        set color pallete for each group of metadata
+        set color palette for each group of metadata
 
         :param col: name of metadata
         :type col: str
-        :param cmap: color pallet
+        :param cmap: color palette
         :type cmap: list
         """
         # check if obs_col is even there
@@ -2995,10 +3003,10 @@ class WGCNA(GeneExp):
                     handles = []
                     x = ind
                     y = np.repeat(3000 * metadata.index(m), len(ind))
-                    color = sampleInfo[m].values
+                    color = sampleInfo[m].tolist()
                     if type(self.metadataColors[m]) == dict:
-                        for n in list(self.metadataColors[m].keys()):
-                            color = np.where(color == n, self.metadataColors[m][n], color)
+                        for n in self.metadataColors[m].keys():
+                            color = [self.metadataColors[m][n] if str(c) == str(n) else c for c in color]
                             patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
                             handles.append(patch)
                         axs[0, 0].scatter(x, y, c=color, s=1600, marker='s')
@@ -3093,46 +3101,38 @@ class WGCNA(GeneExp):
             print(f"{WARNING}Module name does not exist in {ENDC}")
             return None
         else:
-            ME = pd.DataFrame(self.datME["ME" + moduleName].values, columns=['eigengeneExp'])
+            ME = self.datME[["ME" + moduleName]].copy(
+                    deep= True
+                ).rename(
+                    columns= {"ME" + moduleName: 'eigengeneExp'}
+                )
 
             if combine:
                 df = ME.copy(deep=True)
-                df['all'] = ''
-                for m in metadata:
-                    df[m] = sampleInfo[m].values
-                    df.sort_values(by=m, inplace=True)
-                    df[m] = df[m].astype(str).str.replace('_', '-') # Replace underscores with dashes
-                    df['all'] = df['all'] + '_' + df[m].astype(str)
-                df['all'] = df['all'].apply(lambda x: x[1:])
-                cat = pd.DataFrame(pd.unique(df['all']), columns=['all'])
-                cat[metadata] = cat['all'].str.split('_', expand=True)
-                for col in cat.columns: # switch back dashes to underscores
-                    cat[col] = cat[col].str.replace('-', '_') # switch back dashes to underscores
-                df['all'] = df['all'].astype(str).str.replace('-', '_') # switch back dashes to underscores
+                df[metadata] = sampleInfo[metadata].copy(deep= True)
+                df["all"] = df[metadata].astype(str).apply("_".join, axis= 1)
+                df = df.sort_values("all")
+                cat = df[metadata + ["all"]].drop_duplicates()
                 ybar = df[['all', 'eigengeneExp']].groupby(['all']).mean()['eigengeneExp']
                 ebar = df[['all', 'eigengeneExp']].groupby(['all']).std()['eigengeneExp']
                 ybar = ybar.loc[cat['all']]
                 ebar = ebar.loc[cat['all']]
                 label = list(ybar.index)
-                dot = df[['all', 'eigengeneExp']].copy()
-                ind = {}
-                for i in range(cat.shape[0]):
-                    ind[cat.loc[i, 'all']] = cat.index[i]
-                dot.replace(ind, inplace=True)
-                xdot = dot['all']
-                ydot = dot['eigengeneExp']
+                xdot = df['all']
+                ydot = df['eigengeneExp']
 
                 if colorBar is None:
                     palette = "lightblue"
-                elif type(colorBar) == dict:
-                    palette = cat[[colorBar]].copy()
+                elif type(self.metadataColors[colorBar]) == dict:
+                    palette = cat[colorBar].copy(deep= True)
                     palette.replace(self.metadataColors[colorBar], inplace=True)
-                    palette = palette[colorBar].values
                 else:
-                    palette = cat[[colorBar]].copy()
-                    palette[[colorBar]] = palette[[colorBar]].astype('int')
-                    palette[colorBar] = palette[colorBar].apply(lambda x: mcolors.to_hex(self.metadataColors[colorBar].to_rgba(float(x))) if pd.notna(x) else "#FFFFFF")
-                    palette = palette[colorBar].values
+                    palette = cat[colorBar].copy(deep= True)
+                    palette = palette.astype(
+                        "int"
+                    ).apply(
+                        lambda x: mcolors.to_hex(self.metadataColors[colorBar].to_rgba(float(x))) if pd.notna(x) else "#FFFFFF"
+                    )
 
                 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(cat.shape[0] + 2, len(metadata) * 4),
                                         sharex='col', gridspec_kw={
@@ -3149,15 +3149,15 @@ class WGCNA(GeneExp):
                                                               subplot_spec=ax_legend.get_subplotspec(),
                                                               height_ratios=height_ratios)
 
-                ind = [i for i in range(cat.shape[0])]
+                ind = cat["all"]
                 for m in metadata:
                     handles = []
                     x = ind
                     y = np.repeat(3000 * metadata.index(m), len(ind))
-                    color = cat[m].values
+                    color = cat[m].tolist()
                     if type(self.metadataColors[m]) == dict:
                         for n in list(self.metadataColors[m].keys()):
-                            color = np.where(color == n, self.metadataColors[m][n], color)
+                            color = [self.metadataColors[m][n] if str(c) == str(n) else c for c in color]
                             patch = mpatches.Patch(color=self.metadataColors[m][n], label=n)
                             handles.append(patch)
                         if m != colorBar:
@@ -3193,7 +3193,6 @@ class WGCNA(GeneExp):
                 axs[0, 0].grid(False)
                 axs[0, 0].axis('off')
 
-                ind = [i for i in range(cat.shape[0])]
                 axs[1, 0].bar(ind, ybar, align='center', color=palette)
                 axs[1, 0].errorbar(ind, ybar, yerr=ebar, fmt="o", color="r")
                 axs[1, 0].scatter(xdot, ydot, c='black', alpha=0.5)
