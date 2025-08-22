@@ -3129,10 +3129,28 @@ class WGCNA(GeneExp):
                     palette.replace(self.metadataColors[colorBar], inplace=True)
                     palette = palette[colorBar].values
                 else:
-                    palette = cat[[colorBar]].copy()
-                    palette[[colorBar]] = palette[[colorBar]].astype('int')
-                    palette[colorBar] = palette[colorBar].apply(lambda x: mcolors.to_hex(self.metadataColors[colorBar].to_rgba(float(x))) if pd.notna(x) else "#FFFFFF")
-                    palette = palette[colorBar].values
+                    palette_df = cat[[colorBar]].copy()
+                    
+                    # Get the color mapping dictionary for the current trait (e.g., 'chemical')
+                    color_map = self.metadataColors[colorBar]
+                    
+                    # Check if the mapping is a dictionary (for categorical data)
+                    if isinstance(color_map, dict):
+                        # Directly map the category names to their hex color codes.
+                        # This is where a string like 'nan' would fail to map, resulting in a np.nan value.
+                        palette_df[colorBar] = palette_df[colorBar].map(color_map)
+                        
+                        # Fill any unmapped values (which become np.nan) with a default color.
+                        palette_df[colorBar].fillna("#D3D3D3", inplace=True) # Use light gray for missing/unmapped data
+                        
+                    else:
+                        # This retains the new logic for when the color_map is a colormap object (for numeric data)
+                        # We should add similar protection here.
+                        palette_df[colorBar] = palette_df[colorBar].apply(
+                            lambda x: mcolors.to_hex(color_map.to_rgba(float(x))) if pd.notna(x) and str(x).lower() != 'nan' else "#D3D3D3"
+                        )
+
+                    palette = palette_df[colorBar].values
 
                 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(cat.shape[0] + 2, len(metadata) * 4),
                                         sharex='col', gridspec_kw={
