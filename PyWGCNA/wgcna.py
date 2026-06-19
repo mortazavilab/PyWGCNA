@@ -377,6 +377,29 @@ class WGCNA(GeneExp):
                                             cutHeight=self.MEDissThres, **kwargs)
             # The merged module colors; Rename to moduleColors
             self.datExpr.var['moduleColors'] = merge['colors']
+
+            # Reassign any singleton modules (1 gene) into the closest module by ME correlation
+            mergedColors = self.datExpr.var['moduleColors']
+            newMEs = merge['newMEs']
+            nonGreyMEs = [c for c in newMEs.columns if c != 'ME' + self.naColor]
+            colorCounts = mergedColors.value_counts()
+            singletons = [c for c in colorCounts[colorCounts == 1].index if c != self.naColor]
+            if singletons and len(nonGreyMEs) > 1:
+                print(f"  Found {len(singletons)} singleton module(s); merging into closest module...", flush=True)
+                expr = self.datExpr.to_df()
+                for sc in singletons:
+                    meCol = 'ME' + sc
+                    if meCol not in newMEs.columns:
+                        continue
+                    gene = mergedColors[mergedColors == sc].index[0]
+                    geneExpr = expr[gene]
+                    otherMEs = newMEs[[c for c in nonGreyMEs if c != meCol]]
+                    if otherMEs.shape[1] == 0:
+                        continue
+                    corr = otherMEs.apply(lambda col: geneExpr.corr(col))
+                    bestColor = corr.idxmax()[2:]  # strip 'ME' prefix
+                    self.datExpr.var.loc[gene, 'moduleColors'] = bestColor
+                    print(f"    module '{sc}' (1 gene: '{gene}') merged into '{bestColor}'", flush=True)
         else:
             self.datExpr.var['moduleColors'] = ["black"] * self.datExpr.shape[1]
 
